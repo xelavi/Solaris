@@ -1,98 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Grid with JSON Import/Export</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0;
-        }
-        .grid {
-            display: grid;
-            background-color: #ccc;
-            padding: 1px;
-            position: relative;
-        }
-        .cell {
-            width: 50px;
-            height: 50px;
-            background-color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-        .shape {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            border: none;
-        }
-        .circle {
-            border: 2px solid blue;
-            border-radius: 50%;
-            
-        }
-        .square {
-            border: 2px solid red;
-        }
-        .shape input {
-            width: 70px;
-            text-align: center;
-            border: none;
-            background: transparent;
-        }
-        .shape input {
-            border: none;
-
-        }
-        input[type="text"] {
-        outline: none;  
-        user-select: none;
-        -webkit-user-select: none; /* Para Safari y Chrome */
-        }
-        .controls {
-            margin-top: 20px;
-        }
-        button, input[type="file"] {
-            padding: 10px 20px;
-            margin: 0 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .line {
-            position: absolute;
-            background-color: #000;
-            z-index: 1;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="grid" class="grid"></div>
-        <div class="controls">
-            <button id="downloadJSON">Download JSON</button>
-        </div>
-    </div>
-
-    <script>
         let GRID_SIZE = 20;
         let currentShape = 'circle';
         let linkMode = false;
@@ -245,7 +150,7 @@
 
         function loadJSONFile() {
             fetch('./data.json')
-    .then((response) => response.json())
+            .then((response) => response.json())
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -296,6 +201,3 @@
             document.getElementById('downloadJSON').addEventListener('click', downloadJSON);
             document.getElementById('uploadJSON').addEventListener('change', loadJSONFile);
         });
-    </script>
-</body>
-</html>
