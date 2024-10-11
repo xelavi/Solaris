@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular RPG Skill Tree Creator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #skill-tree {
+            width: 800px;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+        #controls {
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 5px;
+        }
+        .node text {
+            font-size: 12px;
+        }
+        .node-name-input {
+            position: absolute;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="circular-rpg-skill-tree-creator" style="text-align: center;">Circular RPG Skill Tree Creator</h1>
+
+    <div id="skill-tree"></div>
+
+    <div id="controls">
+        <button onclick="addNode('circle')">Add Circle Node</button>
+        <button onclick="addNode('rect')">Add Square Node</button>
+        <button onclick="setMode('link')">Link Nodes</button>
+        <button onclick="setMode('unlink')">Unlink Nodes</button>
+        <button onclick="downloadJSON()">Download JSON</button>
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+        const svg = d3.select("#skill-tree")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        let nodes = [];
+        let links = [];
+        let nodeId = 0;
+        let mode = 'move';
+        let selectedNode = null;
+
+        function addNode(shape) {
+            const node = {
+                id: nodeId++,
+                x: Math.random() * (width - 100) + 50,
+                y: Math.random() * (height - 100) + 50,
+                shape: shape,
+                name: `Skill ${nodeId}`
+            };
+            nodes.push(node);
+            updateSkillTree();
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            selectedNode = null;
+        }
+
+        function updateSkillTree() {
+            svg.selectAll("*").remove();
+
+            svg.selectAll("line")
+                .data(links)
+                .enter()
+                .append("line")
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y)
+                .attr("stroke", "black");
+
+            const nodeElements = svg.selectAll("g")
+                .data(nodes)
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", handleNodeClick)
+                .on("dblclick", editNodeName);
+
+            nodeElements.each(function(d) {
+                if (d.shape === 'circle') {
+                    d3.select(this).append("circle")
+                        .attr("r", 30)
+                        .attr("fill", "lightblue");
+                } else {
+                    d3.select(this).append("rect")
+                        .attr("width", 60)
+                        .attr("height", 60)
+                        .attr("x", -30)
+                        .attr("y", -30)
+                        .attr("fill", "lightgreen");
+                }
+            });
+
+            nodeElements.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", ".35em")
+                .text(d => d.name);
+        }
+
+        function dragstarted(event, d) {
+            if (mode !== 'move') return;
+            d3.select(this).raise().attr("stroke", "black");
+        }
+
+        function dragged(event, d) {
+            if (mode !== 'move') return;
+            d.x = event.x;
+            d.y = event.y;
+            d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
+            svg.selectAll("line")
+                .filter(l => l.source === d || l.target === d)
+                .attr("x1", l => l.source.x)
+                .attr("y1", l => l.source.y)
+                .attr("x2", l => l.target.x)
+                .attr("y2", l => l.target.y);
+        }
+
+        function dragended(event, d) {
+            if (mode !== 'move') return;
+            d3.select(this).attr("stroke", null);
+        }
+
+        function handleNodeClick(event, d) {
+            if (mode === 'link') {
+                if (selectedNode === null) {
+                    selectedNode = d;
+                } else if (selectedNode !== d) {
+                    links.push({ source: selectedNode, target: d });
+                    selectedNode = null;
+                    updateSkillTree();
+                }
+            } else if (mode === 'unlink') {
+                if (selectedNode === null) {
+                    selectedNode = d;
+                } else if (selectedNode !== d) {
+                    links = links.filter(l => 
+                        !(l.source === selectedNode && l.target === d) &&
+                        !(l.source === d && l.target === selectedNode)
+                    );
+                    selectedNode = null;
+                    updateSkillTree();
+                }
+            }
+        }
+
+        function editNodeName(event, d) {
+            const foreignObject = d3.select(this).append('foreignObject')
+                .attr('x', -50)
+                .attr('y', -15)
+                .attr('width', 100)
+                .attr('height', 30);
+
+            const input = foreignObject.append('xhtml:input')
+                .attr('value', d.name)
+                .attr('style', 'width: 100%; height: 100%;')
+                .on('keyup', function(event) {
+                    if (event.key === 'Enter' || event.keyCode === 13) {
+                        d.name = this.value;
+                        updateSkillTree();
+                    }
+                })
+                .on('blur', function() {
+                    d.name = this.value;
+                    updateSkillTree();
+                });
+
+            input.node().focus();
+        }
+
+        function downloadJSON() {
+            const data = {
+                nodes: nodes.map(n => ({ id: n.id, shape: n.shape, x: n.x, y: n.y, name: n.name })),
+                links: links.map(l => ({ source: l.source.id, target: l.target.id }))
+            };
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "skill_tree.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        updateSkillTree();
+    </script>
+</body>
+</html>

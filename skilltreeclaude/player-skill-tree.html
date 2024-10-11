@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Skill Tree Selection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #skill-tree {
+            width: 600px;
+            height: 600px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: relative;
+            background-color: white;
+            margin: 0 auto;
+        }
+        .node {
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .node-circle {
+            border-radius: 50%;
+            border: 2px solid #333;
+            background-color: #f9f9f9;
+        }
+        .node-square {
+            border: 2px solid #333;
+            background-color: #f9f9f9;
+        }
+        .node-selected {
+            border-color: #1890ff;
+            background-color: #e6f7ff;
+        }
+        .node-locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .arrow {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #build-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Player Skill Tree Selection</h1>
+    <div id="skill-tree"></div>
+    <div id="controls">
+        <button id="save-build">Save Build</button>
+        <button id="reset-build">Reset Build</button>
+    </div>
+    <div id="build-info">
+        <p>Selected Skills: <span id="selected-skills">0</span></p>
+        <p>Available Points: <span id="available-points">10</span></p>
+    </div>
+
+    <script>
+        const skillTree = document.getElementById('skill-tree');
+        const saveBuildBtn = document.getElementById('save-build');
+        const resetBuildBtn = document.getElementById('reset-build');
+        const selectedSkillsSpan = document.getElementById('selected-skills');
+        const availablePointsSpan = document.getElementById('available-points');
+
+        let nodes = [];
+        let links = [];
+        let selectedNodes = new Set();
+        let availablePoints = 10;
+
+        const predefinedNodes = [
+            { x: 270, y: 270, shape: 'circle', text: 'Start', locked: false },
+            { x: 150, y: 150, shape: 'square', text: 'Strength', locked: true },
+            { x: 390, y: 150, shape: 'square', text: 'Dexterity', locked: true },
+            { x: 150, y: 390, shape: 'square', text: 'Intelligence', locked: true },
+            { x: 390, y: 390, shape: 'square', text: 'Vitality', locked: true },
+            { x: 270, y: 90, shape: 'circle', text: '+1 STR', locked: true },
+            { x: 450, y: 270, shape: 'circle', text: '+1 DEX', locked: true },
+            { x: 270, y: 450, shape: 'circle', text: '+1 INT', locked: true },
+            { x: 90, y: 270, shape: 'circle', text: '+1 VIT', locked: true },
+        ];
+
+        function createNode(config) {
+            const node = document.createElement('div');
+            node.className = `node node-${config.shape} ${config.locked ? 'node-locked' : ''}`;
+            node.style.left = `${config.x}px`;
+            node.style.top = `${config.y}px`;
+            node.textContent = config.text;
+            
+            node.addEventListener('click', () => selectNode(node));
+            
+            skillTree.appendChild(node);
+            nodes.push(node);
+            return node;
+        }
+
+        function selectNode(node) {
+            if (node.classList.contains('node-locked')) {
+                alert('This node is locked. Unlock connected nodes first!');
+                return;
+            }
+            
+            if (selectedNodes.has(node)) {
+                node.classList.remove('node-selected');
+                selectedNodes.delete(node);
+                availablePoints++;
+            } else if (availablePoints > 0) {
+                node.classList.add('node-selected');
+                selectedNodes.add(node);
+                availablePoints--;
+                unlockConnectedNodes(node);
+            } else {
+                alert('No more skill points available!');
+                return;
+            }
+            
+            updateBuildInfo();
+        }
+
+        function unlockConnectedNodes(node) {
+            const connectedNodes = links
+                .filter(link => link.from === node || link.to === node)
+                .map(link => link.from === node ? link.to : link.from);
+            
+            connectedNodes.forEach(connectedNode => {
+                connectedNode.classList.remove('node-locked');
+            });
+        }
+
+        function linkNodes(node1, node2) {
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            arrow.classList.add('arrow');
+            arrow.style.overflow = 'visible';
+            
+            const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrowPath.setAttribute('fill', 'none');
+            arrowPath.setAttribute('stroke', '#333');
+            arrowPath.setAttribute('stroke-width', '2');
+            
+            arrow.appendChild(arrowPath);
+            skillTree.insertBefore(arrow, skillTree.firstChild);
+            links.push({ element: arrow, from: node1, to: node2 });
+            
+            updateArrowPosition(arrow, node1, node2);
+        }
+
+        function updateArrowPosition(arrow, from, to) {
+            const fromRect = from.getBoundingClientRect();
+            const toRect = to.getBoundingClientRect();
+            const treeRect = skillTree.getBoundingClientRect();
+            
+            const x1 = fromRect.left + fromRect.width / 2 - treeRect.left;
+            const y1 = fromRect.top + fromRect.height / 2 - treeRect.top;
+            const x2 = toRect.left + toRect.width / 2 - treeRect.left;
+            const y2 = toRect.top + toRect.height / 2 - treeRect.top;
+            
+            arrow.setAttribute('width', skillTree.clientWidth);
+            arrow.setAttribute('height', skillTree.clientHeight);
+            
+            const path = `M ${x1} ${y1} L ${x2} ${y2}`;
+            arrow.querySelector('path').setAttribute('d', path);
+        }
+
+        function updateBuildInfo() {
+            selectedSkillsSpan.textContent = selectedNodes.size;
+            availablePointsSpan.textContent = availablePoints;
+        }
+
+        function saveBuild() {
+            const build = Array.from(selectedNodes).map(node => node.textContent);
+            localStorage.setItem('playerBuild', JSON.stringify(build));
+            alert('Build saved successfully!');
+        }
+
+        function resetBuild() {
+            selectedNodes.forEach(node => node.classList.remove('node-selected'));
+            selectedNodes.clear();
+            availablePoints = 10;
+            nodes.forEach(node => {
+                if (node.textContent !== 'Start') {
+                    node.classList.add('node-locked');
+                }
+            });
+            updateBuildInfo();
+        }
+
+        // Initialize the skill tree
+        predefinedNodes.forEach(createNode);
+
+        // Create some example links
+        linkNodes(nodes[0], nodes[1]);
+        linkNodes(nodes[0], nodes[2]);
+        linkNodes(nodes[0], nodes[3]);
+        linkNodes(nodes[0], nodes[4]);
+        linkNodes(nodes[1], nodes[5]);
+        linkNodes(nodes[2], nodes[6]);
+        linkNodes(nodes[3], nodes[7]);
+        linkNodes(nodes[4], nodes[8]);
+
+        saveBuildBtn.addEventListener('click', saveBuild);
+        resetBuildBtn.addEventListener('click', resetBuild);
+
+        // Select the start node by default
+        selectNode(nodes[0]);
+    </script>
+</body>
+</html>

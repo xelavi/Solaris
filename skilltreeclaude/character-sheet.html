@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Character Sheet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .stat {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RPG Character Sheet</h1>
+        
+        <h2>Character Details</h2>
+        <input type="text" id="charName" placeholder="Character Name">
+        <input type="text" id="charProfession" placeholder="Profession">
+        <select id="charCombatStyle">
+            <option value="">Select Combat Style</option>
+            <option value="melee">Melee</option>
+            <option value="ranged">Ranged</option>
+            <option value="magic">Magic</option>
+        </select>
+        
+        <h2>Skills</h2>
+        <div id="skillList"></div>
+        
+        <button onclick="loadBuild()">Load Saved Build</button>
+        
+        <h2>Character Stats</h2>
+        <div class="stats" id="statsDisplay"></div>
+    </div>
+
+    <script>
+        let characterSkills = [];
+        
+        function loadBuild() {
+            const savedBuild = JSON.parse(localStorage.getItem('playerBuild'));
+            if (savedBuild) {
+                characterSkills = savedBuild;
+                displaySkills();
+                calculateStats();
+            } else {
+                alert('No saved build found. Please create a build in the Skill Tree page first.');
+            }
+        }
+        
+        function displaySkills() {
+            const skillList = document.getElementById('skillList');
+            skillList.innerHTML = '<h3>Selected Skills:</h3>';
+            characterSkills.forEach(skill => {
+                skillList.innerHTML += `<div>${skill}</div>`;
+            });
+        }
+        
+        function calculateStats() {
+            let stats = {
+                hp: 100,
+                armor: 10,
+                movementSpeed: 5,
+                strength: 10,
+                dexterity: 10,
+                intelligence: 10,
+                vitality: 10
+            };
+            
+            characterSkills.forEach(skill => {
+                switch(skill) {
+                    case '+1 STR':
+                        stats.strength += 1;
+                        stats.hp += 5;
+                        break;
+                    case '+1 DEX':
+                        stats.dexterity += 1;
+                        stats.movementSpeed += 0.2;
+                        break;
+                    case '+1 INT':
+                        stats.intelligence += 1;
+                        break;
+                    case '+1 VIT':
+                        stats.vitality += 1;
+                        stats.hp += 10;
+                        stats.armor += 1;
+                        break;
+                    // Add more cases for other skills as needed
+                }
+            });
+            
+            // Apply combat style bonuses
+            const combatStyle = document.getElementById('charCombatStyle').value;
+            switch(combatStyle) {
+                case 'melee':
+                    stats.strength += 2;
+                    stats.armor += 5;
+                    break;
+                case 'ranged':
+                    stats.dexterity += 2;
+                    stats.movementSpeed += 1;
+                    break;
+                case 'magic':
+                    stats.intelligence += 2;
+                    stats.hp += 20;
+                    break;
+            }
+            
+            displayStats(stats);
+        }
+        
+        function displayStats(stats) {
+            const statsDisplay = document.getElementById('statsDisplay');
+            statsDisplay.innerHTML = '';
+            for (const [key, value] of Object.entries(stats)) {
+                statsDisplay.innerHTML += `
+                    <div class="stat">
+                        <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${value.toFixed(1)}
+                    </div>
+                `;
+            }
+        }
+        
+        // Event listeners for input changes
+        document.getElementById('charName').addEventListener('input', calculateStats);
+        document.getElementById('charProfession').addEventListener('input', calculateStats);
+        document.getElementById('charCombatStyle').addEventListener('change', calculateStats);
+        
+        // Initial load
+        loadBuild();
+    </script>
+</body>
+</html>
