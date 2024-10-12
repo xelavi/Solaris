@@ -245,12 +245,21 @@
 
         function downloadJSON() {
             const data = {
+                name: "",
+                image: "",
+                level: 0,
+                job: "",
+                background: "",
+                martialStyle: "",
+                atributePoints: 0,
                 gridSize: GRID_SIZE,
                 nodes: grid.flatMap((row, i) => 
                     row.map((cell, j) => ({
+                        id: j*20+i,
                         position: [i, j],
                         shape: cell.shape,
-                        text: cell.text
+                        text: cell.text,
+                        active: false
                     })).filter(cell => cell.shape)
                 ),
                 links: links
