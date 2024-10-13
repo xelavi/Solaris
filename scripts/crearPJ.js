@@ -202,7 +202,7 @@
                 const a = document.createElement('a');
                 a.href = url;
                 let nombre = document.getElementById('name').value;
-                a.download = `${nombre}.json`;
+                a.download = 'data.json';
                 a.click();
                 URL.revokeObjectURL(url);
             }
