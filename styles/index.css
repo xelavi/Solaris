@@ -1,0 +1,91 @@
+/* Estilo general para la página */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+h2, h3 {
+    color: #444;
+    font-weight: 600;
+}
+
+p {
+    margin: 5px 0;
+}
+
+.navbar {
+    background-color: #6b6c55;
+    padding: 10px;
+    text-align: center;
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.navbar ul li a:hover {
+    color: #f39c12;
+}
+
+
+/* Estilo para el encabezado */
+h2 {
+    color: #333;
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para la lista de personajes */
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilo para los enlaces de la lista */
+ul li {
+    margin: 10px 0;
+    text-align: center;
+}
+
+ul li a {
+    text-decoration: none;
+    font-size: 1.2em;
+    color: #000000;
+    padding: 10px 20px;
+    display: inline-block;
+}
+
+ul li a:hover {
+    background-color: #4b5156;
+    color: #fff;
+    transform: scale(1.05); /* Añade un efecto de agrandar al pasar el mouse */
+}
+
+/* Efecto sombra en los enlaces */
+ul li a {
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+ul li a:hover {
+    box-shadow: 4px 8px 16px rgba(144, 137, 66, 0.4);
+}

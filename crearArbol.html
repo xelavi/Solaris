@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grid with JSON Import/Export</title>
+    <link rel="stylesheet" href="styles/nav.css">
+   <link rel="stylesheet"href="styles/crearArbol.css">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="menu">
+          <li><a href="verPJ.html">Hoja de Personaje</a></li>
+          <li><a href="personajes.html">Personajes Creados</a></li>
+          <li><a href = "./Personajes/ungahReroJero.html"></a></li>
+        </ul>
+      </nav>
+    <div class="container">
+        <div id="grid" class="grid"></div>
+        <div class="controls">
+            <button id="toggleShape">Cambiar a Cuadrado</button>
+            <button id="linkNodes">Crear Linea</button>
+            <button id="unlinkNodes">Borrar Linea</button>
+            <button id="downloadJSON">Guardar</button>
+            <input type="file" id="uploadJSON" accept=".json">
+        </div>
+    </div>
+<script src="scripts/crearArbol.js"></script>
+</body>
+</html>

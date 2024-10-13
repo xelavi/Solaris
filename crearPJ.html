@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grid with JSON Import/Export</title>
+</head>
+<link rel="stylesheet" href="styles/nav.css">
+<link rel="stylesheet" href="styles/crearPJ.css">
+<body>
+  <script src="scripts/crearPJ.js"></script>
+    <nav class="navbar">
+        <ul class="menu">
+          <li><a href="verPJ.html">Ver Personajes</a></li>
+          <li><a href = "index.html">Lista de Personajes</a></li>
+          <li><a href="crearArbol.html">Lista de personajes</a></li>
+          
+        </ul>
+      </nav>
+      <div>
+        <p>Nombre: <input type="text" id="name"></p> 
+        <p>Nivel: <input type="text" id="level"></p> 
+        <p>Oficio: <input type="text" id="job"></p> 
+        <p>Trasfondo: <input type="text" id="background"></p> 
+        <p>Estilo Marcial: <input type="text" id="martialStyle"></p> 
+        <p>Raza: <input type="text" id="race"></p> 
+    </div>
+      <div>
+        <p>Puntos:</p> <p id="points">0</p>
+      </div>
+    <div class="container">
+        <div id="grid" class="grid"></div>
+        <div class="controls">
+            <button id="downloadJSON">Guardar</button>
+            <input type="file" id="uploadJSON" accept=".json">
+        </div>
+    </div>
+   
+   
+</body>
+</html>
