@@ -11,8 +11,10 @@ let agility = 0;
     let actions = 0;
     let deadeye = 0;
 let mind = 0;
-    let skillpoints=0;
-let toHit=0;
+
+let skillpoints = 0;
+
+
 
 let GRID_SIZE = 20;
 let currentShape = 'circle';
@@ -44,49 +46,57 @@ let links = [];
     function calculateNodes(data) {
 
         
-        document.getElementById('name').innerText = data.name;
-        document.getElementById('job').innerText = data.job;
-        level = document.getElementById('level').innerText = data.level;
-        document.getElementById('background').innerText = data.background;
-        document.getElementById('martialStyle').innerText = data.martialStyle;
-        
+       document.getElementById('name').value = data.name;
+        document.getElementById('job').value = data.job;
+        level = document.getElementById('level').value = data.level;
+        document.getElementById('background').value = data.background;
+        document.getElementById('martialStyle').value = data.martialStyle;
+        document.getElementById('race').value = data.race;
      data.nodes.forEach(node => {
         
             if(node.shape == 'circle-enabled'){
-                if(node.text=='HP') hp++;
+                
+               calculateStats(node.text,true);
             }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='B') body++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='R') resistance++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='M') movement++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='DL') deadlift++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='A') agility++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='INI') initiative++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='DE') deadeye++;
-            }
-            if(node.shape == 'circle-enabled'){
-                if(node.text=='AC') dodge++;
-            }
-
 
         })
-      calculateStats();
+   //   calculateStats();
+ calculateSkillPoints();
+    }
+    
+
+    function calculateStats(text,enabled){
+
+
+      
+        
+    if(enabled){
+        if(text=='HP') hp++;
+        if(text=='B') body++;
+        if(text=='R') resistance++;
+        if(text=='M') movement++;
+        if(text=='DL') deadlift++;
+        if(text=='A') agility++;
+        if(text=='INI') initiative++;
+        if(text=='DE') deadeye++;
+        if(text=='AC') dodge++;
+    }
+    else{
+        if(text=='HP') hp--;
+        if(text=='B') body--;
+        if(text=='R') resistance--;
+        if(text=='M') movement--;
+        if(text=='DL') deadlift--;
+        if(text=='A') agility--;
+        if(text=='INI') initiative--;
+        if(text=='DE') deadeye--;
+        if(text=='AC') dodge--;
     }
 
 
-    function calculateStats(){
+
+
+
         //HP
         document.getElementById('hp').innerText = 12 + (hp*12) + (level*2) + (body*level);
         //RESISTANCE
@@ -114,7 +124,7 @@ let links = [];
 
 
 
-
+    //ARBOL
 
     function initializeGrid() {
         grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill({ shape: null, text: '' }));
@@ -130,7 +140,7 @@ let links = [];
                 cell.className = 'cell';
                 cell.dataset.row = i;
                 cell.dataset.col = j;
-               // cell.addEventListener('click', handleCellClick);
+               cell.addEventListener('click', handleCellClick);
                 gridElement.appendChild(cell);
                 if (grid[i][j].shape) {
                     addShapeToCell(cell, grid[i][j].shape, grid[i][j].text);
@@ -139,16 +149,56 @@ let links = [];
         }
         redrawAllLines();
     }
+
+    function handleCellClick(event) {
+        const cell = event.currentTarget;
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        toggleShape(cell, row, col);
+        
+    }
+
+    function toggleShape(cell, row, col) {
+      
+        if (grid[row][col].shape === 'circle') {
+            cell.innerHTML = '';
+            grid[row][col] = { shape: 'circle-enabled', text: grid[row][col].text };
+            addShapeToCell(cell, 'circle-enabled',grid[row][col].text);
+            calculateStats(grid[row][col].text,true);
+        }
+        else if(grid[row][col].shape === 'square'){
+            cell.innerHTML = '';
+            grid[row][col] = { shape: 'square-enabled', text: grid[row][col].text};
+            addShapeToCell(cell, 'square-enabled', grid[row][col].text);
+            calculateStats(grid[row][col].text,true);
+        }
+        else if(grid[row][col].shape === 'circle-enabled'){
+            cell.innerHTML = '';
+            grid[row][col] = { shape: 'circle', text: grid[row][col].text, enabled: true };
+            addShapeToCell(cell, 'circle',grid[row][col].text);
+            calculateStats(grid[row][col].text,false);
+        }
+        else if(grid[row][col].shape === 'square-enabled'){
+            cell.innerHTML = '';
+            grid[row][col] = { shape: 'square', text: grid[row][col].text, enabled: true };
+            addShapeToCell(cell, 'square',grid[row][col].text);
+            calculateStats(grid[row][col].text,false);
+
+        }
+       
+        
+        
+}
     
     function addShapeToCell(cell, shape, text) {
         const shapeElement = document.createElement('div');
         shapeElement.className = `shape ${shape}`;
-        console.log(shape);
+        
         const input = document.createElement('input');
         input.type = 'text';
         input.value = text;
         input.readOnly = true;
-        input.addEventListener('click', (e) => e.stopPropagation());
+      //  input.addEventListener('click', (e) => e.stopPropagation());
         input.addEventListener('input', (e) => {
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
@@ -156,6 +206,7 @@ let links = [];
         });
         shapeElement.appendChild(input);
         cell.appendChild(shapeElement);
+        calculateSkillPoints();
     }
     
     function linkNodes() {
@@ -211,6 +262,55 @@ let links = [];
         });
         links = data.links || [];
         createGrid();
+    } 
+    let boolinput = 0;
+    function updateLevel(event){
+        level = (document.getElementById('level').value);
+        console.log(level);
+        calculateStats();
+        calculateSkillPoints();
+    }
+
+    //Cada cop que canvii el nivell, un node, os es cargui un json
+    function calculateSkillPoints(){
+        skillpoints=0;
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if(grid[i][j].shape == 'circle-enabled' ||  grid[i][j].shape == 'square-enabled') skillpoints++;
+            }
+        }
+        document.getElementById('skillPoint').innerText = 2+(level*2) - skillpoints;
+    }
+
+    function downloadJSON() {
+        console.log(6);
+        const data = {
+            name: document.getElementById('name').value,
+            level: document.getElementById('level').value,
+            job: document.getElementById('job').value,
+            background: document.getElementById('background').value,
+            martialStyle: document.getElementById('martialStyle').value,
+            raza: document.getElementById('race').value,
+            atributePoints: document.getElementById('skillPoint').value,
+
+            nodes: grid.flatMap((row, i) => 
+                row.map((cell, j) => ({
+                    position: [i, j],
+                    shape: cell.shape,
+                    text: cell.text
+                })).filter(cell => cell.shape)
+            ),
+            links: links
+        };
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        let nombre = document.getElementById('name').value;
+        a.download = 'data.json';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -226,5 +326,10 @@ let links = [];
               buildGridFromJSON(data);
  
          });
-     document.getElementById('uploadJSON').addEventListener('change', loadJSONFile);
+         calculateSkillPoints();
+        document.getElementById('downloadJSON').addEventListener('click', downloadJSON);
+        document.getElementById('level').addEventListener('input', updateLevel);  
+        document.getElementById('uploadJSON').addEventListener('change', loadJSONFile);
      });
+
+ 
