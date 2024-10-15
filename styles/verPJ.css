@@ -57,13 +57,20 @@ p {
 
 .character-info {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     align-items: center;
     justify-content: space-between;
 }
 
 
-.character-info p {
+.character-info .flex {
+    margin: 0;
+    font-size: 18px;
+    border: 1px;
+    font-weight: bold;
+}
+
+.character-info input {
     margin: 0;
     font-size: 18px;
     border: 1px;
@@ -74,7 +81,7 @@ p {
 .stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 20px;
+    grid-gap: 10px;
 }
 
 .stats h2 {
@@ -114,7 +121,7 @@ p {
 }
 
 /* Input file */
-input[type="file"] {
+button, input[type="file"] {
     display: block;
     margin: 20px auto;
     padding: 10px;
@@ -125,8 +132,15 @@ input[type="file"] {
     cursor: pointer;
 }
 
+
+
 input[type="file"]:hover {
     background-color: #3498db;
+}
+
+input[type="text"]{
+    background-color: #ecf0f1;
+    border: 0;
 }
 
 /* Responsive design */
