@@ -12,27 +12,42 @@
     
     <nav class="navbar">
         <ul class="menu">
-            <li><a href="crearPJ.html">Crear Personaje</a></li>
             <li><a href="index.html">Lista de Personajes</a></li>
-            <li><a href="crearArbol.html">Crear Arbol</a></li>
+            <li><a href="crearArbol.html">Crear Arbol</a></li>  
         </ul>
     </nav>
 
     <div class="character-info">
         <div class="flex">
-        <p>Nombre: </p> <p id="name"></p> </div>
+          <p>Nombre:</p>
+          <input type="text" id="name">
+        </div>
         
         <div class="flex">
-        <p>Profesión: </p> <p id="job"></p></div>
-        
+          <p>Oficio:</p>
+          <input type="text" id="job">
+        </div>
+      
         <div class="flex">
-        <p>Estilo Marcial: </p> <p id="martialStyle"></p></div>
+          <p>Estilo Marcial:</p>
+          <input type="text" id="martialStyle">
+        </div>
+      
         <div class="flex">
-        <p>Trasfondo: </p> <p id="background"></p></div>
+          <p>Trasfondo:</p>
+          <input type="text" id="background">
+        </div>
+      
         <div class="flex">
-        <p>Nivel: </p> <p id="level"></p></div>
-        
-    </div>
+          <p>Nivel:</p>
+          <input type="number" id="level">
+        </div>
+        <div class="flex">
+          <p>Raza:</p>
+          <input type="text" id="race">
+        </div>
+      </div>
+      
 
     <div class="stats">
         <h2>Estadísticas</h2>
@@ -64,10 +79,12 @@
         <h2>Equipo</h2>
         <p>Armas:</p>
     </div>
-
+    
     <input type="file" id="uploadJSON" accept=".json">
-
+    
     <div class="container">
+      <button id="downloadJSON">Guardar</button>
+      <p> Puntos disponibles:</p> <p id="skillPoint"></p>
         <div id="grid" class="grid"></div>
         </div>
     </div>
