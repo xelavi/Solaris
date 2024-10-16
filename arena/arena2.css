@@ -1,0 +1,24 @@
+
+  .grid {
+    display: grid;
+    gap: 1px;
+    background-color: #ccc;
+  }
+  .cell {
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .cell.movement-range {
+    background-color: #ffff99;
+  }
+  .player {
+    width: 16px;
+    height: 16px;
+    background-color: blue;
+    border-radius: 50%;
+  }
