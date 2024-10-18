@@ -24,8 +24,8 @@
         2,
         10
       ],
-      "shape": "square",
-      "text": "ADR",
+      "shape": "circle",
+      "text": "HP",
       "active": false
     },
     {
@@ -35,7 +35,7 @@
         13
       ],
       "shape": "circle",
-      "text": "DL",
+      "text": "M",
       "active": false
     },
     {
@@ -44,18 +44,8 @@
         3,
         6
       ],
-      "shape": "circle",
-      "text": "HP",
-      "active": false
-    },
-    {
-      "id": 45,
-      "position": [
-        5,
-        2
-      ],
-      "shape": "circle",
-      "text": "CC",
+      "shape": "square",
+      "text": "ADR",
       "active": false
     },
     {
@@ -129,13 +119,23 @@
       "active": false
     },
     {
+      "id": 347,
+      "position": [
+        7,
+        17
+      ],
+      "shape": "square",
+      "text": "INTER",
+      "active": false
+    },
+    {
       "id": 308,
       "position": [
         8,
         15
       ],
       "shape": "circle",
-      "text": "M",
+      "text": "DL",
       "active": false
     },
     {
@@ -146,16 +146,6 @@
       ],
       "shape": "circle",
       "text": "R",
-      "active": false
-    },
-    {
-      "id": 129,
-      "position": [
-        9,
-        6
-      ],
-      "shape": "square",
-      "text": "TAUNT",
       "active": false
     },
     {
@@ -204,7 +194,7 @@
         10,
         15
       ],
-      "shape": "square",
+      "shape": "circle",
       "text": "REAC",
       "active": false
     },
@@ -215,7 +205,7 @@
         17
       ],
       "shape": "circle",
-      "text": "INI",
+      "text": "DE",
       "active": false
     },
     {
@@ -285,7 +275,7 @@
         10
       ],
       "shape": "circle",
-      "text": "DE",
+      "text": "INI",
       "active": false
     },
     {
@@ -472,16 +462,6 @@
     },
     {
       "from": {
-        "row": 14,
-        "col": 12
-      },
-      "to": {
-        "row": 13,
-        "col": 10
-      }
-    },
-    {
-      "from": {
         "row": 17,
         "col": 15
       },
@@ -582,16 +562,6 @@
     },
     {
       "from": {
-        "row": 10,
-        "col": 11
-      },
-      "to": {
-        "row": 12,
-        "col": 14
-      }
-    },
-    {
-      "from": {
         "row": 12,
         "col": 14
       },
@@ -656,28 +626,8 @@
         "col": 4
       },
       "to": {
-        "row": 5,
-        "col": 2
-      }
-    },
-    {
-      "from": {
-        "row": 6,
-        "col": 4
-      },
-      "to": {
         "row": 9,
         "col": 3
-      }
-    },
-    {
-      "from": {
-        "row": 9,
-        "col": 3
-      },
-      "to": {
-        "row": 9,
-        "col": 6
       }
     },
     {
@@ -768,6 +718,26 @@
       "to": {
         "row": 17,
         "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 13,
+        "col": 10
+      },
+      "to": {
+        "row": 14,
+        "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 17
+      },
+      "to": {
+        "row": 8,
+        "col": 15
       }
     }
   ]
