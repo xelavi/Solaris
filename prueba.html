@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mostrar HTMLs uno al lado del otro</title>
+    <style>
+        /* Estilo para alinear los iframes uno al lado del otro */
+        .container {
+            display: flex;  /* Flexbox para colocar los elementos en fila */
+            justify-content: space-around; /* Espacio uniforme entre los iframes */
+        }
+
+        iframe {
+            width: 45%;  /* Ajustar el ancho de cada iframe al 45% */
+            height: 1000px; /* Ajustar la altura del iframe */
+            border: 1px solid #000;  /* Borde para visualización */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <iframe src="verPJ.html" title="Left HTML"></iframe>
+        <iframe src="skills.html" title="Right HTML"></iframe>
+    </div>
+</body>
+</html>

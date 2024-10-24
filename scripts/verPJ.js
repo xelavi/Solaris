@@ -11,9 +11,9 @@ let agility = 0;
     let actions = 0;
     let deadeye = 0;
 let mind = 0;
-
-let skillpoints = 0;
-
+let skillNode = 0;
+let atributePoints = 0;
+let skillPoints = 0;
 
 
 let GRID_SIZE = 20;
@@ -61,7 +61,7 @@ let links = [];
 
         })
    //   calculateStats();
- calculateSkillPoints();
+ calculateAtributePoints();
     }
     
 
@@ -80,6 +80,8 @@ let links = [];
         if(text=='INI') initiative++;
         if(text=='DE') deadeye++;
         if(text=='AC') dodge++;
+        if(text == 'MIND') mind++;
+        if(text == 'H') skillNode++;
     }
     else{
         if(text=='HP') hp--;
@@ -91,6 +93,7 @@ let links = [];
         if(text=='INI') initiative--;
         if(text=='DE') deadeye--;
         if(text=='AC') dodge--;
+        if(text == 'MIND') skillNode--;
     }
 
 
@@ -118,7 +121,7 @@ let links = [];
         //TO HIT
         document.getElementById('toHitB').innerText = (level*1 + body*1);
         document.getElementById('toHitA').innerText = (level*1 + agility*1);
-
+        atributePoints = document.getElementById('skillpoints').innerText = mind*3 + level*2 + skillNode;
         
     }
 
@@ -206,7 +209,7 @@ let links = [];
         });
         shapeElement.appendChild(input);
         cell.appendChild(shapeElement);
-        calculateSkillPoints();
+        calculateAtributePoints();
     }
     
     function linkNodes() {
@@ -268,18 +271,18 @@ let links = [];
         level = (document.getElementById('level').value);
         console.log(level);
         calculateStats();
-        calculateSkillPoints();
+        calculateAtributePoints();
     }
 
     //Cada cop que canvii el nivell, un node, os es cargui un json
-    function calculateSkillPoints(){
-        skillpoints=0;
+    function calculateAtributePoints(){
+        atributePoints=0;
         for (let i = 0; i < GRID_SIZE; i++) {
             for (let j = 0; j < GRID_SIZE; j++) {
-                if(grid[i][j].shape == 'circle-enabled' ||  grid[i][j].shape == 'square-enabled') skillpoints++;
+                if(grid[i][j].shape == 'circle-enabled' ||  grid[i][j].shape == 'square-enabled') atributePoints++;
             }
         }
-        document.getElementById('skillPoint').innerText = 2+(level*2) - skillpoints;
+        document.getElementById('skillPoint').innerText = 2+(level*2) - atributePoints;
     }
 
     function downloadJSON() {
@@ -326,7 +329,7 @@ let links = [];
               buildGridFromJSON(data);
  
          });
-         calculateSkillPoints();
+         calculateAtributePoints();
         document.getElementById('downloadJSON').addEventListener('click', downloadJSON);
         document.getElementById('level').addEventListener('input', updateLevel);  
         document.getElementById('uploadJSON').addEventListener('change', loadJSONFile);
