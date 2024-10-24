@@ -6,6 +6,7 @@
     <title>Character Sheet</title>
     <link rel="stylesheet" href="styles/verPJ.css">
     <link rel="stylesheet" href="styles/verPJ-Tree.css">
+    <link rel="stylesheet" href="styles/skill.css">
 </head>
 <body>
     <script src="scripts/verPJ.js"></script>
@@ -17,7 +18,11 @@
         </ul>
     </nav>
 
+    <div id="webflex">
+
+    <div>
     <div class="character-info">
+      
         <div class="flex">
           <p>Nombre:</p>
           <input type="text" id="name">
@@ -75,10 +80,171 @@
         </div>
     </div>
 
+    <div class="actives"> 
+      <h2>Activas</h2>  
+    </div>
     <div class="equipment">
         <h2>Equipo</h2>
         <p>Armas:</p>
     </div>
+</div>
+<div class="skilltable">
+  <h1>Estadísticas de Habilidades</h1>
+  <h2 id="skillpoints">Puntos:</h2> 
+  <table>
+      <thead>
+          <tr>
+              <th>Habilidad</th>
+              <th>Atributo</th>
+              <th>Rangos</th>
+              <th>Bonificadores Varios</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td>Atletismo</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Nadar</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Aguante</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Medicina</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Naturaleza</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Geografía</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Tasación</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Antropología/Política</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Historia</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Pilotaje</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Investigación/Buscar</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Orientación/Navegación</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Percepción</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Supervivencia</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Persuasión</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Cautivación</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Intimidación</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Averiguar intenciones</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Performance</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Sigilo</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Juego de manos</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Acrobacias</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+          <tr>
+              <td>Artesanía/Arte</td>
+              <td></td>
+              <td><input type="number" value=""></td>
+              <td><input type="number" value=""></td>
+          </tr>
+      </tbody>
+  </table>
+</div>
+
+
+</div>
     
     <input type="file" id="uploadJSON" accept=".json">
     
@@ -88,6 +254,6 @@
         <div id="grid" class="grid"></div>
         </div>
     </div>
-
+   
 </body>
 </html>
