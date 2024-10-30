@@ -1,0 +1,26 @@
+{
+    "name": "Huérfano de Lenam",
+    "description": "Habiendo fracasado en las pruebas para formar parte de la organización de los Caballeros del Silencio, un huérfano en el reino de Lenam está obligado a contribuir a la sociedad. Entrando como aprendiz de algún oficio artesano o en alguna cadena de producción. También puede ser que guardes rencor a aquellos que te examinaron o a lo injustamente desigual que es la sociedad con la gente como tú. En tal caso, también puede ser que te hayas marchado de la ciudad-capital y hayas emprendido un viaje en barco o te hayas aventurado en una de las caravanas que cruzan los desiertos.",
+    "nodes": [
+        {
+        "position": [
+            13,
+            6
+         ]
+    },
+    {
+        "position": [
+            7,
+            9
+         ]
+    }
+    ],
+    "skills": [
+        "Aguante",
+        "Arte",
+        "Supervivencia",
+        "Sigilo",
+        "Intimidación",
+        "Investigación/Buscar"
+    ]
+}

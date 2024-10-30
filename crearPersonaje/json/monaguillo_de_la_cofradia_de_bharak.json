@@ -1,0 +1,26 @@
+{
+    "name": "Monaguillo de la Cofradía de Bharak",
+    "description": "La congregación religiosa más importante de Limsa Lomensa, tienen mucha influencia política, al nivel de que sin ellos el imperio de Mudab Il Nam no habría podido desarrollarse. Tienen conocimientos muy antiguos y valiosos que se remontan a centenares de años. Muchos eruditos y líderes buscan pasar años estudiando en las bibliotecas de sus templos. Guardan muchos secretos y tienen su propia Orden Militar. Los maestros de armas son integrantes en su mayoría de dicha organización.",
+    "nodes": [
+        {
+        "position": [
+            11,
+            15
+         ]
+    },
+    {
+        "position": [
+            12,
+            14
+         ]
+    }
+    ],
+    "skills": [
+        "Historia",
+        "Antropología/Política",
+        "Percepción",
+        "Persuasión",
+        "Medicina (Herboristería)",
+        "Cautivación"
+    ]
+}

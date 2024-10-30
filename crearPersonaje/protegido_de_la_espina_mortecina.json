@@ -1,0 +1,26 @@
+{
+    "name": "Protegido de la espina mortecina",
+    "description": "Miembro de una organización anárquica que quiere ver en llamas la forma de gobierno de Lenam. Viven en las sombras de los lugares más recónditos del reino y aguardan su venganza. De cara al mundo, son una organización privada de servicios. Suelen ser contratados para vigilar, escoltar, secuestrar y matar. Pero son muy caros comparados con otras organizaciones, aunque estos son letales y tienen la fama de jamás fracasar en sus misiones. Se dice por las tabernas y los barracones que un asesino de la espina mortecina equivale a veinte asesinos al uso.",
+    "nodes": [
+        {
+        "position": [
+            11,
+            15
+         ]
+    },
+    {
+        "position": [
+            14,
+            12
+         ]
+    }
+    ],
+    "skills": [
+        "Acrobacias",
+        "Sigilo",
+        "Percepción",
+        "Orientarse",
+        "Averiguar intenciones",
+        "Sabotaje/falsificar"
+    ]
+}

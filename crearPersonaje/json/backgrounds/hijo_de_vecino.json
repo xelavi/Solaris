@@ -1,0 +1,26 @@
+{
+    "name": "Hijo de vecino",
+    "description": "Has nacido en el seno de una familia de clase media, bien alimentado y con todas las necesidades básicas cubiertas. Puedes tener una mascota doméstica y/o puedes no tenerla. Tu infancia ha sido feliz, o no. No tienes ningún trauma, si no quieres.",
+    "nodes": [
+        {
+        "position": [
+            7,
+            9
+         ]
+    },
+    {
+        "position": [
+            2,
+            8
+         ]
+    }
+    ],
+    "skills": [
+        "Aguante",
+        "Tasación",
+        "Orientación",
+        "Teología",
+        "Medicina",
+        "Performance"
+    ]
+}

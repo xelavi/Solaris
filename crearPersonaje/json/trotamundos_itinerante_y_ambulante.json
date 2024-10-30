@@ -1,0 +1,26 @@
+{
+    "name": "Trotamundos itinerante y ambulante",
+    "description": "No te sabes estar quieto y has viajado por gran parte del mundo conocido. Sabes tratar a la gente según tus intereses y conoces canciones de todas partes y has escuchado muchas historias que se ganarían una ronda de cerveza.",
+    "nodes": [
+        {
+        "position": [
+            7,
+            9
+         ]
+    },
+    {
+        "position": [
+            12,
+            14
+         ]
+    }
+    ],
+    "skills": [
+        "Orientación/Navegación",
+        "Percepción",
+        "Persuasión/Dialéctica",
+        "Performance",
+        "Supervivencia",
+        "Historia"
+    ]
+}

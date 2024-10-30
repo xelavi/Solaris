@@ -1,0 +1,26 @@
+{
+    "name": "Hijo de la mar",
+    "description": "Tu vida ha sido una aventura. Has nacido en un barco y seguramente esperes morir en uno. Te han enseñado las leyes del océano y lo respetas como es debido. Has aprendido a navegar y has visto muchos puertos.",
+    "nodes": [
+        {
+        "position": [
+            5,
+            8
+         ]
+    },
+    {
+        "position": [
+            13,
+            6
+         ]
+    }
+    ],
+    "skills": [
+        "Navegación",
+        "Supervivencia",
+        "Pilotaje",
+        "Percepción",
+        "Aguante",
+        "Geografía"
+    ]
+}

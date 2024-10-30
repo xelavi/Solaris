@@ -1,0 +1,157 @@
+/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+h2, h3 {
+    color: #444;
+    font-weight: 600;
+}
+
+p {
+    margin: 5px 0;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #2c3e50;
+    padding: 10px;
+    text-align: center;
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.navbar ul li a:hover {
+    color: #f39c12;
+}
+
+/* Contenedores principales */
+.character-info, .stats, .equipment {
+    background-color: white;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 800px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.character-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.character-info .flex {
+    margin: 0;
+    font-size: 18px;
+    border: 1px;
+    font-weight: bold;
+}
+
+.character-info input {
+    margin: 0;
+    font-size: 18px;
+    border: 1px;
+    font-weight: bold;
+}
+
+/* Statistics Section */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 10px;
+}
+
+.stats h2 {
+    grid-column: span 2;
+    text-align: center;
+}
+
+.stat-group {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-group p {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.stat-group h3 {
+    text-align: center;
+    color: #2980b9;
+}
+
+/* Equipo Section */
+.equipment {
+    text-align: center;
+}
+
+.equipment h2 {
+    margin-bottom: 10px;
+}
+
+.equipment p {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Input file */
+button, input[type="file"] {
+    display: block;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+
+input[type="file"]:hover {
+    background-color: #3498db;
+}
+
+input[type="text"]{
+    background-color: #ecf0f1;
+    border: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .character-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+}

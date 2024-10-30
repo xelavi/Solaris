@@ -1,0 +1,26 @@
+{
+    "name": "Noble",
+    "description": "Ya sea en el imperio de Limsa Lomensa o de Lenam, has crecido en una familia acaudalada y llena de privilegios y responsabilidades. Te desenvuelves con soltura en los escarceos de la política y la corte. Sabes defenderte decentemente y montar. Sabes leer y escribir en distintos idiomas. Posiblemente seas un antipático, racista y mimado como solo tú sabes.",
+    "nodes": [
+        {
+        "position": [
+            12,
+            7
+         ]
+    },
+    {
+        "position": [
+            12,
+            3
+         ]
+    }
+    ],
+    "skills": [
+        "Averiguar intenciones",
+        "Equitación",
+        "Persuasión/Dialéctica",
+        "Diplomacia",
+        "Antropología/Política",
+        "Arte"
+    ]
+}
