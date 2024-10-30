@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./styles/general.css">
   <script src="./scripts/oficio.js"></script>
  
-  <div id="menu" class="menu">
+  <div class="container">
     <nav>
         <ul>
             <li><a href="./general.html">General</a></li>
@@ -31,44 +31,44 @@
     <div class="flex">
         <p id="description"></p>
     </div>
-    <p id="nodo1"> </p>
-    <p id="nodo2"> </p>
-        <div class="flex">
-        <input type="checkbox" id="1">
-        <p id="skill1"></p>
-    </div>
-    <div class="flex">
-        <input type="checkbox" id="2">
-        <p id="skill2"></p>
-    </div>
-    <div class="flex">
-        <input type="checkbox" id="3">
-        <p id="skill3"></p>
-    </div>
-    <div class="flex">
-        <input type="checkbox" id="4">
-        <p id="skill4"></p>
-    </div>
-    <div class="flex">
-        <input type="checkbox" id="5">
-        <p id="skill5"></p>
-    </div>
-    <div class="flex">
-        <input type="checkbox" id="6">
-        <p id="skill6"></p>
-    </div>
-  
-    <button id ="siguiente">Siguiente</button>
+    <div class="skill-list">
+        <div class="skill-item">
+          <input type="checkbox" id="1">
+          <label for="skill1" id="skill1">Habilidad 1</label>
+        </div>
+        <div class="skill-item">
+          <input type="checkbox" id="2">
+          <label for="skill2" id="skill2">Habilidad 2</label>
+        </div>
+        <div class="skill-item">
+          <input type="checkbox" id="3">
+          <label for="skill3" id="skill3">Habilidad 3</label>
+        </div>
+        <div class="skill-item">
+          <input type="checkbox" id="4">
+          <label for="skill4" id="skill4">Habilidad 4</label>
+        </div>
+        <div class="skill-item">
+          <input type="checkbox" id="5">
+          <label for="skill5" id="skill5">Habilidad 5</label>
+        </div>
+        <div class="skill-item">
+          <input type="checkbox" id="6">
+          <label for="skill6" id="skill6">Habilidad 6</label>
+        </div>
+      </div>
+   
 
 
-    <div class="navigation-buttons">  
-        <a href="./trasfondo.html" class="nav-button">
-            <img src="left-arrow.svg" alt="Previous">
-          </a>   
-        <a href="./skills.html" class="nav-button">
-         <img src="right-arrow.svg" alt="Next">
+    <div class="navigation-buttons">
+        <a href="./arbol.html" class="nav-button">
+          <img src="left-arrow.svg" alt="Previous"> Anterior
+        </a>
+        <a href="./oficio.html" class="nav-button">
+          Siguiente <img src="right-arrow.svg" alt="Next">
         </a>
       </div>
+    </div>
 </body>
 </html>
 
