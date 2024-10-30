@@ -3,20 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
- 
-  
-  <title>Crear Personaje</title>
+  <title>Document</title>
 </head>
 <body>
-  
   <link rel="stylesheet" href="./styles/general.css">
-  <script src="./scripts/general.js"></script>
- 
   <div class="container">
-    
+    <nav>
+      <ul>
+        <li><a href="./general.html">General</a></li>
+        <li><a href="./arbol.html">Arbol</a></li>
+        <li><a href="./trasfondo.html">Trasfondo</a></li>
+        <li><a href="./oficio.html">Oficio</a></li>
+        <li><a href="./skills.html">Habilidades</a></li>
+        <li><a href="#">Equipo</a></li>
+      </ul>
+    </nav>
 
-<div id="content">
-    <div class="flex2">
+    <h1>Crear Personaje</h1>
+
+    <div id="content">
+      <div class="flex2">
         <p>Nombre:</p>
         <input type="text" id="name">
       </div>
@@ -32,11 +38,10 @@
           <option value="hijo_de_la_mar">Hijo de la mar</option>
           <option value="huerfano_de_lenam">Huérfano de Lenam</option>
           <option value="agoje">Agojé</option>
-           <option value="protegido_de_la_espina_mortecina">Protegido de la espina mortecina</option>
+          <option value="protegido_de_la_espina_mortecina">Protegido de la espina mortecina</option>
           <option value="monaguillo_de_la_cofradia_de_bharak">Monaguillo de la cofradía de Bharak</option>
         </select>
       </div>
-    
     
       <div class="flex2">
         <label for="martialStyle">Estilo marcial:</label>
@@ -67,14 +72,13 @@
       </div>
       
       <div class="navigation-buttons">  
-        
         <a href="./arbol.html" class="nav-button">
-         <img src="right-arrow.svg" alt="Next">
+          Siguiente <img src="right-arrow.svg" alt="Next">
         </a>
       </div>
-    
-</div>
+    </div>
+  </div>
 
-
+  <script src="./scripts/general.js"></script>
 </body>
 </html>
