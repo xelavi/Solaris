@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desplegable Anidado</title>
+  <style>
+    .container {
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .title-label {
+      display: block;
+      padding: 15px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 15px;
+      display: none;
+      background-color: #f9f9f9;
+      border-top: 1px solid #ccc;
+    }
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    input[type="checkbox"]:checked ~ .content {
+      display: block;
+    }
+
+    .nested-container {
+      margin-top: 10px;
+    }
+
+    .nested-title-label {
+      display: block;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .nested-content {
+      padding: 10px;
+      display: none;
+      background-color: #e9f5e9;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    input[type="checkbox"]:checked ~ .nested-content {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Desplegable principal -->
+<div class="container">
+  <label for="main-toggle" class="title-label">Menú Principal</label>
+  <input type="checkbox" id="main-toggle">
+  <div class="content">
+
+    <!-- Primer desplegable anidado -->
+    <div class="nested-container">
+      <label for="toggle-1" class="nested-title-label">Opción 1</label>
+      <input type="checkbox" id="toggle-1">
+      <div class="nested-content">
+        Contenido de la Opción 1.
+      </div>
+    </div>
+
+    <!-- Segundo desplegable anidado -->
+    <div class="nested-container">
+      <label for="toggle-2" class="nested-title-label">Opción 2</label>
+      <input type="checkbox" id="toggle-2">
+      <div class="nested-content">
+        Contenido de la Opción 2.
+      </div>
+    </div>
+
+    <!-- Tercer desplegable anidado -->
+    <div class="nested-container">
+      <label for="toggle-3" class="nested-title-label">Opción 3</label>
+      <input type="checkbox" id="toggle-3">
+      <div class="nested-content">
+        Contenido de la Opción 3.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
