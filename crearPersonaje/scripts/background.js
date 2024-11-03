@@ -21,12 +21,14 @@ fetch('./json/'+ background +'.json')
     });
 
     let skills = [4];
+let k=0;
 function guardarSkills(event){
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach((checkbox) => {
    //console.log(`Checkbox ${checkbox.id} está ${checkbox.checked ? 'activado' : 'no activado'}`);
         if(checkbox.checked){
-        skills[checkbox.id] = document.getElementById(`skill${checkbox.id}`).innerHTML;
+        skills[k] = document.getElementById(`skill${checkbox.id}`).innerHTML;
+            k++;
     }
    
     
