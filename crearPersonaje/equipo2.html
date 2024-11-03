@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Desplegable Anidado</title>
+  <link rel="stylesheet" href="styles/general.css">
+  <script src="scripts/equipo.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <style>
     .container {
       width: 300px;
@@ -77,16 +80,21 @@
       <input type="checkbox" id="toggle-1">
       <div class="nested-content">
       <p> Daño: </p> <p id="damage"></p>
-        <p> Tipo de arma </p> <p></p>
+        <p> Tipo de arma: </p> <p></p>
+        <p> Rango: </p> <p></p>
+        <p> Crítico: </p> <p></p>
       </div>
     </div>
 
     <!-- Segundo desplegable anidado -->
     <div class="nested-container">
-      <label for="toggle-2" class="nested-title-label">Opción 2</label>
-      <input type="checkbox" id="toggle-2">
+      <label for="toggle-1" class="nested-title-label">Lanza</label>
+      <input type="checkbox" id="toggle-1">
       <div class="nested-content">
-        Contenido de la Opción 2.
+      <p> Daño: </p> <p id="damage"></p>
+        <p> Tipo de arma: </p> <p></p>
+        <p> Rango: </p> <p></p>
+        <p> Crítico: </p> <p></p>
       </div>
     </div>
 
@@ -98,6 +106,15 @@
         Contenido de la Opción 3.
       </div>
     </div>
+
+    <div class="nested-container">
+      <label for="toggle-3" class="nested-title-label">Opción 3</label>
+      <input type="checkbox" id="toggle-3">
+      <div class="nested-content">
+        Contenido de la Opción 3.
+      </div>
+    </div>
+
 
   </div>
 </div>
