@@ -20,14 +20,17 @@
             <li><a href="./trasfondo.html">Trasfondo</a></li>
             <li><a href="./oficio.html">Oficio</a></li>
             <li><a href="./skills.html">Habilidades</a></li>
-            <li><a href="./armas.html">Equipo</a></li>
+            <li><a href="#">Equipo</a></li>
         </ul>
     </nav>
 
     <link rel="stylesheet" href="../styles/skill.css">
     <div class="skilltable">
       <h1>Estadísticas de Habilidades</h1>
-      <h2 id="skillpoints">Puntos:</h2> 
+      <div class="flex">
+      <h2>Puntos:</h2> 
+      <h2 id="skillpoints"></h2> 
+    </div>
       <table id="table">
           <thead>
               <tr>
@@ -38,211 +41,204 @@
                   <th>Bonificadores Varios</th>
                   <th>Total</th>
               </tr>
-          </thead>
+          </thead>  
           <tbody>
               <tr>
                   <td><input type="checkbox" id="atletismo" disabled></td>
                   <td>Atletismo</td>
                   <td class="body"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="nadar" disabled></td>
                   <td>Nadar</td>
                   <td class="body"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="aguante" disabled></td>
                   <td >Aguante</td>
                   <td class="body"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="medicina" disabled></td>
                   <td >Medicina</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="naturaleza" disabled></td>
                   <td>Naturaleza</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="geografia" disabled></td>
                   <td >Geografía</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="tasacion" disabled></td>
                   <td>Tasación</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="antropologia_politica" disabled></td>
                   <td>Antropología/Política</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="historia" disabled></td>
                   <td>Historia</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="equitacion" disabled></td>
                   <td>Equitación</td>
                   <td class="agility"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="investigacion_buscar" disabled></td>
                   <td>Investigación</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="orientacion_navegacion" disabled></td>
                   <td>Orientación/Navegación</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="percepcion" disabled></td>
                   <td>Percepción</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="supervivencia" disabled></td>
                   <td>Supervivencia</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="persuasion_dialectica" disabled></td>
                   <td>Persuasión/Dialéctica</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="embaucar" disabled></td>
                   <td>Embaucar</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="intimidacion" disabled></td>
                   <td>Intimidación</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="averiguar_intenciones" disabled></td>
                   <td>Averiguar intenciones</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="performance" disabled></td>
                   <td>Performance</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="arte" disabled></td>
                   <td>Arte</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="sigilo" disabled></td>
                   <td>Sigilo</td>
                   <td class="agility"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="juego_de_manos" disabled></td>
                   <td>Juego de manos</td>
                   <td class="agility"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="acrobacias" disabled></td>
                   <td>Acrobacias</td>
                   <td class="agility"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
               <tr>
                   <td><input type="checkbox" id="falsificar_sabotear" disabled></td>
                   <td>Falsificar/Sabotear</td>
                   <td class="mind"></td>
-                  <td><input type="number" value=""></td>
-                  <td><input type="number" value=""></td>
-                  <td></td>
+                  <td><input type="number" value="" class="input1"></td>
+                  <td><input type="number" value="" class="input2"></td>
+                  <td class="output"></td>
               </tr>
           </tbody>
       </table>
     </div>
-     <div class="navigation-buttons">  
-        <a href="./oficio.html" class="nav-button">
-            <img src="left-arrow.svg" alt="Previous">
-          </a>   
-        <a href="./armas.html" class="nav-button">
-         <img src="right-arrow.svg" alt="Next">
-        </a>
-      </div>
+    
 
 </body>
 </html>
