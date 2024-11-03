@@ -57,6 +57,10 @@ body {
     margin-bottom: 1rem;
   }
 
+.flex {
+    display: flex;
+    margin-bottom: 1rem;
+  }
   .flex2 label, .flex2 p {
     flex: 1;
     margin-right: 1rem;
