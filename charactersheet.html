@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <link rel="stylesheet" href="./crearPersonaje/styles/skill.css">
+    
+    <style>
+
+.grid-container {
+    font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    display: grid;
+    position: relative;
+    width: 100%;
+    max-width: 1600px; /* Or your preferred max width */
+    margin: 0 auto;
+    aspect-ratio: 4/3; /* Adjust this ratio to match your desired proportions */
+}
+
+.grid-wrapper {
+    /* Make the grid fill the aspect ratio container */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;/* Adjust the column distribution */
+    gap: 0.5em;
+}
+
+.grid-wrapper {
+    font-size: calc(0.5em + 0.5vw);
+}
+
+/* Asignación de cada área a las diferentes posiciones de la grid */
+.saving-throws {
+    grid-column: 1 / 2; /* Primera columna */
+    grid-row: 1 / 2; /* Primera fila */
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.senses {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.armor-weapons {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.name {
+    grid-column: 1 / 3 ; /* Última columna */
+    grid-row: 1 / 2;
+    background-color: #f4f4f4;
+    padding: 10px;
+    display: flex;
+    align-items : center;
+}
+
+.defenses {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.notes {
+    grid-column: 2 / 3;
+    grid-row: 3 / 4;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.initiative, .defenses, .notes {
+    background-color: #f4f4f4;
+    padding: 10px;
+    min-height: 100px; /* Tamaño mínimo para que no colapsen */
+    overflow: hidden; /* Evita que el contenido adicional rompa el layout */
+}
+
+.saving-throws, .senses, .armor-weapons {
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.skills {
+    grid-column: 3/ 4;
+    grid-row:  1 / 4;
+    background-color: #e0e0e0;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+.profile-picture {
+    width: 150px; /* Ancho del contenedor de la imagen */
+    height: 150px; /* Alto del contenedor de la imagen */
+    border-radius: 10%; /* Esto hace que el contenedor sea circular */
+    overflow: hidden; /* Oculta cualquier parte de la imagen que salga del contenedor */
+    border: 2px solid #ccc; /* Opcional: añade un borde alrededor de la imagen */
+    display: flex; /* Centra la imagen dentro del contenedor */
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-picture img {
+    width: 100%; /* La imagen ocupará el 100% del ancho del contenedor */
+    height: auto; /* Mantiene las proporciones de la imagen */
+    object-fit: cover; /* Ajusta la imagen para cubrir todo el contenedor sin deformarse */
+}
+
+.stats {
+    display: flex;
+    width: 100%;
+   
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    justify-content: center;
+}
+
+
+.stat-group {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+}
+
+.stat-group p {
+    font-size: 14px;
+   
+}
+
+.flex2 {
+    gap: 8px;
+}
+
+.stat-group h2 {
+font-size: 1.25rem;
+font-weight: bold;
+margin-bottom: 1rem;
+}
+
+</style>
+
+<div class="grid-container">
+    <div class="grid-wrapper">
+    <div class="name">  
+        <div class="profile-picture">
+            <img src="Paysan The witcher.jpeg" alt="Foto de Perfil">
+            
+        </div>
+        <p>Nombre</p>   
+    </div>
+    <div class="senses">Activas</div>
+    <div class="armor-weapons">Armas y armaduras</div>
+    
+    
+    <div class="stats">
+            <div class="stat-group">
+                <h2>Body </h2> <h2 id="body"></h2> 
+                <div class="flex2">
+                    <p>HP:</p> <p id="hp"></p>
+                    <p>Resistencia al Daño:</p> <p id="resistance"></p>
+                    <p>Movimiento:</p> <p id="movement"></p>
+                    <p>Capacidad de carga:</p> <p id="cc"></p>
+                    <p>Deadlift:</p> <p id="deadlift"></p>
+                </div>
+            </div>
+        
+            <div class="stat-group">
+                <h2>Agility</h2> <h2 id="agility"></h2> 
+                <div class="flex2">
+                <p>Dodge:</p> <p id="dodge"></p>
+                <p>Iniciativa:</p> <p id="initiative"></p>
+                <p>Acciones:</p> <p id="actions"></p>
+                <p>Deadeye:</p> <p id="deadeye"></p>
+            </div>
+            </div>
+            <div class="stat-group">
+                <div class="flex2">
+                <h2>Mind</h2> <h2 id="mind"></h2>
+                <p>Puntos de habilidades:</p> <p id="skillpoints"></p>
+                <p>Fuerza de voluntad:</p> <p id="willpower"></p>
+            </div>
+            </div>
+    </div>
+    <div class="notes">Notes</div>
+    <div class="skills">
+        <table id="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ATR</th>
+                    <th>Habilidad</th>
+                    <th>Bon. Atributo</th>
+                    <th>Rangos</th>
+                    <th>Bon. Varios</th>
+                    <th>Total</th>
+                </tr>
+            </thead>  
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" id="atletismo" ></td>
+                    <td>BODY</td>
+                    <td>Atletismo</td>
+                    <td class="body"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="nadar" disabled></td>
+                    <td>BODY</td>
+                    <td>Nadar</td>
+                    <td class="body"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="aguante" disabled></td>
+                    <td>BODY</td>
+                    <td >Aguante</td>
+                    <td class="body"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="medicina" disabled></td>
+                    <td>MIND</td>
+                    <td >Medicina</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="naturaleza" disabled></td>
+                    <td>MIND</td>
+                    <td>Naturaleza</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="geografia" disabled></td>
+                    <td>MIND</td>
+                    <td >Geografía</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="tasacion" disabled></td>
+                    <td>MIND</td>
+                    <td>Tasación</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="antropologia_politica" disabled></td>
+                    <td>MIND</td>
+                    <td>Política</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="historia" disabled></td>
+                    <td>MIND</td>
+                    <td>Historia</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="equitacion" disabled></td>
+                    <td>AGILITY</td>
+                    <td>Equitación</td>
+                    <td class="agility"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="investigacion_buscar" disabled></td>
+                    <td>MIND</td>
+                    <td>Investigación</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="orientacion_navegacion" disabled></td>
+                    <td>MIND</td>
+                    <td>Orientación</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="percepcion" disabled></td>
+                    <td>BODY</td>
+                    <td>Percepción</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="supervivencia" disabled></td>
+                    <td>MIND</td>
+                    <td>Supervivencia</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="persuasion_dialectica" disabled></td>
+                    <td>MIND</td>
+                    <td>Persuasión/Dialéctica</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="embaucar" disabled></td>
+                    <td>MIND</td>
+                    <td>Embaucar</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="intimidacion" disabled></td>
+                    <td>MIND</td>
+                    <td>Intimidación</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="averiguar_intenciones" disabled></td>
+                    <td>MIND</td>
+                    <td>Averiguar intenciones</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="performance" disabled></td>
+                    <td>MIND</td>
+                    <td>Performance</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="arte" disabled></td>
+                    <td>MIND</td>
+                    <td>Arte</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="sigilo" disabled></td>
+                    <td>AGILITY</td>
+                    <td>Sigilo</td>
+                    <td class="agility"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="juego_de_manos" disabled></td>
+                    <td>AGILITY</td>
+                    <td>Juego de manos</td>
+                    <td class="agility"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="acrobacias" disabled></td>
+                    <td>AGILITY</td>
+                    <td>Acrobacias</td>
+                    <td class="agility"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="falsificar_sabotear" disabled></td>
+                    <td>AGILITY</td>
+                    <td>Falsificar/Sabotear</td>
+                    <td class="mind"></td>
+                    <td><input type="number" value="" class="input1"></td>
+                    <td><input type="number" value="" class="input2"></td>
+                    <td class="output"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+</div>
+</body>
+</html>
