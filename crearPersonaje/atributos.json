@@ -1,315 +1,392 @@
 {
   "name": "",
-  "level": "",
+  "image": "",
+  "level": 0,
   "job": "",
   "background": "",
   "martialStyle": "",
-  "raza": "",
+  "atributePoints": 0,
   "gridSize": 20,
   "nodes": [
     {
+      "id": 162,
       "position": [
         2,
         8
       ],
       "shape": "square",
-      "text": "HEAL"
+      "text": "HEAL",
+      "active": false
     },
     {
+      "id": 202,
       "position": [
         2,
         10
       ],
       "shape": "circle",
-      "text": "HP"
+      "text": "HP",
+      "active": false
     },
     {
+      "id": 262,
       "position": [
         2,
         13
       ],
       "shape": "square",
-      "text": "ADR"
+      "text": "ADR",
+      "active": false
     },
     {
+      "id": 123,
       "position": [
         3,
         6
       ],
       "shape": "circle",
-      "text": "M"
+      "text": "M",
+      "active": false
     },
     {
+      "id": 165,
       "position": [
         5,
         8
       ],
       "shape": "circle",
-      "text": "DL"
+      "text": "DL",
+      "active": false
     },
     {
+      "id": 205,
       "position": [
         5,
         10
       ],
       "shape": "square",
-      "text": "INTER"
+      "text": "INTER",
+      "active": false
     },
     {
+      "id": 285,
       "position": [
         5,
         14
       ],
       "shape": "circle",
-      "text": "R"
+      "text": "R",
+      "active": false
     },
     {
+      "id": 86,
       "position": [
         6,
         4
       ],
       "shape": "square",
-      "text": "TENS"
+      "text": "TENS",
+      "active": false
     },
     {
+      "id": 127,
       "position": [
         7,
         6
       ],
       "shape": "circle",
-      "text": "HP"
+      "text": "HP",
+      "active": false
     },
     {
+      "id": 187,
       "position": [
         7,
         9
       ],
       "shape": "circle",
-      "text": "R"
+      "text": "R",
+      "active": false
     },
     {
+      "id": 227,
       "position": [
         7,
         11
       ],
       "shape": "circle",
-      "text": "M"
+      "text": "M",
+      "active": false
     },
     {
+      "id": 267,
       "position": [
         7,
         13
       ],
       "shape": "square",
-      "text": "CARGA"
+      "text": "CARGA",
+      "active": false
     },
     {
+      "id": 308,
       "position": [
         8,
         15
       ],
       "shape": "circle",
-      "text": "DL"
+      "text": "DL",
+      "active": false
     },
     {
+      "id": 69,
       "position": [
         9,
         3
       ],
       "shape": "circle",
-      "text": "WP"
+      "text": "WP",
+      "active": false
     },
     {
+      "id": 209,
       "position": [
         9,
         10
       ],
       "shape": "circle",
-      "text": "B"
+      "text": "B",
+      "active": false
     },
     {
+      "id": 130,
       "position": [
         10,
         6
       ],
       "shape": "square",
-      "text": "CONC"
+      "text": "CONC",
+      "active": false
     },
     {
+      "id": 190,
       "position": [
         10,
         9
       ],
       "shape": "circle",
-      "text": "MIND"
+      "text": "MIND",
+      "active": false
     },
     {
+      "id": 230,
       "position": [
         10,
         11
       ],
       "shape": "circle",
-      "text": "A"
+      "text": "A",
+      "active": false
     },
     {
+      "id": 270,
       "position": [
         10,
         13
       ],
       "shape": "square",
-      "text": "COUNTER"
+      "text": "COUNTER",
+      "active": false
     },
     {
+      "id": 310,
       "position": [
         10,
         15
       ],
       "shape": "circle",
-      "text": "DE"
+      "text": "DE",
+      "active": false
     },
     {
+      "id": 350,
       "position": [
         10,
         17
       ],
       "shape": "circle",
-      "text": "REAC"
+      "text": "REAC",
+      "active": false
     },
     {
+      "id": 111,
       "position": [
         11,
         5
       ],
       "shape": "circle",
-      "text": "H++"
+      "text": "H++",
+      "active": false
     },
     {
+      "id": 72,
       "position": [
         12,
         3
       ],
       "shape": "circle",
-      "text": "SKILL"
+      "text": "SKILL",
+      "active": false
     },
     {
+      "id": 152,
       "position": [
         12,
         7
       ],
       "shape": "circle",
-      "text": "H"
+      "text": "H",
+      "active": false
     },
     {
+      "id": 252,
       "position": [
         12,
         12
       ],
       "shape": "circle",
-      "text": "DE"
+      "text": "DE",
+      "active": false
     },
     {
+      "id": 292,
       "position": [
         12,
         14
       ],
       "shape": "circle",
-      "text": "AC"
+      "text": "AC",
+      "active": false
     },
     {
+      "id": 352,
       "position": [
         12,
         17
       ],
       "shape": "square",
-      "text": "OPO"
+      "text": "OPO",
+      "active": false
     },
     {
+      "id": 133,
       "position": [
         13,
         6
       ],
       "shape": "circle",
-      "text": "WP"
+      "text": "WP",
+      "active": false
     },
     {
+      "id": 213,
       "position": [
         13,
         10
       ],
       "shape": "square",
-      "text": "APUNTAR"
+      "text": "APUNTAR",
+      "active": false
     },
     {
+      "id": 194,
       "position": [
         14,
         9
       ],
       "shape": "square",
-      "text": "PROC"
+      "text": "PROC",
+      "active": false
     },
     {
+      "id": 254,
       "position": [
         14,
         12
       ],
       "shape": "circle",
-      "text": "INI"
+      "text": "INI",
+      "active": false
     },
     {
+      "id": 294,
       "position": [
         14,
         14
       ],
       "shape": "circle",
-      "text": "IC"
+      "text": "IC",
+      "active": false
     },
     {
+      "id": 334,
       "position": [
         14,
         16
       ],
       "shape": "circle",
-      "text": "INI"
+      "text": "INI",
+      "active": false
     },
     {
+      "id": 95,
       "position": [
         15,
         4
       ],
       "shape": "square",
-      "text": "INSTRUIR"
+      "text": "INSTRUIR",
+      "active": false
     },
     {
+      "id": 157,
       "position": [
         17,
         7
       ],
       "shape": "circle",
-      "text": "H++"
+      "text": "H++",
+      "active": false
     },
     {
+      "id": 197,
       "position": [
         17,
         9
       ],
       "shape": "circle",
-      "text": "H"
+      "text": "H",
+      "active": false
     },
     {
+      "id": 257,
       "position": [
         17,
         12
       ],
       "shape": "circle",
-      "text": "AC"
+      "text": "AC",
+      "active": false
     },
     {
+      "id": 317,
       "position": [
         17,
         15
       ],
       "shape": "square",
-      "text": "PARRY"
+      "text": "PARRY",
+      "active": false
     }
   ],
   "links": [
