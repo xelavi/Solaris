@@ -1,0 +1,717 @@
+{
+  "name": "",
+  "level": "",
+  "job": "",
+  "background": "",
+  "martialStyle": "",
+  "raza": "",
+  "gridSize": 20,
+  "nodes": [
+    {
+      "position": [
+        2,
+        8
+      ],
+      "shape": "square",
+      "text": "HEAL"
+    },
+    {
+      "position": [
+        2,
+        10
+      ],
+      "shape": "circle",
+      "text": "HP"
+    },
+    {
+      "position": [
+        2,
+        13
+      ],
+      "shape": "square",
+      "text": "ADR"
+    },
+    {
+      "position": [
+        3,
+        6
+      ],
+      "shape": "circle",
+      "text": "M"
+    },
+    {
+      "position": [
+        5,
+        8
+      ],
+      "shape": "circle",
+      "text": "DL"
+    },
+    {
+      "position": [
+        5,
+        10
+      ],
+      "shape": "square",
+      "text": "INTER"
+    },
+    {
+      "position": [
+        5,
+        14
+      ],
+      "shape": "circle",
+      "text": "R"
+    },
+    {
+      "position": [
+        6,
+        4
+      ],
+      "shape": "square",
+      "text": "TENS"
+    },
+    {
+      "position": [
+        7,
+        6
+      ],
+      "shape": "circle",
+      "text": "HP"
+    },
+    {
+      "position": [
+        7,
+        9
+      ],
+      "shape": "circle",
+      "text": "R"
+    },
+    {
+      "position": [
+        7,
+        11
+      ],
+      "shape": "circle",
+      "text": "M"
+    },
+    {
+      "position": [
+        7,
+        13
+      ],
+      "shape": "square",
+      "text": "CARGA"
+    },
+    {
+      "position": [
+        8,
+        15
+      ],
+      "shape": "circle",
+      "text": "DL"
+    },
+    {
+      "position": [
+        9,
+        3
+      ],
+      "shape": "circle",
+      "text": "WP"
+    },
+    {
+      "position": [
+        9,
+        10
+      ],
+      "shape": "circle",
+      "text": "B"
+    },
+    {
+      "position": [
+        10,
+        6
+      ],
+      "shape": "square",
+      "text": "CONC"
+    },
+    {
+      "position": [
+        10,
+        9
+      ],
+      "shape": "circle",
+      "text": "MIND"
+    },
+    {
+      "position": [
+        10,
+        11
+      ],
+      "shape": "circle",
+      "text": "A"
+    },
+    {
+      "position": [
+        10,
+        13
+      ],
+      "shape": "square",
+      "text": "COUNTER"
+    },
+    {
+      "position": [
+        10,
+        15
+      ],
+      "shape": "circle",
+      "text": "DE"
+    },
+    {
+      "position": [
+        10,
+        17
+      ],
+      "shape": "circle",
+      "text": "REAC"
+    },
+    {
+      "position": [
+        11,
+        5
+      ],
+      "shape": "circle",
+      "text": "H++"
+    },
+    {
+      "position": [
+        12,
+        3
+      ],
+      "shape": "circle",
+      "text": "SKILL"
+    },
+    {
+      "position": [
+        12,
+        7
+      ],
+      "shape": "circle",
+      "text": "H"
+    },
+    {
+      "position": [
+        12,
+        12
+      ],
+      "shape": "circle",
+      "text": "DE"
+    },
+    {
+      "position": [
+        12,
+        14
+      ],
+      "shape": "circle",
+      "text": "AC"
+    },
+    {
+      "position": [
+        12,
+        17
+      ],
+      "shape": "square",
+      "text": "OPO"
+    },
+    {
+      "position": [
+        13,
+        6
+      ],
+      "shape": "circle",
+      "text": "WP"
+    },
+    {
+      "position": [
+        13,
+        10
+      ],
+      "shape": "square",
+      "text": "APUNTAR"
+    },
+    {
+      "position": [
+        14,
+        9
+      ],
+      "shape": "square",
+      "text": "PROC"
+    },
+    {
+      "position": [
+        14,
+        12
+      ],
+      "shape": "circle",
+      "text": "INI"
+    },
+    {
+      "position": [
+        14,
+        14
+      ],
+      "shape": "circle",
+      "text": "IC"
+    },
+    {
+      "position": [
+        14,
+        16
+      ],
+      "shape": "circle",
+      "text": "INI"
+    },
+    {
+      "position": [
+        15,
+        4
+      ],
+      "shape": "square",
+      "text": "INSTRUIR"
+    },
+    {
+      "position": [
+        17,
+        7
+      ],
+      "shape": "circle",
+      "text": "H++"
+    },
+    {
+      "position": [
+        17,
+        9
+      ],
+      "shape": "circle",
+      "text": "H"
+    },
+    {
+      "position": [
+        17,
+        12
+      ],
+      "shape": "circle",
+      "text": "AC"
+    },
+    {
+      "position": [
+        17,
+        15
+      ],
+      "shape": "square",
+      "text": "PARRY"
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "row": 9,
+        "col": 10
+      },
+      "to": {
+        "row": 7,
+        "col": 11
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 10
+      },
+      "to": {
+        "row": 7,
+        "col": 9
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 9
+      },
+      "to": {
+        "row": 5,
+        "col": 8
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 10
+      },
+      "to": {
+        "row": 2,
+        "col": 13
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 10
+      },
+      "to": {
+        "row": 2,
+        "col": 10
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 11
+      },
+      "to": {
+        "row": 7,
+        "col": 13
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 13
+      },
+      "to": {
+        "row": 8,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 9
+      },
+      "to": {
+        "row": 12,
+        "col": 7
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 12
+      },
+      "to": {
+        "row": 17,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 15
+      },
+      "to": {
+        "row": 14,
+        "col": 16
+      }
+    },
+    {
+      "from": {
+        "row": 14,
+        "col": 16
+      },
+      "to": {
+        "row": 12,
+        "col": 17
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 7
+      },
+      "to": {
+        "row": 11,
+        "col": 5
+      }
+    },
+    {
+      "from": {
+        "row": 8,
+        "col": 15
+      },
+      "to": {
+        "row": 10,
+        "col": 17
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 17
+      },
+      "to": {
+        "row": 12,
+        "col": 17
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 17
+      },
+      "to": {
+        "row": 10,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 15
+      },
+      "to": {
+        "row": 10,
+        "col": 13
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 12
+      },
+      "to": {
+        "row": 10,
+        "col": 11
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 12
+      },
+      "to": {
+        "row": 14,
+        "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 10
+      },
+      "to": {
+        "row": 2,
+        "col": 8
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 8
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 3,
+        "col": 6
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 9
+      },
+      "to": {
+        "row": 7,
+        "col": 6
+      }
+    },
+    {
+      "from": {
+        "row": 7,
+        "col": 6
+      },
+      "to": {
+        "row": 6,
+        "col": 4
+      }
+    },
+    {
+      "from": {
+        "row": 6,
+        "col": 4
+      },
+      "to": {
+        "row": 9,
+        "col": 3
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 3
+      },
+      "to": {
+        "row": 11,
+        "col": 5
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 12
+      },
+      "to": {
+        "row": 17,
+        "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 12
+      },
+      "to": {
+        "row": 12,
+        "col": 17
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 7
+      },
+      "to": {
+        "row": 15,
+        "col": 4
+      }
+    },
+    {
+      "from": {
+        "row": 15,
+        "col": 4
+      },
+      "to": {
+        "row": 12,
+        "col": 3
+      }
+    },
+    {
+      "from": {
+        "row": 15,
+        "col": 4
+      },
+      "to": {
+        "row": 12,
+        "col": 7
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 7
+      },
+      "to": {
+        "row": 17,
+        "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 13,
+        "col": 10
+      },
+      "to": {
+        "row": 14,
+        "col": 12
+      }
+    },
+    {
+      "from": {
+        "row": 9,
+        "col": 3
+      },
+      "to": {
+        "row": 11,
+        "col": 5
+      }
+    },
+    {
+      "from": {
+        "row": 2,
+        "col": 13
+      },
+      "to": {
+        "row": 5,
+        "col": 14
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 14
+      },
+      "to": {
+        "row": 8,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 12
+      },
+      "to": {
+        "row": 14,
+        "col": 14
+      }
+    },
+    {
+      "from": {
+        "row": 14,
+        "col": 14
+      },
+      "to": {
+        "row": 17,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 17,
+        "col": 7
+      },
+      "to": {
+        "row": 14,
+        "col": 9
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 7
+      },
+      "to": {
+        "row": 14,
+        "col": 9
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 6
+      },
+      "to": {
+        "row": 11,
+        "col": 5
+      }
+    }
+  ]
+}
