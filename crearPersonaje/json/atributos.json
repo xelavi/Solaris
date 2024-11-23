@@ -164,8 +164,8 @@
         10,
         6
       ],
-      "shape": "square",
-      "text": "CONC",
+      "shape": "circle",
+      "text": "SKILL",
       "active": false
     },
     {
@@ -225,7 +225,7 @@
         5
       ],
       "shape": "circle",
-      "text": "H++",
+      "text": "CAP",
       "active": false
     },
     {
@@ -355,7 +355,7 @@
         7
       ],
       "shape": "circle",
-      "text": "H++",
+      "text": "CAP",
       "active": false
     },
     {
@@ -788,6 +788,46 @@
       "to": {
         "row": 11,
         "col": 5
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 8
+      },
+      "to": {
+        "row": 5,
+        "col": 10
+      }
+    },
+    {
+      "from": {
+        "row": 12,
+        "col": 14
+      },
+      "to": {
+        "row": 10,
+        "col": 15
+      }
+    },
+    {
+      "from": {
+        "row": 5,
+        "col": 10
+      },
+      "to": {
+        "row": 5,
+        "col": 14
+      }
+    },
+    {
+      "from": {
+        "row": 10,
+        "col": 6
+      },
+      "to": {
+        "row": 7,
+        "col": 6
       }
     }
   ]
