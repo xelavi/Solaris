@@ -75,7 +75,7 @@ function calculateStats(text,enabled){
 
 
         //HP
-        document.getElementById('hp').innerText = 12 + (hp*12) + (level*2) + (body*level);
+        document.getElementById('hp').innerText = 10 + (hp*12) + (level*2) + (body*level);
         //RESISTANCE
         document.getElementById('resistance').innerText = (resistance*3)+(body*3);
         //MOVEMENT SPEED
