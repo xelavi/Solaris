@@ -1,0 +1,32 @@
+{
+    "nombre": "Enric",
+    "level": 1,
+    "hp": 15,
+    "res": 3,
+    "dodge": 12,
+    "dl": 6,
+    "ini": 0,
+    "arma": {
+        "nombre": "lanza",
+        "cortante": 8,
+        "perforante": 0,
+        "aporreo": 4
+    },
+    "armadura": [
+        {
+            "nombre": "armadura de anillas",
+            "cortante": 3,
+            "perforante": 3,
+            "aporreo": 3
+        },
+        {
+            "nombre": "escudo",
+            "cortante": 2,
+            "perforante": 2,
+            "aporreo": 2
+        }
+    ] 
+    
+
+
+}
