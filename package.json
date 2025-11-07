@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && cd dist && git init && git add -A && git commit -m 'deploy' && git push -f git@github.com:xelavi/Solaris.git main:gh-pages && cd .."
   },
   "dependencies": {
     "vue": "^3.5.22"
