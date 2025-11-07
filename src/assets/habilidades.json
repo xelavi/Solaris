@@ -1,0 +1,198 @@
+{
+  "habilidades": [
+    {
+      "id": 1,
+      "nombre": "Atletismo",
+      "descripcion": "Habilidad física que abarca correr, saltar, escalar y nadar.",
+      "atributo": "Cuerpo"
+    },
+    {
+      "id": 2,
+      "nombre": "Nadar",
+      "descripcion": "Capacidad para moverse y mantenerse a flote en el agua.",
+      "atributo": "Cuerpo"
+    },
+    {
+      "id": 3,
+      "nombre": "Percepción",
+      "descripcion": "Habilidad para notar detalles y cambios en el entorno.",
+      "atributo": "Cuerpo"
+    },
+    {
+      "id": 4,
+      "nombre": "Medicina",
+      "descripcion": "Conocimiento y habilidades para tratar heridas y enfermedades.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 5,
+      "nombre": "Geografía",
+      "descripcion": "Conocimiento y habilidades para entender y analizar el entorno físico y humano.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 6,
+      "nombre": "Tasación",
+      "descripcion": "Habilidad para evaluar el valor de objetos, bienes y propiedades.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 7,
+      "nombre": "Historia",
+      "descripcion": "Conocimiento y habilidades para entender y analizar eventos pasados.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 8,
+      "nombre": "Investigación",
+      "descripcion": "Habilidad para buscar, recopilar y analizar información de diversas fuentes.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 8,
+      "nombre": "Orientación",
+      "descripcion": "Conocimiento y habilidades para encontrar el camino y ubicarse en diferentes entornos.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 9,
+      "nombre": "Supervivencia",
+      "descripcion": "Conocimiento y habilidades para sobrevivir en entornos hostiles.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 10,
+      "nombre": "Persuasión",
+      "descripcion": "Conocimiento y habilidades para influir en las decisiones y acciones de otros.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 11,
+      "nombre": "Intimidar",
+      "descripcion": "Habilidad para provocar miedo a otros.",
+      "atributo": "Mente"
+    },
+       {
+      "id": 12,
+      "nombre": "Embaucar",
+      "descripcion": "Conocimiento y habilidades para engañar o manipular a otros.",
+      "atributo": "Mente"
+    },
+    
+    {
+      "id": 13,
+      "nombre": "Averiguar intenciones",
+      "descripcion": "Conocimiento y habilidades para entender las motivaciones y deseos de otros.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 14,
+      "nombre": "Performance",
+      "descripcion": "Conocimiento y habilidades para actuar, cantar o entretener a una audiencia.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 15,
+      "nombre": "Antropología/Politica",
+      "descripcion": "Conocimiento y habilidades para entender las culturas, sociedades y sistemas políticos.",
+      "atributo": "Mente"
+    },
+    {
+      "id": 16,
+      "nombre": "Sigilo",
+      "descripcion": "Conocimiento y habilidades para moverse sin ser detectado.",
+      "atributo": "Agilidad"
+    },
+    {
+      "id": 17,
+      "nombre": "Juego de manos",
+      "descripcion": "Conocimiento y habilidades para realizar trucos y movimientos rápidos con las manos.",
+      "atributo": "Agilidad"
+    },
+    {
+      "id": 18,
+      "nombre": "Acrobacias",
+      "descripcion": "Conocimiento y habilidades para realizar trucos y movimientos acrobáticos.",
+      "atributo": "Agilidad"
+    },
+    {
+      "id": 19,
+      "nombre": "Sabotaje",
+      "descripcion": "Habilidad para dañar, destruir o interferir con equipos, maquinaria o sistemas.",
+      "atributo": "Agilidad"
+    },
+    {
+      "id": 20,
+      "nombre": "Montar",
+      "descripcion": "Habilidad para montar y manejar animales de monta.",
+      "atributo": "Agilidad"
+    },
+    {
+      "id": 21,
+      "nombre": "Alquimia",
+      "descripcion": "Habilidad para crear pociones y elixires a partir de ingredientes naturales.",
+      "atributo": "Artesania"
+    },
+    {
+      "id": 22,
+      "nombre": "Armería",
+      "descripcion": "Habilidad para crear, reparar y mantener armas y armaduras.",
+      "atributo": "Artesania"
+    },
+    {
+      "id": 23,
+      "nombre": "Ingenios",
+      "descripcion": "Habilidad para crear dispositivos y mecanismos ingeniosos.",
+      "atributo": "Artesania"
+    },
+    {
+      "id": 24,
+      "nombre": "Artes",
+      "descripcion": "Habilidad para crear obras de arte, como pintura, escultura o música.",
+      "atributo": "Artesania"
+    },
+    {
+      "id": 25,
+      "nombre": "Grandes Proyectos",
+      "descripcion": "Habilidad para trabajar en proyectos de gran envergadura y coordinar equipos.",
+      "atributo": "Artesania"
+    },
+    {
+      "id": 26,
+      "nombre": "Herboristeria",
+      "descripcion": "Habilidad para recolectar y utilizar plantas con fines medicinales.",
+      "atributo": "Recoleccion"
+    },
+    {
+      "id": 27,
+      "nombre": "Mineria",
+      "descripcion": "Habilidad para extraer recursos minerales y gemas del subsuelo.",
+      "atributo": "Recoleccion"
+    },
+    {
+      "id": 28,
+      "nombre": "Carniceria",
+      "descripcion": "Habilidad para recolectar y procesar cualquier tipo de recursos obtenidos de animales.",
+      "atributo": "Recoleccion"
+    },
+     {
+      "id": 29,
+      "nombre": "Información",
+      "descripcion": "Habilidad para recolectar y procesar información de diversas fuentes.",
+      "atributo": "Recoleccion"
+    },
+    {
+      "id": 30,
+      "nombre": "Aguante",
+      "descripcion": "Habilidad para resistir el esfuerzo físico y recuperarse rápidamente.",
+      "atributo": "Cuerpo"
+    },
+     {
+      "id": 31,
+      "nombre": "Naturaleza",
+      "descripcion": "Habilidad para comprender y relacionarse con el entorno natural.",
+      "atributo": "Mente"
+    }
+    
+  ]
+}

@@ -1,0 +1,88 @@
+{
+    "activas": [
+        {
+            "id": 1,
+            "nombre": "Carga",
+            "descripcion": "Ataque a distancia, gastas 2 acciones en correr + Ataque",
+            "atributo": "Cuerpo",
+            "esMental": false
+        },
+        {
+            "id": 2,
+            "nombre": "Tensión",
+            "descripcion": "(Reacción) +3 a Resistencia",
+            "atributo": "Cuerpo",
+            "esMental": false
+        },
+        {
+            "id": 3,
+            "nombre": "Adrenalina",
+            "descripcion": "(Mental) +1 Cuerpo hasta próximo turno, una vez por combate.",
+            "atributo": "Cuerpo",
+            "esMental": true
+        },
+        {
+            "id": 4,
+            "nombre": "Interceptar",
+            "descripcion": "(Reacción) A una criatura adyacente puedes recibir el daño de tu compañero pusilánime.",
+            "atributo": "Cuerpo",
+            "esMental": false
+        },
+        {
+            "id": 5,
+            "nombre": "Heal",
+            "descripcion": "(Mental) Te curas 12HP",
+            "atributo": "Cuerpo",
+            "esMental": true
+        },
+        {
+            "id": 6,
+            "nombre": "Ataque pesado",
+            "descripcion": "Esta activa no se puede usar con un arma de categoria Ligera. El personaje usa dos acciones para realizar un ataque pesado, duplicando el daño normal del ataque. En el caso de que el arma usada sea de categoria Pesada, se usaran 3 acciones en vez de dos y el daño se triplicará.",
+            "atributo": "Cuerpo",
+            "esMental": false
+        },
+        {
+            "id": 7,
+            "nombre": "Apuntar",
+            "descripcion": "(Mental) 2 Acciones sumar Deadeye ToHit (Concentración)",
+            "atributo": "Agilidad",
+            "esMental": true
+        },
+        {
+            "id": 8,
+            "nombre": "Parry",
+            "descripcion": "(Reacción) Suma tu nivel a tu Esquiva contra ese ataque específico.",
+            "atributo": "Agilidad",
+            "esMental": false
+        },
+        {
+            "id": 9,
+            "nombre": "Ataque de oportunidad",
+            "descripcion": "(Reacción) Si alguien entra o sale en tu rango de ataque le puedes atacar a cuerpo a cuerpo",
+            "atributo": "Agilidad",
+            "esMental": false
+        },
+        {
+            "id": 10,
+            "nombre": "Contraataque",
+            "descripcion": "(Reacción) Puedes atacar si te atacan",
+            "atributo": "Agilidad",
+            "esMental": false
+        },
+        {
+            "id": 11,
+            "nombre": "Procesar",
+            "descripcion": "Permite realizar acciones mentales que de normal costarían 1 accion son gratuitas.",
+            "atributo": "Mente",
+            "esMental": true
+        },
+        {
+            "id": 12,
+            "nombre": "Instruir",
+            "descripcion": "Gastas 1 accion para darle ventaja 1 a un aliado.",
+            "atributo": "Mente",
+            "esMental": true
+        }
+    ]
+}

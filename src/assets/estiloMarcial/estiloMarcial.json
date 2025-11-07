@@ -1,0 +1,1200 @@
+{
+  "estiloMarcial": [
+    {
+      "nombre": "Armatha",
+      "descripcion": "El estilo de combate propio de Lenam. Simple y directo, sin florituras. Especialidad en combate con escudos y combate grupal.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Falange I",
+          "descripcion": "Al realizar la acción de carga, los aliados que estén adyacentes a ti cargaran contigo en tu misma dirección, realizando todos ellos 1 acción de carga.",
+          "requisito_dote": "",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Falange II",
+          "descripcion": "Si algun aliado cargando tiene menos movimiento que tu le otorgas tu movimiento",
+          "requisito_dote": "1",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Falange III",
+          "descripcion": "Aumenta el radio a 4 casillas de distancia.",
+          "requisito_dote": "2",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Falange IV",
+          "descripcion": "Duplicas el movimiento de todos los aliados y tu mismo. El radio de efecto de la carga aumenta hasta tu distancia de grito. ",
+          "requisito_dote": "3",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Tácticas de pelotón I",
+          "descripcion": "Duplica el efecto de las Formaciones durante 1 turno. Formaciones disponibles en un radio de 2 casillas por estrato: Testudos (resistencia al daño perforante y proyectiles +2 por estrato), Falange (daño DL +2 por tier), En línea (penetración DE +2 por tier), Abanderada (WL +2 por tier), En Blitz (Iniciativa +2 por tier).",
+          "requisito_dote": "",
+          "activa": "12",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Tácticas de pelotón II",
+          "descripcion": "Duplica el efecto de las Formaciones a todos los aliados que estén afectados en el área.",
+          "requisito_dote": "5",
+          "activa": "12",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Tácticas de pelotón III",
+          "descripcion": "Triplica el efecto de las Formaciones a todos los aliados implicados dentro del área.",
+          "requisito_dote": "6",
+          "activa": "12",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Palabra de comando",
+          "descripcion": "Puedes otorgar 1 acción tuya a un aliado.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Alentar",
+          "descripcion": "Usas 1 acción para quitar el estado de Atemorizado y Embobado a todos los que te puedan escuchar.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "¡A mi la Legión!",
+          "descripcion": "Usas 1 acción para animar a tus aliados a que se reagrupen a tu alrededor. Estos aliados pueden moverse en dirección hacia ti un máximo de distancia igual a su Movimiento.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 11,
+          "nombre": "Discurso motivador",
+          "descripcion": "Al hacer un discurso de 5 minutos a un grupo de oyentes, otorga los siguientes bufos durante 10 min: +1 Movimiento, +1 Poderío, +1 Puntería, Tu nivel en sobreescudo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 12,
+          "nombre": "Bricomania",
+          "descripcion": "Te permite construir obras de ingenieria militar, sin la necesidad de tener puntos en la artesania de grandes proyectos.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 13,
+          "nombre": "Heavy weaponzzz",
+          "descripcion": "Levanta la restricción de armas y armaduras con la etiqueta de Pesada.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Maestros de armas de Limsa Lomensa",
+      "descripcion": "Los mejores guerreros de Limsa Lomensa, especialistas en las armas duales y el uso de múltiples armas rápidas que les dotan de mucha versatilidad en la batalla.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Demasiado lento I",
+          "descripcion": "Al usar Contraataque, golpeas una vez más con un arma diferente sin coste alguno para desenvainarla.",
+          "requisito_dote": "",
+          "activa": "10",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Demasiado lento II",
+          "descripcion": "Una vez por turno puedes usar una reacción gratuita para efectuar el contraataque.",
+          "requisito_dote": "1",
+          "activa": "10",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Poco rápido I",
+          "descripcion": "Al usar Parry, si desvías con éxito un golpe, el siguiente ataque que cometa el objetivo contra ti va con desventaja.",
+          "requisito_dote": "",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Poco rápido II",
+          "descripcion": "Si desvías dicho ataque, este va dirigido contra otro enemigo a tu elección.",
+          "requisito_dote": "3",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Poco rápido III",
+          "descripcion": "Como parte de tu reacción, puedes usar, en caso de tenerla, Desarme precoz.",
+          "requisito_dote": "4",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Truco del almendruco",
+          "descripcion": "Puedes intercambiar tus armas actualmente equipadas al principio de cada acción de ataque.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Intercambio promiscuo",
+          "descripcion": "Al cambiar de armas por un arma no utilizada durante este turno, ganas tu estrato en Poderío hasta final de turno. Se puede acumular.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Empuñadura del titán",
+          "descripcion": "Ignoras la propiedad A dos manos. Pudiendo llevar un arma en cada mano a merced, además hacen el máximo daño posible que tengan dichas armas.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Tormenta de acero",
+          "descripcion": "Requisito: tener a dos o más objetivos a rango de al menos una de tus armas cuerpo a cuerpo. Gastas 3 acciones. Dañas a todos los enemigos que estén a rango con el daño de tus armas, siempre y cuando cada ataque sea efectuado con un arma de distinto tipo y los ataques se distribuyan equitativamente entre todos los objetivos que te rodeen.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Carga febril",
+          "descripcion": "Las armas pesan y ocupan la mitad en tu inventario.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 11,
+          "nombre": "Desarme precoz I",
+          "descripcion": "Usas una acción de ataque para robar el arma de tu oponente o bien para lanzarla al suelo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 12,
+          "nombre": "Desarme precoz II",
+          "descripcion": "Al tener éxito en ello puedes realizar una acción de ataque con el mismo arma robada.",
+          "requisito_dote": "11",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Pugilista",
+      "descripcion": "Acceso a las posturas de combate y mejora de las acciones de combate. Desventaja al llevar puesta una armadura.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Parry - Desvío perfecto",
+          "descripcion": "Si logras desviar con éxito un ataque, consigues hacer que el atacante se golpee a sí mismo con la misma fuerza con la que te iba a golpear.",
+          "requisito_dote": "",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Parry - Desvío de proyectiles",
+          "descripcion": "Te permite desviar proyectiles.",
+          "requisito_dote": "1",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Parry - Devolución de proyectiles",
+          "descripcion": "Te permite devolver proyectiles.",
+          "requisito_dote": "2",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Adrenalina - La Zona I",
+          "descripcion": "Tienes una acción de ataque extra.",
+          "requisito_dote": "",
+          "activa": "3",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Adrenalina - La Zona II",
+          "descripcion": "Tienes una reacción extra.",
+          "requisito_dote": "4",
+          "activa": "3",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Inmovilización prensada",
+          "descripcion": "Ataque contra su nivel de Estilo Marcial, en caso de ganar aplicas el estado Sometido.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela de las luxaciones"
+        },
+        {
+          "id": 7,
+          "nombre": "Agarre eficiente",
+          "descripcion": "Cuando realizas la agarrar, no tienes que elegir entre Maniatado y Enredado.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela de las luxaciones"
+        },
+        {
+          "id": 8,
+          "nombre": "Juri",
+          "descripcion": "Puedes utilizar tus piernas como herramienta para causar Maniatado a un enemigo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela de las luxaciones"
+        },
+        {
+          "id": 9,
+          "nombre": "Juri - Mejora I",
+          "descripcion": "Cuando realizas un agarre, ignoras los efectos negativos de Maniatado y/o Enredado que el agarre te causaría.",
+          "requisito_dote": "8",
+          "activa": "",
+          "categoria": "Escuela de las luxaciones"
+        },
+        {
+          "id": 10,
+          "nombre": "Danzas Ballerina Longina",
+          "descripcion": "Cada acción de ataque con arma permite realizar un ataque sin armas en forma de patada.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela de las armas"
+        },
+        {
+          "id": 11,
+          "nombre": "Danza Vectorial Direccional",
+          "descripcion": "Puedes golpear a tus enemigos en direcciones distintas. Si golpeas al mismo enemigo desde direcciones distintas (diferente cara del hexágono), obtienes -4 en tu rango de crítico.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela de las armas"
+        },
+        {
+          "id": 12,
+          "nombre": "Guardia del agua que fluye",
+          "descripcion": "Si no has gastado ninguna acción durante tu turno, tu Esquiva se dobla hasta el principio de tu siguiente turno.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del desvio que te vio"
+        },
+        {
+          "id": 13,
+          "nombre": "Fluyo como el agua",
+          "descripcion": "Gastas 1 Reacción. El rival tiene desventaja al atacarte hasta el siguiente turno. En el momento de recibir un golpe enemigo, reaccionas desviándolo, haciendo que el enemigo caiga al suelo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del desvio que te vio"
+        },
+        {
+          "id": 14,
+          "nombre": "Fluyo como el agua - Mejora I",
+          "descripcion": "Aprovechas como parte del desvío y el enemigo realiza una tirada con desventaja por Juego de Manos sobre Nivel de Pugilista o Juego de manos, si falla, lo desarmas.",
+          "requisito_dote": "13",
+          "activa": "",
+          "categoria": "Escuela del desvio que te vio"
+        },
+        {
+          "id": 15,
+          "nombre": "El Directo",
+          "descripcion": "Un golpe rápidísimo que requiere de una preparación.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 16,
+          "nombre": "Destrozo visceral",
+          "descripcion": "Un forte golpe mezzoforte hecho con el hombro que empuja y realiza en daño tu DL*2, tanto en daño como en distancia de empuje. Si el objetivo se choca con algo durante el recorrido del empuje, recibe tanto daño como movimiento restante.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 17,
+          "nombre": "Contra",
+          "descripcion": "Puedes decidir no actuar durante un turno. Como parte de esta maniobra, puedes desplazarte tanto como tu Movimiento. Todo el daño recibido hasta el principio de tu siguiente turno se acumula, y una vez comience tu siguiente turno, se devuelve multiplicado por dos a todos los enemigos que tengas en casillas colindantes.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 18,
+          "nombre": "Efecto Depèche",
+          "descripcion": "Tus puñetazos adquieren la propiedad de Rango con una distancia óptima entre cero y tu Poderío, y la propiedad de Área, con daño en cono delante de ti. Este ataque realiza tu Poderío en daño, y cada espacio que te separe del objetivo reduce el daño en uno, hasta cero.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 19,
+          "nombre": "Golpe aturdidor",
+          "descripcion": "Una vez por turno puedes realizar un ataque que aplique el estado de Aturdido.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 20,
+          "nombre": "Terremoto",
+          "descripcion": "Realizas un pisotón o puñetazo contra el suelo para causar un pequeño cataclismo a tu alrededor. Todos los espacios en un radio de dos se transforman en terreno dificilillo, y todos los enemigos que hubiese en el área se desplazan una casilla hacia ti. Los enemigos desplazados de esta forma deben realizar una tirada de Acrobacia contra tu Nivel de Pugilista + Poderío; si fallan, adquieren el estado Cuerpo a tierra. Además, cualquier trampa en el área del cráter queda inutilizada y destruida.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del castañazo"
+        },
+        {
+          "id": 21,
+          "nombre": "Galleta galleta metralleta",
+          "descripcion": "Una vez por turno, puedes decidir gastar una, dos o tres acciones en realizar los siguientes ataques. Gastando 1 acción: golpeas 3 veces. Gastando 2 acciones: golpeas 5 veces con desventaja 1. Gastando 3 acciones: golpeas 7 veces con desventaja 2.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 22,
+          "nombre": "Arras",
+          "descripcion": "Puedes moverte un espacio en cualquier dirección después de cada golpe certero.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 23,
+          "nombre": "Jab I",
+          "descripcion": "Golpe rápido al que no se le añade el Poderío y no se le puede reaccionar.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 24,
+          "nombre": "Jab II - Golpe ciclón",
+          "descripcion": "Al atacar con jab obtienes ventaja 3.",
+          "requisito_dote": "24",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 25,
+          "nombre": "Jab III - Golpe Espiral",
+          "descripcion": "Ignoras la esquiva, el ataque no puede fallar.",
+          "requisito_dote": "25",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 26,
+          "nombre": "Patadiña de Boliña",
+          "descripcion": "Gastando 1 acción. Patadas especiales realizan 2 de daño + Poderío. En el turno de usar Patadiña de Boliña, puedes moverte gastando acciones y si los enemigos entran en el rango de tu habilidad son golpeados automáticamente, cada ataque golpea 1 vez a un enemigo distinto. Si usas alguna otra acción que no sea moverte Patadiña de Boliña es cancelada.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 27,
+          "nombre": "Patadiña de Boliña I",
+          "descripcion": "Golpeas en área realizando una patada en arco enfrente tuyo.",
+          "requisito_dote": "27",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 28,
+          "nombre": "Patadiña de Boliña II",
+          "descripcion": "Patadiña de Boliña golpea dos veces a todos los enemigos golpeados previamente.",
+          "requisito_dote": "28",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        },
+        {
+          "id": 29,
+          "nombre": "Patadiña de Boliña III",
+          "descripcion": "Golpeas en área a todos los enemigos a tu alrededor en ángulo de 360.",
+          "requisito_dote": "28",
+          "activa": "",
+          "categoria": "Escuela del muda muda"
+        }
+      ]
+    },
+    {
+      "nombre": "Cruzado",
+      "descripcion": "Dispuesto a servir y proteger a los inocentes y castigar a los injustos, este estilo marcial es propio de aquellos que han sido entrenados por los maestros de la Orden de los Caballeros del Silencio. Aprenden tácticas de combate en formaciones y defensa personal. Expertos en aprovechar los errores del rival en su beneficio y en interceder para proteger a sus aliados.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Intercepción - Intervención I",
+          "descripcion": "Si una criatura está a punto de recibir un golpe a melé y está a 2 casillas o menos, intercedes y golpeas a su agresor.",
+          "requisito_dote": "",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Intercepción - Intervención II",
+          "descripcion": "La distancia de la Intervención aumenta hasta tu velocidad base.",
+          "requisito_dote": "1",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Intercepción - Intervención III",
+          "descripcion": "Puedes intervenir ataques a distancia.",
+          "requisito_dote": "2",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Intercepción - Intervención IV",
+          "descripcion": "El golpe que le causas al agresor va con la furia de la justicia, recibe Ventaja 2 en dicho golpe.",
+          "requisito_dote": "3",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Intercepción - Intervención V",
+          "descripcion": "El golpe es devastador, reduce en 1 el rango de crítico necesario.",
+          "requisito_dote": "4",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Tensión - Custodio I",
+          "descripcion": "Además de otorgar 3 de Resistencia, Tensión también aumenta en 1/Body la Resistencia.",
+          "requisito_dote": "",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Tensión - Custodio II",
+          "descripcion": "Otorga tanto HP como Body tengas.",
+          "requisito_dote": "6",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Tensión - Custodio III",
+          "descripcion": "Si el atacante falla, debe tirar por caer derribado al suelo con Desventaja 1.",
+          "requisito_dote": "7",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Tensión - Custodio IV",
+          "descripcion": "Si falla debe tirar con Desventaja 2 por caer preso del terror.",
+          "requisito_dote": "8",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Tensión - Custodio V",
+          "descripcion": "Aumenta en 1 las Desventajas anteriores.",
+          "requisito_dote": "9",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 11,
+          "nombre": "Baluarte",
+          "descripcion": "Has sido entrenado para proteger, para ser la vanguardia y el escudo que defiende toda la fe. Mientras tus compañeros no reciban daño, tienes Ventaja 1 en las tiradas de dar en combate.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 12,
+          "nombre": "Contemplación",
+          "descripcion": "Ritual en el que meditas sobre el origen de la fe. (Acción mental) Integras el poder del fuego imperecedero y adquieres diferentes efectos.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 13,
+          "nombre": "Juicio",
+          "descripcion": "Estado que infliges a un enemigo por nivel de poder con el que todo el mundo tiene una bonificación al dar.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 14,
+          "nombre": "Veredicto",
+          "descripcion": "Golpe cargado de luz abrasadora. Inflige más daño si el objetivo está en estado juzgado.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 15,
+          "nombre": "Bendición",
+          "descripcion": "Bendices hasta un número máximo de 1 por nivel de poder de alma y ofreces una mejora a la armadura y la vitalidad.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 16,
+          "nombre": "Expiación",
+          "descripcion": "Te bendices a ti o una criatura. Cuando alguien ataque a la persona bendecida, un castigo se desatará sobre el atacante, imbuyendo tu arma con el poder del fuego sagrado, podrás infligir un extra de daño al atacante.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 17,
+          "nombre": "Choque sagrado",
+          "descripcion": "Descargas un rayo de luz desde las yemas de los dedos hacia un único objetivo, sana aliados y daña enemigos.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 18,
+          "nombre": "Vínculo de rectitud",
+          "descripcion": "Forjas un vínculo con un aliado en el que prometes protegerle ante todo, si el objetivo recibe daño, se divide a la mitad y tú recibes la otra mitad de su daño.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 19,
+          "nombre": "Consagrar",
+          "descripcion": "Bendice una zona con el poder de la luz, quemando a los infieles y sanando a los aliados.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 20,
+          "nombre": "Iniciativa mejorada",
+          "descripcion": "Tu Body por 3 se suma a la iniciativa.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Vagabond",
+      "descripcion": "Eras un guerrero formidable y lo tenias todo…Hasta que algo o alguien se interpuso y ahora lo que mas valorabas te ha sido arrebatado. ¿Recuperarás lo que te pertenece?",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Contraataque - Oni Giri",
+          "descripcion": "A diferencia del contraataque normal, que solo puede ser activado cuando un enemigo te impacta, tú puedes activarlo cuando realizan una acción de ataque contra ti a melé y fallan también. Castigas al oponente que ha fallado su ataque contra ti de manera devastadora, aplicas tu nivel de Vagabond +1 al DL y al dar del golpe del contraataque.",
+          "requisito_dote": "",
+          "activa": "10",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Tensión - Kaioken I",
+          "descripcion": "Adoptas una postura de combate y tienes todos tus sentidos al máximo, formas un perímetro al tener tensión de 2 casillas y 1 en diagonal (4 metros). La criatura que te ataque a ti o algún aliado dentro del perímetro se llevará un contraataque extra. Pudiendo ser 2 contraataques en 1 turno si te atacan a ti.",
+          "requisito_dote": "",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Tensión - Kaioken II",
+          "descripcion": "Los contraataques se duplican.",
+          "requisito_dote": "2",
+          "activa": "2",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Sentidos super desarrollados",
+          "descripcion": "Gastando 3 acciones, te concentras de tal manera que tienes ventaja 3 al esquivar. Hasta el principio de tu siguiente turno.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Defensa personal",
+          "descripcion": "Si aciertas un contraataque, en vez de atacar puedes aturdir a tu oponente 1 vez por turno. Causando que haya ventaja 1 al darle y solo pueda moverse la mitad de su movimiento.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Abandonar toda esperanza",
+          "descripcion": "Con la condición de haber recibido más de la mitad de tu vida en daño. Tus emociones te hacen estallar, convirtiéndote en un torbellino de furia imparable. Tienes ventaja 3 al dar pero desventaja 3 al esquivar. Dura 1 turno pero si quieres alargarlo deberás sufrir en cada uno de los turnos 1 nivel de cansancio extra.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Ratero",
+      "descripcion": "En toda buena urbe urbana hay rateros, pero estos son profesionales. Expertos en hacer un arma de cualquier cosa que tengan cerca, usan cachivaches y juegan muuy sucio.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Intercepción - Abarse I",
+          "descripcion": "Cuando eres el objetivo de un ataque cuerpo a cuerpo, puedes realizar un agarre contra una criatura (que no sea la atacante) para usarla como escudo de carne. Si el agarre es exitoso, la criatura agarrada se convierte en el nuevo objetivo del ataque.",
+          "requisito_dote": "",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Intercepción - Abarse II",
+          "descripcion": "Puedes utilizar Abarse contra cualquier ataque, sea o no cuerpo a cuerpo.",
+          "requisito_dote": "1",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Intercepción - Abarse III",
+          "descripcion": "En caso de que el agarre que se realiza como parte de Abarse sea exitoso, puedes intercambiar posiciones con la criatura agarrada. Además, puedes utilizar Abarse en caso de que seas víctima de un ataque en área, permitiendo así evadir por completo el ataque en caso de que se abandone su perímetro.",
+          "requisito_dote": "2",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Intercepción - Abarse IV",
+          "descripcion": "Cuando utilizas Abarse, puedes gastar una reacción extra para escoger a una criatura a una distancia máxima de hasta tu velocidad de movimiento como objetivo de tu agarre. Si el agarre es exitoso, envías a ese pobre desgraciado a tu posición inicial de una patada.",
+          "requisito_dote": "3",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Intercepción - Abarse V",
+          "descripcion": "El agarre utilizado como parte de Abarse siempre se realiza con éxito sin necesidad de tirada.",
+          "requisito_dote": "4",
+          "activa": "4",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Procesar - Picaresca I",
+          "descripcion": "Puedes identificar el objeto no ocultado de más valor portado por una criatura con un simple vistazo.",
+          "requisito_dote": "",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Procesar - Picaresca II",
+          "descripcion": "Puedes tirar por Juego de manos para robar un objeto portado pero no equipado de un objetivo, incluso en combate. Si el objeto robado tiene alguna utilidad activa con coste de una acción o inferior, puedes utilizarlo como parte de esta acción. Si el objetivo consiente, no es necesario realizar ninguna tirada de Juego de manos para sustraer el objeto de su inventario.",
+          "requisito_dote": "6",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Procesar - Picaresca III",
+          "descripcion": "Utilizar Juego de manos para sustraer un objeto de un objetivo pasa a ser una acción mental. Tus dedos se mueven más rápidos que tu mente.",
+          "requisito_dote": "7",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Picapica",
+          "descripcion": "Puedes realizar un ataque cuerpo a cuerpo para lanzar arena del suelo (o que se haya quedado atrapada en tus bolsillos o zapatos) a la cara de un rival, causando el estado cegado hasta el final de su turno. Una vez por combate por objetivo, puedes utilizar Picapica como parte de otro ataque cuerpo a cuerpo contra este objetivo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Piesplanos",
+          "descripcion": "Como parte de tu tirada de iniciativa al entrar en combate, puedes moverte una distancia igual o menor que tu velocidad de movimiento antes de entrar en el orden de turnos.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 11,
+          "nombre": "Trampero trampista",
+          "descripcion": "Cualquier trampa que comiences a desplegar cuesta un tercio de las acciones usuales. Mínimo 1 acción.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 12,
+          "nombre": "Fallo a favor",
+          "descripcion": "Cuando eres afectado por un movimiento forzado, puedes utilizar una reacción para moverte en la misma dirección en la que eres arrastrado una distancia igual o inferior a tu velocidad de movimiento. Además, como parte de esta reacción, puedes incorporarte.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 13,
+          "nombre": "Rastrillad el rastro",
+          "descripcion": "Como parte de tu acción de movimiento, puedes arrojar trampas con un coste base de una acción (como rodamientos o abrojos) a lo largo de todo tu desplazamiento, sin coste adicional. Además, puedes utilizar esta habilidad con obstáculos del entorno o chatarra de tu inventario (a discreción del Maestro) para causar terreno dificultoso a tu paso.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Acechador Letal",
+      "descripcion": "Mortíferos artistas de la emboscada y las puñaladitas traperas traviesas. Usan todo tipo de artilugios para acabar con sus mentecatas víctimas.",
+      "dotes": [
+        {
+          "id": 14,
+          "nombre": "Procesar - Analizar enemigo I",
+          "descripcion": "Puedes usar tu habilidad de procesar para analizar a un objetivo. Elige entre: HP actual (Sabes si está a más de la mitad o menos), Nivel (Sabes si tiene más que tú o menos), o 1 estado negativo.",
+          "requisito_dote": "",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 15,
+          "nombre": "Procesar - Analizar enemigo II",
+          "descripcion": "Puedes elegir 2 opciones en vez de una al analizar.",
+          "requisito_dote": "14",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 16,
+          "nombre": "Procesar - Analizar enemigo III",
+          "descripcion": "Aprendes más información al analizar. HP: 1/4, 1/2, 3/4 o full hp. Nivel: Sabes en qué tier está, es decir de 5 en 5 niveles. Estados: todos los estados negativos.",
+          "requisito_dote": "15",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 17,
+          "nombre": "Procesar - Analizar enemigo IV",
+          "descripcion": "Consigues ventaja 2 contra ese objetivo. Puedes compartir esa información para que todos obtengan ventaja.",
+          "requisito_dote": "16",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 18,
+          "nombre": "Procesar - Analizar enemigo V",
+          "descripcion": "Obtienes información precisa del objetivo analizado.",
+          "requisito_dote": "17",
+          "activa": "11",
+          "categoria": ""
+        },
+        {
+          "id": 19,
+          "nombre": "Apuntar - Combate en las sombras I",
+          "descripcion": "Al Apuntar estando en sigilo se reduce en 2 el rango de crítico del siguiente ataque.",
+          "requisito_dote": "",
+          "activa": "7",
+          "categoria": ""
+        },
+        {
+          "id": 20,
+          "nombre": "Apuntar - Combate en las sombras II",
+          "descripcion": "Al apuntar estando en sigilo puedes atacar con ventaja.",
+          "requisito_dote": "19",
+          "activa": "7",
+          "categoria": ""
+        },
+        {
+          "id": 21,
+          "nombre": "Apuntar - Combate en las sombras III",
+          "descripcion": "Apuntar estando en sigilo reduce en 2 más el rango de crítico.",
+          "requisito_dote": "20",
+          "activa": "7",
+          "categoria": ""
+        },
+        {
+          "id": 22,
+          "nombre": "Apuntar - Atacar al punto débil",
+          "descripcion": "Al apuntar a un objetivo estando en sigilo puedes apuntar a partes expuestas de su cuerpo. Duplicas tu Deadeye en ese objetivo.",
+          "requisito_dote": "",
+          "activa": "7",
+          "categoria": "Tier 2"
+        },
+        {
+          "id": 23,
+          "nombre": "Apuntar - Precisión mortal",
+          "descripcion": "Reduces en 2 el rango de crítico a un objetivo apuntado.",
+          "requisito_dote": "",
+          "activa": "7",
+          "categoria": "Tier 2"
+        },
+        {
+          "id": 24,
+          "nombre": "Emboscada",
+          "descripcion": "Tu filosofía es quien ataca primero ataca dos veces. Tienes ventaja 1 en atacar si atacas por sorpresa.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 25,
+          "nombre": "Manto de Niebla",
+          "descripcion": "Eres tan silencioso que los enemigos no saben de dónde les vienen los golpes. Puedes mantener el sigilo después de un ataque.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 26,
+          "nombre": "Velocidad de reacción",
+          "descripcion": "Tu Agilidad se suma a la iniciativa.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 27,
+          "nombre": "Maestro de la planificación I",
+          "descripcion": "Si has estudiado la zona del combate antes de que empiece tienes ventaja en todas las tiradas de investigación para encontrar enemigos escondidos y para esconderse.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 28,
+          "nombre": "Maestro de la planificación II",
+          "descripcion": "Puedes compartir esa información con tantas personas como tu nivel y compartir esa ventaja.",
+          "requisito_dote": "27",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 29,
+          "nombre": "Esconderse sin gastar acción I",
+          "descripcion": "Esconderte y moverte la mitad de tu movimiento.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 30,
+          "nombre": "Esconderse sin gastar acción II",
+          "descripcion": "Esconderte con ventaja.",
+          "requisito_dote": "29",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 31,
+          "nombre": "Esconderse sin gastar acción III",
+          "descripcion": "Esconderte con ventaja, moverte y atacar.",
+          "requisito_dote": "30",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Gentilhombre",
+      "descripcion": "Gallardos guerreros especialistas del combate montado, sacan el máximo provecho de la fuerza de sus monturas para propiciar golpes devastadores.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Instruir - Lección Humillante",
+          "descripcion": "Tiene el efecto adverso al homólogo de la habilidad. Sueltas una serie de improperios y críticas que desmoralizan al adversario. Debe hacer una tirada de salvación de mente, si falla, puedes comandarle que suelte el arma, se eche al suelo o que salga despavorido, adquiriendo el estado de Terror.",
+          "requisito_dote": "",
+          "activa": "12",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Carga - Justa",
+          "descripcion": "Al realizar una acción de carga, añades el daño de la distancia recorrida hasta tu oponente.",
+          "requisito_dote": "",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Avasallar",
+          "descripcion": "Si el objetivo está asustado, tienes ventaja 1 en las tiradas al dar de ataque y en resistencia.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Gallardía I",
+          "descripcion": "Si aciertas una acción de ataque, sumas 1 de DL a los siguientes ataques hasta el siguiente turno.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Gallardía II",
+          "descripcion": "Si fallas una acción de ataque, sumas 1 de Resistencia hasta tu siguiente turno.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Crueldad",
+          "descripcion": "Si el objetivo está asustado, estás montado o en superioridad numérica, impones desventaja 1 al dar al enemigo o enemigos que puedas ver. Para ello deben de verte los enemigos también.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Hidalgo",
+          "descripcion": "Si vas montado, puedes aumentar tu movimiento en 1. La montura solo necesita descansar la mitad del tiempo, solo necesita comer y beber la mitad de las cantidades normales y puede ayudarte en el combate. Además su capacidad de carga se duplica.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Honorable",
+          "descripcion": "Inspiras a los aliados cercanos a 3x3 casillas con un grito de orgullo y valor. Si vas montado y tus aliados también, vuestro movimiento aumenta en 2, si vais a pie aumenta en 1.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Ungah Ungah",
+      "descripcion": "Guerreros primitivos que canalizan su ira y furia primal en combate, convirtiéndose en máquinas de destrucción imparables.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Adrenalina - Furia Primal",
+          "descripcion": "Adrenalina también hace que tu resistencia se convierta en daño, pero la resistencia que tuvieras la pierdes de igual manera, hasta que canceles el estado.",
+          "requisito_dote": "",
+          "activa": "3",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Carga - Grappling",
+          "descripcion": "Al cargar también aplicas el estado Sometido a una criatura grande o inferior. En ese estado no os podéis mover pero puedes derribarla al suelo o incluso intentar dejarla Inconsciente con una tirada.",
+          "requisito_dote": "",
+          "activa": "1",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Berserker I",
+          "descripcion": "Atacas con ventaja 1 pero tienes desventaja 2 al esquivar.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Berserker II",
+          "descripcion": "Atacas con ventaja 2 ahora.",
+          "requisito_dote": "3",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Berserker III",
+          "descripcion": "Tienes una acción de ataque extra.",
+          "requisito_dote": "4",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Berserker IV",
+          "descripcion": "Atacas con ventaja 3 y sufres desventaja 3 al esquivar.",
+          "requisito_dote": "5",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Furia primal I",
+          "descripcion": "Aumentas en 1 por tier de Ungha Ungha tu resistencia.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Furia primal II",
+          "descripcion": "Si recibes daño físico, recibes la mitad de este.",
+          "requisito_dote": "7",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Furia primal III",
+          "descripcion": "Si recibes daño elemental, recibes la mitad de este.",
+          "requisito_dote": "8",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Odio profundo",
+          "descripcion": "Consumiendo 3 acciones y en estado Berserker o de Furia primal, un torrente de ira te invade el cuerpo, haciendo hervir tu sangre y acelerándote. Eliges un área de la que tú eres su centro y en un cono de 45° golpeas a todos los enemigos que hayan sido cogidos por tu área. Los ataques que aciertes puedes volver a tirarlos en forma de nuevos ataques.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Depredador",
+      "descripcion": "Acecha a sus víctimas y una vez que las ha localizado jamás escapan de su visión letal. Mortífero en el combate a distancia.",
+      "dotes": [
+        {
+          "id": 1,
+          "nombre": "Parry - Kitear/Poquear",
+          "descripcion": "Como parte de la reacción puedes desplazarte tu movimiento.",
+          "requisito_dote": "",
+          "activa": "8",
+          "categoria": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Adrenalina - Strafing I",
+          "descripcion": "Disparar a la carrera. Puedes atacar en tu acción de movimiento.",
+          "requisito_dote": "",
+          "activa": "3",
+          "categoria": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Adrenalina - Strafing II",
+          "descripcion": "Atacas el doble de veces.",
+          "requisito_dote": "2",
+          "activa": "3",
+          "categoria": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Overwatch I",
+          "descripcion": "Cuando alguien use una acción no mental y puedas verle, puedes atacarle usando tu Reacción. El rango es un ataque en cono en frente tuyo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Overwatch II",
+          "descripcion": "Si alguien ataca a un aliado que no seas tú, le atacas con ventaja 1.",
+          "requisito_dote": "4",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Overwatch III",
+          "descripcion": "Aunque no veas al atacante, puedes atacarle en un radio de 360°.",
+          "requisito_dote": "5",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Overwatch IV",
+          "descripcion": "Tienes ventaja 3 al atacar al atacante. Si impactas le aturdes.",
+          "requisito_dote": "6",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Disparo ralentizador I",
+          "descripcion": "Al realizar una acción de ataque, una vez por turno, si impactas, reduces a la mitad el movimiento de un enemigo.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Disparo ralentizador II",
+          "descripcion": "Puedes realizar dicho disparo una vez por turno por objetivo.",
+          "requisito_dote": "8",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Disparo múltiple",
+          "descripcion": "Al realizar una acción de ataque, una vez por turno, disparas hasta un máximo de 4 proyectiles con una desventaja proporcional por cada proyectil por encima de 1. Máx desventaja 3.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 11,
+          "nombre": "Lluvia de flechas",
+          "descripcion": "Its raining man! Gastas un mínimo de 3 acciones para preparar una gran salva de proyectiles; debes indicar un radio de 3x3 donde disparar. Realizando 9 disparos, 1 por casilla con desventaja 1.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 12,
+          "nombre": "Aspiradora de flechas I",
+          "descripcion": "Puedes atrapar flechas enemigas.",
+          "requisito_dote": "",
+          "activa": "",
+          "categoria": ""
+        },
+        {
+          "id": 13,
+          "nombre": "Aspiradora de flechas II",
+          "descripcion": "Hacerlo en área.",
+          "requisito_dote": "12",
+          "activa": "",
+          "categoria": ""
+        }
+      ]
+    }
+  ]
+}
