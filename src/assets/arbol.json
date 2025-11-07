@@ -1,0 +1,452 @@
+{
+    "arbol": 
+    {
+        "nodos": [
+            {
+                "id": 1,
+                "atributo": "2",
+                "layer": 0,
+                "posicion": 0,
+                "shape": "circle"
+            },
+            {
+                "id": 2,
+                "atributo": "3",
+                "layer": 0,
+                "posicion": 1,
+                "shape": "circle"
+            },
+            {
+                "id": 3,
+                "atributo": "1",
+                "layer": 0,
+                "posicion": 2,
+                "shape": "circle"
+            },
+            {
+                "id": 4,
+                "atributo": "11",
+                "layer": 1,
+                "posicion": 0,
+                "shape": "circle"
+            },
+            {
+                "id": 5,
+                "atributo": "14",
+                "layer": 1,
+                "posicion": 4,
+                "shape": "circle"
+            },
+            {
+                "id": 6,
+                "atributo": "6",
+                "layer": 1,
+                "posicion": 8,
+                "shape": "circle"
+            },
+            {
+                "id": 7,
+                "atributo": "5",
+                "layer": 1,
+                "posicion": 9,
+                "shape": "circle"
+            },
+            {
+                "id": 8,
+                "atributo": "1",
+                "layer": 1,
+                "posicion": 10,
+                "shape": "square"
+            },
+            {
+                "id": 9,
+                "atributo": "10",
+                "layer": 1,
+                "posicion": 11,
+                "shape": "square"
+            },
+            {
+                "id": 10,
+                "atributo": "9",
+                "layer": 2,
+                "posicion": 0,
+                "shape": "circle"
+            },
+            {
+                "id": 11,
+                "atributo": "18",
+                "layer": 2,
+                "posicion": 1,
+                "shape": "circle"
+            },
+            {
+                "id": 12,
+                "atributo": "10",
+                "layer": 2,
+                "posicion": 2,
+                "shape": "circle"
+            },
+            {
+                "id": 13,
+                "atributo": "7",
+                "layer": 2,
+                "posicion": 4,
+                "shape": "square"
+            },
+            {
+                "id": 14,
+                "atributo": "11",
+                "layer": 2,
+                "posicion": 7,
+                "shape": "square"
+            },
+            {
+                "id": 15,
+                "atributo": "15",
+                "layer": 2,
+                "posicion": 8,
+                "shape": "circle"
+            },
+            {
+                "id": 16,
+                "atributo": "16",
+                "layer": 2,
+                "posicion": 9,
+                "shape": "circle"
+            },
+            {
+                "id": 17,
+                "atributo": "17",
+                "layer": 2,
+                "posicion": 11,
+                "shape": "circle"
+            },
+            {
+                "id": 18,
+                "atributo": "7",
+                "layer": 2,
+                "posicion": 14,
+                "shape": "circle"
+            },
+            {
+                "id": 19,
+                "atributo": "4",
+                "layer": 2,
+                "posicion": 16,
+                "shape": "circle"
+            },
+            {
+                "id": 20,
+                "atributo": "4",
+                "layer": 2,
+                "posicion": 18,
+                "shape": "square"
+            },
+            {
+                "id": 21,
+                "atributo": "4",
+                "layer": 2,
+                "posicion": 20,
+                "shape": "circle"
+            },
+            {
+                "id": 22,
+                "atributo": "11",
+                "layer": 2,
+                "posicion": 22,
+                "shape": "circle"
+            },
+            {
+                "id": 23,
+                "atributo": "9",
+                "layer": 3,
+                "posicion": 0,
+                "shape": "square"
+            },
+            {
+                "id": 24,
+                "atributo": "10",
+                "layer": 3,
+                "posicion": 1,
+                "shape": "circle"
+            },
+            {
+                "id": 25,
+                "atributo": "8",
+                "layer": 3,
+                "posicion": 2,
+                "shape": "square"
+            },
+            {
+                "id": 26,
+                "atributo": "9",
+                "layer": 3,
+                "posicion": 4,
+                "shape": "circle"
+            },
+            {
+                "id": 27,
+                "atributo": "14",
+                "layer": 3,
+                "posicion": 6,
+                "shape": "circle"
+            },
+            {
+                "id": 28,
+                "atributo": "16",
+                "layer": 3,
+                "posicion": 7,
+                "shape": "circle"
+            },
+            {
+                "id": 29,
+                "atributo": "12",
+                "layer": 3,
+                "posicion": 8,
+                "shape": "square"
+            },
+            {
+                "id": 30,
+                "atributo": "17",
+                "layer": 3,
+                "posicion": 9,
+                "shape": "circle"
+            },
+            {
+                "id": 31,
+                "atributo": "15",
+                "layer": 3,
+                "posicion": 10,
+                "shape": "circle"
+            },
+            {
+                "id": 32,
+                "atributo": "2",
+                "layer": 3,
+                "posicion": 14,
+                "shape": "square"
+            },
+            {
+                "id": 33,
+                "atributo": "5",
+                "layer": 3,
+                "posicion": 16,
+                "shape": "circle"
+            },
+            {
+                "id": 34,
+                "atributo": "5",
+                "layer": 3,
+                "posicion": 17,
+                "shape": "square"
+            },
+            {
+                "id": 35,
+                "atributo": "7",
+                "layer": 3,
+                "posicion": 18,
+                "shape": "circle"
+            },
+            {
+                "id": 36,
+                "atributo": "3",
+                "layer": 3,
+                "posicion": 19,
+                "shape": "square"
+            },
+            {
+                "id": 37,
+                "atributo": "8",
+                "layer": 3,
+                "posicion": 20,
+                "shape": "circle"
+            },
+            {
+                "id": 38,
+                "atributo": "13",
+                "layer": 3,
+                "posicion": 21,
+                "shape": "circle"
+            }
+        ],
+      "conexiones": [
+            {
+                "origen": 7,
+                "destino": 8
+            },
+            {
+                "origen": 10,
+                "destino": 22
+            },
+            {
+                "origen": 16,
+                "destino": 17
+            },
+            {
+                "origen": 17,
+                "destino": 18
+            },
+            {
+                "origen": 19,
+                "destino": 20
+            },
+            {
+                "origen": 12,
+                "destino": 13
+            },
+            {
+                "origen": 33,
+                "destino": 34
+            },
+            {
+                "origen": 34,
+                "destino": 35
+            },
+            {
+                "origen": 35,
+                "destino": 36
+            },
+            {
+                "origen": 23,
+                "destino": 24
+            },
+            {
+                "origen": 24,
+                "destino": 25
+            },
+            {
+                "origen": 25,
+                "destino": 26
+            },
+            {
+                "origen": 26,
+                "destino": 27
+            },
+            {
+                "origen": 27,
+                "destino": 28
+            },
+            {
+                "origen": 28,
+                "destino": 29
+            },
+            {
+                "origen": 29,
+                "destino": 30
+            },
+            {
+                "origen": 31,
+                "destino": 32
+            },
+            {
+                "origen": 38,
+                "destino": 23
+            },
+            {
+                "origen": 1,
+                "destino": 4
+            },
+            {
+                "origen": 2,
+                "destino": 5
+            },
+            {
+                "origen": 3,
+                "destino": 6
+            },
+            {
+                "origen": 3,
+                "destino": 7
+            },
+            {
+                "origen": 4,
+                "destino": 10
+            },
+            {
+                "origen": 4,
+                "destino": 11
+            },
+            {
+                "origen": 4,
+                "destino": 12
+            },
+            {
+                "origen": 6,
+                "destino": 19
+            },
+            {
+                "origen": 6,
+                "destino": 18
+            },
+            {
+                "origen": 5,
+                "destino": 14
+            },
+            {
+                "origen": 5,
+                "destino": 15
+            },
+            {
+                "origen": 5,
+                "destino": 16
+            },
+            {
+                "origen": 9,
+                "destino": 22
+            },
+            {
+                "origen": 21,
+                "destino": 38
+            },
+            {
+                "origen": 22,
+                "destino": 38
+            },
+            {
+                "origen": 19,
+                "destino": 33
+            },
+            {
+                "origen": 20,
+                "destino": 35
+            },
+            {
+                "origen": 20,
+                "destino": 37
+            },
+            {
+                "origen": 21,
+                "destino": 37
+            },
+            {
+                "origen": 10,
+                "destino": 23
+            },
+            {
+                "origen": 11,
+                "destino": 25
+            },
+            {
+                "origen": 14,
+                "destino": 28
+            },
+            {
+                "origen": 15,
+                "destino": 29
+            },
+            {
+                "origen": 16,
+                "destino": 30
+            },
+            {
+                "origen": 16,
+                "destino": 31
+            },
+            {
+                "origen": 18,
+                "destino": 32
+            }
+      ]
+    }
+
+}

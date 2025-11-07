@@ -3,128 +3,80 @@
     {
       "nombre": "Hijo de vecino",
       "descripcion": "Has nacido en el seno de una familia de clase media, bien alimentado y con todas las necesidades básicas cubiertas. Puedes tener una mascota doméstica y/o puedes no tenerla. Tu infancia ha sido feliz, o no. No tienes ningún trauma, si no quieres.",
-      "atributos": [
-        { "nombre": "Resistencia", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [6, 5],
       "habilidades": ["30", "6", "8", "3", "4", "14"]
     },
 
     {
       "nombre": "Noble",
       "descripcion": "Ya sea en el imperio de Limsa Lomensa o de Lenam, has crecido en una familia acaudalada y llena de privilegios y responsabilidades. Posiblemente seas un antipático, racista y mimado como solo tu sabes.",
-      "atributos": [
-        { "nombre": "Pts de Habilidad", "valor": "+3" },
-        { "nombre": "Habilidad extra", "valor": "+1" }
-      ],
+      "atributos": [5, 30],
       "habilidades": ["13", "21", "10", "7", "15", "14"]
     },
     {
       "nombre": "Desperado",
-      "descripcion": "Ya sea en las bulliciosas calles de Limsa Lomensa, los pulcros salones de las Catedrales de Lenam, las estepas rocosas o los desiertos abrasadores, el Desperado aguarda una distraccion para aprovechar su oportunidad y sacar provecho. Buscavidas de nacimiento, la vida no ha tratado bien al querido Desperado, acostumbrado a tener que tirar pa’lante. Se sabe desenvolver con improvisación y sutileza de las situaciones mas inverosímiles.",
-      "atributos": [
-        { "nombre": "Pts de Habilidad", "valor": "+3" },
-        { "nombre": "Habilidad extra", "valor": "+1" }
-      ],
+      "descripcion": "Ya sea en las bulliciosas calles de Limsa Lomensa, los pulcros salones de las Catedrales de Lenam, las estepas rocosas o los desiertos abrasadores, el Desperado aguarda una distraccion para aprovechar su oportunidad y sacar provecho. Buscavidas de nacimiento, la vida no ha tratado bien al querido Desperado, acostumbrado a tener que tirar pa'lante. Se sabe desenvolver con improvisación y sutileza de las situaciones mas inverosímiles.",
+      "atributos": [7, 12],
       "habilidades": ["12", "16", "3", "7", "17", "18"]
     },
     {
       "nombre": "Trotamundos itinerante y ambulante",
       "descripcion": "No te sabes estar quieto y has viajado por gran parte del mundo conocido. Sabes tratar a la gente según tus intereses y conoces canciones de todas partes y has escuchado muchas historias que se ganarían una ronda de cerveza.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [6, 10],
       "habilidades": ["30", "5", "8 ", "9", "14", "31"]
     },
     {
       "nombre": "Hijo de la mar",
       "descripcion": "Tu vida ha sido una aventura. Has nacido en un barco y seguramente esperes morir en uno. Te han enseñado las leyes del océano y lo respetas como es debido. Has aprendido a navegar y has visto muchos puertos.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [19, 15],
       "habilidades": ["2", "8", "1 ", "9", "17", "6"]
     },
     {
       "nombre": "Feligrés",
       "descripcion": "Tu vida ha estado marcada por la fe y la devoción. Has crecido en un entorno religioso y has aprendido a seguir las enseñanzas de tu fe. Tu vida gira en torno a la comunidad y a los rituales que la acompañan.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [15, 30],
       "habilidades": ["12", "7", "10", "4", "14", "8"]
     },
     {
       "nombre": "Huérfano de Lenam",
       "descripcion": "Has tenido suerte al haber crecido en el Imperio de Lenam siendo huérfano, pues en el resto del mundo te hubieras tenido q apañar sin ayuda alguna. Se te acogió en un orfanato de los Caballeros del Silencio, en el que te educaron y pasaste diferentes pruebas para llegar a formar parte de la orden. Habiendo fracasado en las pruebas para formar parte de la organización de los Caballeros del Silencio, un huérfano en el reino de Lenam está obligado a contribuir a la sociedad. Entrando como aprendiz de algún oficio artesano o en alguna cadena de producción.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [6, 18],
       "habilidades": ["12", "7", "10", "4", "14", "8"]
-    },
-    {
-      "nombre": "Huérfano de Lenam",
-      "descripcion": "Has tenido suerte al haber crecido en el Imperio de Lenam siendo huérfano, pues en el resto del mundo te hubieras tenido q apañar sin ayuda alguna. Se te acogió en un orfanato de los Caballeros del Silencio, en el que te educaron y pasaste diferentes pruebas para llegar a formar parte de la orden. Habiendo fracasado en las pruebas para formar parte de la organización de los Caballeros del Silencio, un huérfano en el reino de Lenam está obligado a contribuir a la sociedad. Entrando como aprendiz de algún oficio artesano o en alguna cadena de producción.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
-      "habilidades": ["7", "5", "1", "10", "30", "20"]
     },
     {
       "nombre": "Feligrés del Molino",
       "descripcion": "Una nueva religión en auge en la que rinden culto y pleitesía en demasía al movimiento de las aspas de El Molino. Se suelen congregar en campos de conreo lejos de las grandes urbes urbanas.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [6, 15],
       "habilidades": ["12", "16", "3", "17", "13", "19"]
     },
      {
       "nombre": "Monaguillo de la Cofradía de Bharak",
       "descripcion": "La congregación religiosa mas importante de Limsa Lomensa, tienen mucha influéncia política, al nivel de que sin ellos el imperio de Mudab Il Nam no habría podido desarrollarse. Tienen conocimientos muy antiguos y valiosos que se remontan a centenares de años. Muchos eruditos y líderes buscan pasar años estudiando en las bibliotecas de sus templos. Guardan muchos secretos y tienen su propia Orden Militar. Los maestros de armas son integrantes en su mayoría de dicha organización.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [10, 16],
       "habilidades": ["5", "7", "31", "15", "31", "19"]
     },
      {
       "nombre": "Agojé",
       "descripcion": "Entrenamiento militar obligatorio que los ciudadanos que viven en Lenam deben realizar. En tiempos de guerra, la población debe realizar otro entrenamiento cada año. Los ciudadanos que completan el entrenamiento reciben la oferta de formar parte de la Armatha, el ejercito del imperio. En caso de no querer formar parte de la Armatha, un ciudadano puede reanudar sus actividades previas, pero recibe un permiso a modo de pasaporte que debe llevar siempre encima para poder ser identificado, esto no se suele cumplir por la mayoría, aunque perderlo conlleva un castigo grave en el que se extirpa una oreja. En la ciudad-capital son muy estrictos con esto, pero en las otras regiones del imperio son mas laxos con la vigilancia.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [18, 5],
       "habilidades": ["1", "2", "15", "30", "9", "7"]
     },
      {
       "nombre": "Protegido de la espina mortecina",
       "descripcion": "Miembro de una organización anárquica que quiere ver en llamas la forma de gobierno de Lenam. Viven en las sombras de los lugares mas recónditos del reino y aguardan su venganza. De cara al mundo, son una organización privada de servicios. Suelen ser contratados para vigilar, escoltar, secuestrar y matar. Pero son muy caros comparados con otras organizaciones, aunque estos son letales y tienen la fama de jamás fracasar en sus misiones. Se dice por las tabernas y los barracones que un asesino de la espina mortecina equivale a veinte asesinos al uso.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [4, 12],
       "habilidades": ["18", "16", "3", "8", "13", "19"]
     },
     {
       "nombre": "Hijo de lo desconocido",
       "descripcion": "Eres el descendiente de un gran explorador, investigador o cazador. Has crecido en Libertha, una ciudad que se ha ido desarrollando en las últimas décadas. Sus líderes son un poderoso gremio de cazadores que organizan grandes búsquedas y expediciones en las zonas más inhóspitas y peligrosas que se conocen. Abanderado por los logros de tus descendientes, siempre has tenido sed de aventuras y grandes descubrimientos, Libertha, aunque no es de los lugares más seguros para vivir, es en el q te ha tocado crecer y ahora tienes los medios para salir y descubrir que te deparará tu destino.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [6, 15],
       "habilidades": ["30", "9", "6", "8", "4", "6"]
     },
     {
       "nombre": "Tecnomante de Valanil",
       "descripcion": "La República de Valanil se ha mantenido distante de los conflictos del exterior hasta hace unas décadas. De mentalidad curiosa, expandieron recientemente sus fronteras para conquistar las costas del vasto continente de Ardar. Han formado un pequeño territorio en las estepas rocosas del continente y este, aunque salvaje y brutal, ha cedido ante los ingenios mecánicos y especiales que esta república posee. Ahora el territorio es el centro del comercio con las diferentes civilizaciones autóctonas y están construyendo grandes proyectos arquitectónicos para evitar las constantes incursiones de la vida salvaje de los alrededores.",
-      "atributos": [
-        { "nombre": "Fuerza", "valor": "+3" },
-        { "nombre": "Pts de Habilidad", "valor": "+3" }
-      ],
+      "atributos": [12, 16],
       "habilidades": ["8", "17", "6", "2", "13", "19"]
     }
   ]

@@ -1,0 +1,20 @@
+{
+    "atributos": [
+        {
+            "id": 1,
+            "nombre": "Cuerpo",
+            "descripcion": "Determina la potencia física, la resistencia y la salud general."
+        },
+        {
+            "id": 2,
+            "nombre": "Agilidad",
+            "descripcion": "Mide la destreza, reflejos y coordinación."
+        },
+        {
+            "id": 3,
+            "nombre": "Mente",
+            "descripcion": "Indica la capacidad cognitiva y el enfoque mental."
+        }
+        
+    ]
+}

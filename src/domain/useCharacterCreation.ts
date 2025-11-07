@@ -18,7 +18,26 @@ export function useCharacterCreation() {
     trasfondo: '',
     trasfondo_habilidades: [] as string[],
     raza: '',
-    arbol: ''
+    arbol: '',
+    // Atributos del árbol
+    atributos: {
+      cuerpo: 0,
+      agilidad: 0,
+      mente: 0,
+      rangoCritico: 0,
+      habilidadesExtra: 0,
+      limiteHabilidad: 0,
+      acciones: 0,
+      reacciones: 0,
+      poderio: 0,
+      movimiento: 0,
+      resistencia: 0,
+      regeneracion: 0,
+      evasion: 0,
+      iniciativa: 0,
+      punteria: 0,
+      puntosHabilidad: 0
+    }
   })
 
   // Función para obtener o crear el personaje en creación
@@ -45,6 +64,24 @@ export function useCharacterCreation() {
       characterData.value.trasfondo_habilidades = character.trasfondo_habilidades || []
       characterData.value.raza = character.raza || ''
       characterData.value.arbol = character.arbol || ''
+      characterData.value.atributos = character.atributos || {
+        cuerpo: 0,
+        agilidad: 0,
+        mente: 0,
+        rangoCritico: 0,
+        habilidadesExtra: 0,
+        limiteHabilidad: 0,
+        acciones: 0,
+        reacciones: 0,
+        poderio: 0,
+        movimiento: 0,
+        resistencia: 0,
+        regeneracion: 0,
+        evasion: 0,
+        iniciativa: 0,
+        punteria: 0,
+        puntosHabilidad: 0
+      }
     }
   }
 
@@ -62,6 +99,7 @@ export function useCharacterCreation() {
       character.trasfondo_habilidades = characterData.value.trasfondo_habilidades
       character.raza = characterData.value.raza
       character.arbol = characterData.value.arbol
+      character.atributos = characterData.value.atributos
     }
   }
 
@@ -76,6 +114,7 @@ export function useCharacterCreation() {
   watch(() => characterData.value.trasfondo_habilidades, () => saveCharacterData(), { deep: true })
   watch(() => characterData.value.raza, () => saveCharacterData())
   watch(() => characterData.value.arbol, () => saveCharacterData())
+  watch(() => characterData.value.atributos, () => saveCharacterData(), { deep: true })
 
   return {
     characterData,

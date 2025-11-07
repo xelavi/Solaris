@@ -41,23 +41,15 @@
       </h4>
       <div class="flex gap-3">
         <div
+          v-for="atributoId in trasfondoActual.atributos"
+          :key="atributoId"
           class="flex-1 bg-white border-2 border-blue-300 rounded-lg p-4 text-center"
         >
           <div class="text-2xl font-bold text-blue-600">
-            {{ trasfondoActual.atributos[0].valor }}
+            +3
           </div>
           <div class="text-sm text-blue-700 font-medium">
-            {{ trasfondoActual.atributos[0].nombre }}
-          </div>
-        </div>
-        <div
-          class="flex-1 bg-white border-2 border-blue-300 rounded-lg p-4 text-center"
-        >
-          <div class="text-2xl font-bold text-blue-600">
-            {{ trasfondoActual.atributos[1].valor }}
-          </div>
-          <div class="text-sm text-blue-700 font-medium">
-            {{ trasfondoActual.atributos[1].nombre }}
+            {{ getNombreAtributo(atributoId) }}
           </div>
         </div>
       </div>
@@ -113,6 +105,9 @@
 import { ref, computed, watch, onMounted } from "vue";
 import trasfondosData from "../../assets/trasfondos/trasfondos.json";
 import habilidadesData from "../../assets/habilidades.json";
+import arbolData from "../../assets/arbol.json";
+import atributosData from "../../assets/atributos.json";
+import activasData from "../../assets/activas.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
 const { characterData, loadCharacterData } = useCharacterCreation();
@@ -145,6 +140,22 @@ const trasfondoActual = computed(() => {
   console.log("Trasfondo seleccionado:", selectedTrasfondo.value);
   return trasfondosDetallados.value.find((t) => t.nombre === selectedTrasfondo.value);
 });
+
+// Función para obtener el nombre del atributo a partir del ID del nodo
+function getNombreAtributo(nodeId) {
+  // Buscar el nodo en arbol.json
+  const nodo = arbolData.arbol.nodos.find(n => n.id === nodeId);
+  if (!nodo) return "Desconocido";
+  
+  // Dependiendo del shape, buscar en atributos o activas
+  if (nodo.shape === "circle") {
+    const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === parseInt(nodo.atributo));
+    return atributo ? atributo.nombre : "Desconocido";
+  } else {
+    const activa = activasData.activas.find(a => a.id === parseInt(nodo.atributo));
+    return activa ? activa.nombre : "Desconocido";
+  }
+}
 
 const LIMITE = 3;
 
