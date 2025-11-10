@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <!-- Panel de Atributos Calculados -->
+      <!-- Panel de Atributos Calculados -->  
       <div class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
         <h3 class="text-lg font-bold mb-3">Atributos</h3>
         <div class="space-y-2 text-sm">
@@ -60,6 +60,10 @@
           
           <!-- Atributos derivados (+3 por nodo) -->
           <div class="font-semibold text-green-700 mt-3 mb-2">Derivados (×3)</div>
+           <div class="flex justify-between">
+            <span>HP:</span>
+            <span class="font-bold">{{ hp }}</span>
+          </div>
           <div class="flex justify-between">
             <span>Poderío:</span>
             <span class="font-bold">{{ poderio }}</span>
@@ -130,7 +134,7 @@ import atributosData from "../../assets/atributos.json";
 import activasData from "../../assets/activas.json";
 import trasfondosData from "../../assets/trasfondos/trasfondos.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
-import { useArbolAttributes } from "../../domain/useArbolAttributes";
+import { useArbolAttributes, type ArbolNode } from "../../domain/useArbolAttributes";
 
 const box = ref<HTMLDivElement | null>(null);
 let renderer: THREE.WebGLRenderer | null = null;
@@ -145,6 +149,10 @@ const pointer = new THREE.Vector2();
 const clickables: THREE.Object3D[] = [];
 let hovered: THREE.Mesh | null = null;
 let selected: THREE.Mesh | null = null;
+
+// Declare circles and connections at component scope
+let circles: THREE.Mesh[] = [];
+let connections: THREE.Line[] = [];
 
 // Mouse interaction variables
 const mouse = new THREE.Vector2();
@@ -163,16 +171,21 @@ const characterLevel = computed({
 
 const maxNodes = computed(() => characterLevel.value * 2);
 
-// Define selectedNodes first before using it
-const selectedNodes = ref<Array<{
-  nodeId: number;
-  skillName: string;
-  type: string;
-  layer: number;
-  index: number;
-  description: string;
-  isTrasfondo?: boolean;
-}>>([]);
+// selectedNodes now reads directly from characterData.value.arbol (single source of truth)
+const selectedNodes = computed({
+  get: () => {
+    if (!characterData.value.arbol) return [];
+    try {
+      return JSON.parse(characterData.value.arbol);
+    } catch (error) {
+      console.error("Error parsing arbol data:", error);
+      return [];
+    }
+  },
+  set: (value) => {
+    characterData.value.arbol = JSON.stringify(value);
+  }
+});
 
 // Get trasfondo node IDs
 const trasfondoNodeIds = computed(() => {
@@ -187,7 +200,7 @@ const trasfondoNodeIds = computed(() => {
 
 // Filter selected nodes to separate trasfondo nodes from regular nodes
 const regularSelectedNodes = computed(() => 
-  selectedNodes.value.filter(node => !trasfondoNodeIds.value.includes(node.nodeId))
+  selectedNodes.value.filter((node: ArbolNode) => !trasfondoNodeIds.value.includes(node.nodeId))
 );
 
 const remainingNodes = computed(() => maxNodes.value - regularSelectedNodes.value.length);
@@ -195,8 +208,9 @@ const remainingNodes = computed(() => maxNodes.value - regularSelectedNodes.valu
 // Use arbol attributes composable to calculate stats
 const {
   cuerpo,
-  agilidad,
+  agilidad, 
   mente,
+  hp,
   rangoCritico,
   habilidadesExtra,
   limiteHabilidad,
@@ -211,17 +225,7 @@ const {
   punteria,
   puntosHabilidad,
   attributes
-} = useArbolAttributes(selectedNodes);
-
-// Watch attributes and update characterData
-watch(attributes, (newAttributes) => {
-  characterData.value.atributos = { ...newAttributes };
-}, { deep: true });
-
-// Watch selectedNodes and save to characterData.arbol
-watch(selectedNodes, (newNodes) => {
-  characterData.value.arbol = JSON.stringify(newNodes);
-}, { deep: true });
+} = useArbolAttributes(selectedNodes, characterLevel);
 
 function init() {
   const el = box.value!;
@@ -317,8 +321,7 @@ function init() {
     return sprite;
   }
 
-  let circles: THREE.Mesh[] = [];
-  let connections: THREE.Line[] = []; // Array to store all connections
+  // circles and connections are now declared at component scope
   const rSmall = 8; // circle radius - increased for better visibility
 
   // Helper function to get diminutivo from atributos or activas
@@ -722,7 +725,7 @@ function init() {
 
   // Restore visual selection state for loaded nodes
   function restoreSelectionState() {
-    selectedNodes.value.forEach(savedNode => {
+    selectedNodes.value.forEach((savedNode: ArbolNode) => {
       const mesh = circles.find(circle => circle.userData.nodeId === savedNode.nodeId);
       if (mesh) {
         mesh.userData.isSelected = true;
@@ -788,7 +791,7 @@ function onClick(event: MouseEvent) {
     if (object.userData.isSelected) {
       // Prevent deselecting trasfondo nodes
       if (isTrasfondoNode) {
-        console.warn(`No puedes deseleccionar un nodo de trasfondo`);
+        
         return;
       }
       
@@ -796,11 +799,8 @@ function onClick(event: MouseEvent) {
       object.userData.isSelected = false;
       (object.material as THREE.MeshStandardMaterial).color.setHex(object.userData.originalColor);
       
-      // Remove from selectedNodes array
-      const index = selectedNodes.value.findIndex(n => n.nodeId === object.userData.nodeId);
-      if (index !== -1) {
-        selectedNodes.value.splice(index, 1);
-      }
+      // Remove from selectedNodes array - use filter to trigger setter
+      selectedNodes.value = selectedNodes.value.filter((n: ArbolNode) => n.nodeId !== object.userData.nodeId);
       
       console.log(`Deselected skill: ${object.userData.skillName}`);
     } else {
@@ -815,8 +815,8 @@ function onClick(event: MouseEvent) {
       // Always use green selected color for all selected nodes
       (object.material as THREE.MeshStandardMaterial).color.setHex(object.userData.selectedColor);
       
-      // Add to selectedNodes array
-      selectedNodes.value.push({
+      // Add to selectedNodes array - create new array to trigger setter
+      selectedNodes.value = [...selectedNodes.value, {
         nodeId: object.userData.nodeId,
         skillName: object.userData.skillName,
         type: object.userData.type,
@@ -824,7 +824,7 @@ function onClick(event: MouseEvent) {
         index: object.userData.index,
         description: object.userData.description,
         isTrasfondo: isTrasfondoNode
-      });
+      }];
       
       console.log(`Selected skill: ${object.userData.skillName} (Layer ${object.userData.layer}, Index ${object.userData.index})`);
       console.log(`Puntos restantes: ${remainingNodes.value}`);
@@ -854,7 +854,7 @@ function showTooltip(event: MouseEvent, object: THREE.Mesh) {
   <strong>${object.userData.nodeId}</strong><br>
     <strong>${object.userData.skillName}</strong><br>
     <small>${object.userData.description}</small><br>
-    <em>Tipo: ${object.userData.type === 'circle' ? 'Círculo' : 'Cuadrado'}</em>
+    <em>Tipo: ${object.userData.type === 'circle' ? 'Pasiva' : 'Activa'}</em>
   `;
   
   tooltip.style.left = event.clientX + 10 + 'px';
@@ -931,15 +931,24 @@ function dispose() {
 // Watch for trasfondo changes and update selected nodes
 watch(() => characterData.value.trasfondo, (newTrasfondo, oldTrasfondo) => {
   if (newTrasfondo !== oldTrasfondo) {
-    // Reset the entire tree when trasfondo changes
-    // First, reset all visual states
+    console.log('🔄 [arbol.vue] Trasfondo cambió:', newTrasfondo);
+    
+    // Remove old trasfondo nodes (keep regular selections)
+    const regularNodes = selectedNodes.value.filter((n: ArbolNode) => !n.isTrasfondo);
+    
+    // Reset visual state for old trasfondo nodes
     circles.forEach(mesh => {
-      mesh.userData.isSelected = false;
-      (mesh.material as THREE.MeshBasicMaterial).color.setHex(mesh.userData.originalColor);
+      const wasTrasfondo = selectedNodes.value.find((n: ArbolNode) => 
+        n.nodeId === mesh.userData.nodeId && n.isTrasfondo
+      );
+      if (wasTrasfondo) {
+        mesh.userData.isSelected = false;
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(mesh.userData.originalColor);
+      }
     });
     
-    // Clear all selected nodes
-    selectedNodes.value = [];
+    // Set selectedNodes to only regular nodes first
+    selectedNodes.value = regularNodes;
     
     // Add new trasfondo nodes if a trasfondo is selected
     if (newTrasfondo) {
@@ -960,9 +969,11 @@ function addTrasfondoNodes() {
   
   if (!trasfondo) return;
   
+  const newNodes: ArbolNode[] = [];
+  
   trasfondo.atributos.forEach(nodeId => {
     // Check if node is already selected
-    if (!selectedNodes.value.find(n => n.nodeId === nodeId)) {
+    if (!selectedNodes.value.find((n: ArbolNode) => n.nodeId === nodeId)) {
       // Find node data from arbol.json
       const nodo = arbolData.arbol.nodos.find(n => n.id === nodeId);
       if (!nodo) return;
@@ -995,7 +1006,7 @@ function addTrasfondoNodes() {
       const skillName = getDiminutivo(nodo.atributo, nodo.shape);
       const description = getDescription(nodo.atributo, nodo.shape);
       
-      selectedNodes.value.push({
+      newNodes.push({
         nodeId: nodeId,
         skillName: skillName,
         type: nodo.shape === 'circle' ? 'circle' : 'square',
@@ -1006,11 +1017,16 @@ function addTrasfondoNodes() {
       });
     }
   });
+  
+  // Add all new nodes at once to trigger setter
+  if (newNodes.length > 0) {
+    selectedNodes.value = [...selectedNodes.value, ...newNodes];
+  }
 }
 
 // Function to update visual state of trasfondo nodes
 function updateTrasfondoVisuals() {
-  selectedNodes.value.forEach(savedNode => {
+  selectedNodes.value.forEach((savedNode: ArbolNode) => {
     if (savedNode.isTrasfondo) {
       const mesh = circles.find(circle => circle.userData.nodeId === savedNode.nodeId);
       if (mesh) {
@@ -1028,21 +1044,14 @@ onMounted(() => {
     // Load character data
     loadCharacterData();
     
-    // Load saved tree nodes if they exist
-    if (characterData.value.arbol) {
-      try {
-        const savedNodes = JSON.parse(characterData.value.arbol);
-        selectedNodes.value = savedNodes;
-      } catch (error) {
-        console.error("Error loading saved tree nodes:", error);
-      }
-    }
-    
-    // Add trasfondo nodes if trasfondo is selected
+    // If trasfondo exists, ensure nodes are added
     if (characterData.value.trasfondo) {
+      console.log('➕ Trasfondo detectado, verificando nodos:', characterData.value.trasfondo);
+      // Add trasfondo nodes if they don't exist
       addTrasfondoNodes();
     }
     
+    // Initialize the 3D scene (restoreSelectionState is called at the end of init)
     init();
     animate();
   }

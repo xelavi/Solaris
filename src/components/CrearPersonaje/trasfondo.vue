@@ -46,10 +46,35 @@
           class="flex-1 bg-white border-2 border-blue-300 rounded-lg p-4 text-center"
         >
           <div class="text-2xl font-bold text-blue-600">
-            +3
-          </div>
-          <div class="text-sm text-blue-700 font-medium">
             {{ getNombreAtributo(atributoId) }}
+          </div>
+          <div class="text-sm text-blue-500 font-medium">
+            Nodo del árbol
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mostrar atributos calculados del personaje -->
+      <div v-if="characterData.atributos" class="mt-4 p-4 bg-white border-2 border-blue-200 rounded-lg">
+        <h5 class="text-sm font-semibold text-blue-700 mb-2">Atributos actuales del personaje:</h5>
+        <div class="grid grid-cols-3 gap-2 text-sm">
+          <div class="text-blue-600">
+            <span class="font-semibold">Cuerpo:</span> {{ characterData.atributos.cuerpo }}
+          </div>
+          <div class="text-blue-600">
+            <span class="font-semibold">Agilidad:</span> {{ characterData.atributos.agilidad }}
+          </div>
+          <div class="text-blue-600">
+            <span class="font-semibold">Mente:</span> {{ characterData.atributos.mente }}
+          </div>
+          <div class="text-blue-600">
+            <span class="font-semibold">HP:</span> {{ characterData.atributos.hp }}
+          </div>
+          <div class="text-blue-600">
+            <span class="font-semibold">Puntos Hab:</span> {{ characterData.atributos.puntosHabilidad }}
+          </div>
+          <div class="text-blue-600">
+            <span class="font-semibold">Límite Hab:</span> {{ characterData.atributos.limiteHabilidad }}
           </div>
         </div>
       </div>
@@ -177,8 +202,12 @@ watch(habilidadesSeleccionadas, (newValue) => {
 }, { deep: true });
 
 // Resetear habilidades cuando cambia el trasfondo
-watch(trasfondoActual, () => {
-  habilidadesSeleccionadas.value = [];
+watch(trasfondoActual, (newTrasfondo, oldTrasfondo) => {
+  // Solo resetear si realmente cambió el trasfondo (no en el primer load)
+  if (oldTrasfondo && newTrasfondo?.nombre !== oldTrasfondo?.nombre) {
+    habilidadesSeleccionadas.value = [];
+    characterData.value.trasfondo_habilidades = [];
+  }
 });
 
 function toggleHabilidad(habilidad) {

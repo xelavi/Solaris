@@ -16,7 +16,7 @@
     <p v-if="selectedOficio" style="margin-top: 8px"></p>
   </div>
 
-  <div v-if="oficioActual" class="space-y-8">
+  <div v-if="oficioActual && datosCompletosCargados" class="space-y-8">
     <!-- Descripción -->
     <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
       <h3 class="text-xl font-bold text-blue-700 mb-3">
@@ -39,12 +39,12 @@
           @click="toggleHabilidad(habilidad)"
           :class="[
             'text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2',
-            habilidadesSeleccionadas.includes(habilidad)
+            estaHabilidadSeleccionada(habilidad)
               ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
               : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50',
           ]"
           :disabled="
-            !habilidadesSeleccionadas.includes(habilidad) &&
+            !estaHabilidadSeleccionada(habilidad) &&
             habilidadesSeleccionadas.length >= oficioActual.numHabilidades
           "
         >
@@ -52,13 +52,13 @@
             <span
               :class="[
                 'flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0',
-                habilidadesSeleccionadas.includes(habilidad)
+                estaHabilidadSeleccionada(habilidad)
                   ? 'bg-white border-white'
                   : 'bg-transparent border-blue-300',
               ]"
             >
               <span
-                v-if="habilidadesSeleccionadas.includes(habilidad)"
+                v-if="estaHabilidadSeleccionada(habilidad)"
                 class="text-blue-500 text-xs"
                 >✓</span
               >
@@ -76,11 +76,10 @@
     <!-- Dotes -->
     <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
       <h4 class="text-lg font-semibold text-blue-700 mb-4">
-        Dotes de Clase (Elige {{ oficioActual.numDotes }})
+        Dotes de Clase (1 por nivel - Nivel {{ characterData.nivel }})
       </h4>
       <p class="text-sm text-blue-600 mb-6">
-        Seleccionadas: {{ dotesSeleccionadas.length }} /
-        {{ oficioActual.numDotes }}
+        Seleccionadas: {{ dotesSeleccionadas.length }} / {{ oficioActual.numDotes }}
       </p>
 
       <!-- Dotes Normales -->
@@ -111,13 +110,13 @@
               <button
                 @click="toggleDote(dote)"
                 :disabled="
-                  (!dotesSeleccionadas.includes(dote.id) &&
+                  (!estaDoteSeleccionada(dote.id) &&
                     dotesSeleccionadas.length >= oficioActual.numDotes) ||
                   !puedeSeleccionarDote(dote)
                 "
                 :class="[
                   'w-full text-left p-4 rounded-lg transition-all duration-200 border-2',
-                  dotesSeleccionadas.includes(dote.id)
+                  estaDoteSeleccionada(dote.id)
                     ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
                     : puedeSeleccionarDote(dote)
                     ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
@@ -129,13 +128,13 @@
                   <span
                     :class="[
                       'flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5',
-                      dotesSeleccionadas.includes(dote.id)
+                      estaDoteSeleccionada(dote.id)
                         ? 'bg-white border-white'
                         : 'bg-transparent border-blue-300',
                     ]"
                   >
                     <span
-                      v-if="dotesSeleccionadas.includes(dote.id)"
+                      v-if="estaDoteSeleccionada(dote.id)"
                       class="text-blue-500 text-xs"
                       >✓</span
                     >
@@ -145,7 +144,7 @@
                     <p
                       :class="[
                         'text-sm',
-                        dotesSeleccionadas.includes(dote.id)
+                        estaDoteSeleccionada(dote.id)
                           ? 'text-blue-100'
                           : 'text-blue-600',
                       ]"
@@ -164,16 +163,18 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import oficiosData from "../../assets/oficios/oficios.json";
 import habilidadesData from "../../assets/habilidades.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
-const { characterData, loadCharacterData } = useCharacterCreation();
+const { characterData, loadCharacterData, saveCharacterData } = useCharacterCreation();
 
 const selectedOficio = ref("");
 const dotesSeleccionadas = ref([]);
 const habilidadesSeleccionadas = ref([]);
+const datosCompletosCargados = ref(false);
+const estaCargandoDatos = ref(true);
 
 // Crear un mapa de ID a nombre de habilidad
 const habilidadesMap = computed(() => {
@@ -192,7 +193,7 @@ const oficiosDetallados = computed(() => {
       habilidadesMap.value[id] || `Habilidad ${id}`
     ),
     numHabilidades: oficio.habilidades.length,
-    numDotes: 3, // Puedes ajustar esto según necesites
+    numDotes: characterData.value.nivel || 1, // 1 dote por nivel de personaje
     // Organizar dotes por requisitos (árbol de dependencias)
     gruposDotes: organizarDotesEnGrupos(oficio.dotes)
   }));
@@ -222,28 +223,72 @@ const oficioActual = computed(() => {
   return oficiosDetallados.value.find((o) => o.nombre === selectedOficio.value);
 });
 
+// Computed para verificar dotes seleccionadas de manera reactiva
+const dotesSeleccionadasSet = computed(() => {
+  return new Set(dotesSeleccionadas.value);
+});
+
+// Computed para verificar habilidades seleccionadas de manera reactiva
+const habilidadesSeleccionadasSet = computed(() => {
+  return new Set(habilidadesSeleccionadas.value);
+});
+
 // Cargar datos al montar
-onMounted(() => {
-  loadCharacterData();
+onMounted(async () => {
+  estaCargandoDatos.value = true;
+  await loadCharacterData();
   selectedOficio.value = characterData.value.oficio || "";
-  habilidadesSeleccionadas.value = characterData.value.oficio_habilidades || [];
+  habilidadesSeleccionadas.value = [...(characterData.value.oficio_habilidades || [])];
+  dotesSeleccionadas.value = [...(characterData.value.oficio_dotes || [])];
+  datosCompletosCargados.value = true;
+  console.log("Cargado oficio:", selectedOficio.value);
+  console.log("Cargado habilidades:", habilidadesSeleccionadas.value);
+  console.log("Cargado dotes:", dotesSeleccionadas.value);
+  await nextTick();
+  estaCargandoDatos.value = false;
 });
 
 // Guardar oficio seleccionado
-watch(selectedOficio, (newValue) => {
+watch(selectedOficio, (newValue, oldValue) => {
+  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+  
   characterData.value.oficio = newValue;
+  // Resetear habilidades y dotes solo si cambió de un oficio a otro
+  if (oldValue && oldValue !== newValue) {
+    habilidadesSeleccionadas.value = [];
+    dotesSeleccionadas.value = [];
+    characterData.value.oficio_habilidades = [];
+    characterData.value.oficio_dotes = [];
+  }
+  saveCharacterData();
+  console.log("Guardado oficio:", newValue);
 });
 
 // Guardar habilidades seleccionadas
 watch(habilidadesSeleccionadas, (newValue) => {
+  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+  
   characterData.value.oficio_habilidades = [...newValue];
+  saveCharacterData();
+  console.log("Guardado habilidades:", newValue);
 }, { deep: true });
 
-// Resetear selecciones cuando cambia el oficio
-watch(oficioActual, () => {
-  habilidadesSeleccionadas.value = [];
-  dotesSeleccionadas.value = [];
-});
+// Guardar dotes seleccionadas
+watch(dotesSeleccionadas, (newValue) => {
+  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+  
+  characterData.value.oficio_dotes = [...newValue];
+  saveCharacterData();
+  console.log("Guardado dotes:", newValue);
+}, { deep: true });
+
+function estaHabilidadSeleccionada(habilidad) {
+  return habilidadesSeleccionadasSet.value.has(habilidad);
+}
+
+function estaDoteSeleccionada(doteId) {
+  return dotesSeleccionadasSet.value.has(doteId);
+}
 
 function toggleHabilidad(habilidad) {
   const idx = habilidadesSeleccionadas.value.indexOf(habilidad);

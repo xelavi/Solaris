@@ -16,7 +16,7 @@
     <p v-if="selectedEstiloMarcial" style="margin-top: 8px"></p>
   </div>
 
-  <div v-if="estiloMarcialActual" class="space-y-8">
+  <div v-if="estiloMarcialActual && datosCompletosCargados" class="space-y-8">
     <!-- Descripción -->
     <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
       <h3 class="text-xl font-bold text-blue-700 mb-3">
@@ -67,13 +67,13 @@
               <button
                 @click="toggleDote(dote)"
                 :disabled="
-                  (!dotesSeleccionadas.includes(dote.id) &&
+                  (!estaDoteSeleccionada(dote.id) &&
                     dotesSeleccionadas.length >= estiloMarcialActual.numDotes) ||
                   !puedeSeleccionarDote(dote)
                 "
                 :class="[
                   'w-full text-left p-4 rounded-lg transition-all duration-200 border-2',
-                  dotesSeleccionadas.includes(dote.id)
+                  estaDoteSeleccionada(dote.id)
                     ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
                     : puedeSeleccionarDote(dote)
                     ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
@@ -85,13 +85,13 @@
                   <span
                     :class="[
                       'flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5',
-                      dotesSeleccionadas.includes(dote.id)
+                      estaDoteSeleccionada(dote.id)
                         ? 'bg-white border-white'
                         : 'bg-transparent border-blue-300',
                     ]"
                   >
                     <span
-                      v-if="dotesSeleccionadas.includes(dote.id)"
+                      v-if="estaDoteSeleccionada(dote.id)"
                       class="text-blue-500 text-xs"
                       >✓</span
                     >
@@ -127,15 +127,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import estiloMarcialData from "../../assets/estiloMarcial/estiloMarcial.json";
 import activasData from "../../assets/activas.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
-const { characterData, loadCharacterData } = useCharacterCreation();
+const { characterData, loadCharacterData, saveCharacterData } = useCharacterCreation();
 
 const selectedEstiloMarcial = ref("");
 const dotesSeleccionadas = ref([]);
+const datosCompletosCargados = ref(false);
+const estaCargandoDatos = ref(true);
 
 // Cargar los datos desde el JSON
 const estiloMarcials = estiloMarcialData.estiloMarcial;
@@ -152,21 +154,47 @@ const activasMap = computed(() => {
 
 const habilidadesSeleccionadas = ref([]);
 
+// Computed para verificar dotes seleccionadas de manera reactiva
+const dotesSeleccionadasSet = computed(() => {
+  return new Set(dotesSeleccionadas.value);
+});
+
 // Cargar datos al montar el componente
-onMounted(() => {
-  loadCharacterData();
+onMounted(async () => {
+  estaCargandoDatos.value = true;
+  await loadCharacterData();
   selectedEstiloMarcial.value = characterData.value.estilo_marcial || "";
-  dotesSeleccionadas.value = characterData.value.estilo_marcial_dotes || [];
+  dotesSeleccionadas.value = [...(characterData.value.estilo_marcial_dotes || [])];
+  
+  datosCompletosCargados.value = true;
+  console.log("Cargado estilo marcial:", selectedEstiloMarcial.value);
+  console.log("Cargado dotes:", dotesSeleccionadas.value);
+  // Dar tiempo para que Vue actualice antes de activar los watchers
+  await nextTick();
+  estaCargandoDatos.value = false;
 });
 
 // Watcher para guardar el estilo marcial seleccionado
-watch(selectedEstiloMarcial, (newValue) => {
+watch(selectedEstiloMarcial, (newValue, oldValue) => {
+  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+  
   characterData.value.estilo_marcial = newValue;
+  // Resetear dotes solo si cambió de un estilo a otro (no en la carga inicial)
+  if (oldValue && oldValue !== newValue) {
+    dotesSeleccionadas.value = [];
+    characterData.value.estilo_marcial_dotes = [];
+  }
+  saveCharacterData();
+  console.log("Guardado estilo marcial:", newValue);
 });
 
 // Watcher para guardar las dotes seleccionadas
 watch(dotesSeleccionadas, (newValue) => {
+  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+  console.log("Dotes seleccionadas cambiaron:", newValue);
   characterData.value.estilo_marcial_dotes = [...newValue];
+  saveCharacterData();
+  console.log("Guardado dotes:", newValue);
 }, { deep: true });
 
 const estiloMarcialActual = computed(() => {
@@ -221,7 +249,7 @@ const estiloMarcialActual = computed(() => {
   return {
     nombre: estilo.nombre,
     descripcion: estilo.descripcion,
-    numDotes: 3, // Puedes ajustar esto según necesites
+    numDotes: characterData.value.nivel || 1,
     gruposDotes,
   };
 });
@@ -258,6 +286,10 @@ function puedeSeleccionarDote(dote) {
   return dotesSeleccionadas.value.includes(dote.requiere);
 }
 
+function estaDoteSeleccionada(doteId) {
+  return dotesSeleccionadasSet.value.has(doteId);
+}
+
 function getNombreDote(doteId) {
   for (const grupo of estiloMarcialActual.value?.gruposDotes || []) {
     for (const dote of grupo.dotes) {
@@ -282,9 +314,4 @@ function removerDotesDependientes(dote) {
     });
   });
 }
-
-watch(selectedEstiloMarcial, () => {
-  habilidadesSeleccionadas.value = [];
-  dotesSeleccionadas.value = [];
-});
 </script>

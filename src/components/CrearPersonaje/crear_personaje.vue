@@ -95,6 +95,28 @@
               >
                 Siguiente →
               </button>
+
+              <div class="border-l-2 border-gray-300 h-10 mx-2"></div>
+
+              <button
+                @click="debugDatos"
+                class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-yellow-500 text-white hover:bg-yellow-600 text-sm"
+              >
+                � Debug
+              </button>
+
+              <div class="px-6 py-3 text-green-500 font-semibold flex items-center gap-2">
+                <span>✓</span>
+                <span>Guardado automático</span>
+              </div>
+
+              <button
+                @click="verFicha"
+                class="px-6 py-3 rounded-lg font-semibold transition-all duration-200 bg-purple-500 text-white hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-2"
+              >
+                <span>📋</span>
+                <span>Ver Ficha</span>
+              </button>
             </div>
           </div>
         </div>
@@ -104,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, inject, watch } from 'vue'
 import general from './general.vue'
 import trasfondo from './trasfondo.vue' 
 import oficio from './oficio.vue' 
@@ -112,6 +134,7 @@ import estilo_marcial from './estilo_marcial.vue'
 import arbol from './arbol.vue'
 import habilidades from './habilidades.vue'
 import equipo from './equipo.vue'
+import { useCharacterCreation } from '../../domain/useCharacterCreation'
 
 const currentStep = ref(0)
 
@@ -124,6 +147,181 @@ const steps = [
   'Habilidades',
   'Equipo'
 ]
+
+const { characterData, saveCharacterData, loadCharacterData, getCurrentCharacter } = useCharacterCreation()
+
+// Inject navigation function from App.vue
+const navigateToFicha = inject<(name: string) => void>('navigateToFicha')
+
+function verFicha() {
+  const character = getCurrentCharacter()
+  if (!character || !character.name) {
+    alert('⚠️ Por favor, guarda el personaje primero antes de ver la ficha')
+    return
+  }
+  
+  // Verificar que hay datos guardados en localStorage
+  const personajeGuardado = localStorage.getItem('personaje_guardado')
+  if (!personajeGuardado) {
+    alert('⚠️ No hay personaje guardado. Por favor, guarda el personaje primero.')
+    return
+  }
+  
+  // Navegar a la ficha
+  if (navigateToFicha) {
+    navigateToFicha(character.name)
+  }
+}
+
+function debugDatos() {
+  console.log('=== DEBUG DATOS ===')
+  console.log('characterData.value:', characterData.value)
+  const character = getCurrentCharacter()
+  console.log('character from partida:', character)
+  console.log('character keys:', character ? Object.keys(character) : 'no character')
+  console.log('character.name:', character?.name)
+  console.log('character.nivel:', character?.nivel)
+  console.log('character.oficio:', character?.oficio)
+  console.log('character.trasfondo:', character?.trasfondo)
+  console.log('character.estilo_marcial:', character?.estilo_marcial)
+  console.log('character.arbol:', character?.arbol)
+  console.log('character.atributos:', character?.atributos)
+  console.log('==================')
+}
+
+function guardarPersonaje() {
+  try {
+    // Usar directamente characterData que contiene todos los datos actualizados
+    console.log('💾 Guardando personaje con characterData:', characterData.value)
+    
+    if (!characterData.value.nombre) {
+      console.log('⚠️ No hay nombre de personaje, no se guarda')
+      return
+    }
+    
+    // Guardar todos los datos de characterData directamente
+    const datosParaGuardar = {
+      nombre: characterData.value.nombre,
+      nivel: characterData.value.nivel,
+      oficio: characterData.value.oficio,
+      oficio_habilidades: characterData.value.oficio_habilidades,
+      oficio_dotes: characterData.value.oficio_dotes,
+      estilo_marcial: characterData.value.estilo_marcial,
+      estilo_marcial_dotes: characterData.value.estilo_marcial_dotes,
+      trasfondo: characterData.value.trasfondo,
+      trasfondo_habilidades: characterData.value.trasfondo_habilidades,
+      raza: characterData.value.raza,
+      arbol: characterData.value.arbol,
+      habilidades: characterData.value.habilidades,
+      armas: characterData.value.armas,
+      armaduras: characterData.value.armaduras,
+      atributos: characterData.value.atributos,
+      fechaGuardado: new Date().toISOString()
+    }
+    
+    console.log('✅ Datos preparados para guardar:', datosParaGuardar)
+    
+    // Guardar en localStorage
+    localStorage.setItem('personaje_guardado', JSON.stringify(datosParaGuardar, null, 2))
+    
+    console.log('✅ Guardado en localStorage completado')
+  } catch (error) {
+    console.error('❌ Error al guardar personaje:', error)
+  }
+}
+
+onMounted(() => {
+  // Cargar los datos del personaje en creación
+  loadCharacterData()
+  
+  // Verificar si hay personaje guardado en localStorage
+  const personajeGuardado = localStorage.getItem('personaje_guardado')
+  if (personajeGuardado) {
+    try {
+      const datos = JSON.parse(personajeGuardado)
+      console.log('Personaje guardado encontrado:', datos)
+      console.log('Fecha de guardado:', datos.fechaGuardado)
+    } catch (error) {
+      console.error('Error al cargar personaje guardado:', error)
+    }
+  } else {
+    console.log('No hay personaje guardado en localStorage')
+  }
+  
+  // Después de cargar, configurar el guardado automático
+  setTimeout(() => {
+    isFirstLoad = false
+  }, 1000)
+})
+
+// Watcher para guardar automáticamente en localStorage cuando cambien los datos del personaje
+let isFirstLoad = true
+let saveTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Vigilar cambios en characterData para guardar en localStorage
+watch(() => {
+  // Forzar la carga de datos del character al characterData antes de vigilar
+  const character = getCurrentCharacter()
+  if (character) {
+    // Sincronizar characterData con los datos del character
+    return JSON.stringify({
+      nombre: character.name,
+      nivel: character.nivel,
+      oficio: character.oficio,
+      oficio_habilidades: character.oficio_habilidades,
+      oficio_dotes: character.oficio_dotes,
+      estilo_marcial: character.estilo_marcial,
+      estilo_marcial_dotes: character.estilo_marcial_dotes,
+      trasfondo: character.trasfondo,
+      trasfondo_habilidades: character.trasfondo_habilidades,
+      raza: character.raza,
+      arbol: character.arbol,
+      habilidades: character.habilidades,
+      armas: character.armas,
+      armaduras: character.armaduras,
+      atributos: character.atributos
+    })
+  }
+  return JSON.stringify(characterData.value)
+}, () => {
+  if (isFirstLoad) return
+  
+  console.log('💾 Detectado cambio, guardando en localStorage...')
+  
+  // Cancelar el timeout anterior si existe
+  if (saveTimeout) {
+    clearTimeout(saveTimeout)
+  }
+  
+  // Usar debounce para evitar guardados excesivos
+  saveTimeout = setTimeout(() => {
+    const character = getCurrentCharacter()
+    if (character && character.name) {
+      // Actualizar characterData con los datos más recientes del character
+      characterData.value.nombre = character.name
+      characterData.value.nivel = character.nivel
+      characterData.value.oficio = character.oficio
+      characterData.value.oficio_habilidades = character.oficio_habilidades || []
+      characterData.value.oficio_dotes = character.oficio_dotes || []
+      characterData.value.estilo_marcial = character.estilo_marcial
+      characterData.value.estilo_marcial_dotes = character.estilo_marcial_dotes || []
+      characterData.value.trasfondo = character.trasfondo
+      characterData.value.trasfondo_habilidades = character.trasfondo_habilidades || []
+      characterData.value.raza = character.raza
+      characterData.value.arbol = character.arbol
+      characterData.value.habilidades = character.habilidades
+      characterData.value.armas = character.armas || []
+      characterData.value.armaduras = character.armaduras || []
+      characterData.value.atributos = character.atributos
+      
+      guardarPersonaje()
+    } else {
+      console.log('⚠️ No se guarda porque no hay nombre todavía')
+    }
+  }, 500)
+})
+
+
 
 
 </script>

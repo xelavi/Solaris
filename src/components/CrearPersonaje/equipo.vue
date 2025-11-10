@@ -1,9 +1,4 @@
 <template>
-
-<h2 class="text-3xl font-bold text-blue-600 mb-6 pb-4 border-b border-blue-200">
-        Equipo
-      </h2>
-      
       <div class="space-y-8">
         <!-- Tabla de Armas -->
         <div>
@@ -15,20 +10,18 @@
           </div>
 
           <div class="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden">
-            <!-- Header de la tabla de armas -->
+              <!-- Header de la tabla de armas -->
             <div class="bg-blue-600 text-white grid grid-cols-12 gap-3 px-4 py-3 font-semibold text-sm">
               <div class="col-span-1 text-center">Sel.</div>
               <div class="col-span-2">Arma</div>
+              <div class="col-span-1 text-center">Pen.</div>
               <div class="col-span-1 text-center">Lac.</div>
-              <div class="col-span-1 text-center">Cor.</div>
               <div class="col-span-1 text-center">Con.</div>
-              <div class="col-span-3">Etiquetas</div>
+              <div class="col-span-3">Categoría</div>
               <div class="col-span-1 text-center">Crítico</div>
               <div class="col-span-1 text-center">Rango Crít.</div>
               <div class="col-span-1 text-center">Distancia</div>
-            </div>
-
-            <!-- Filas de armas -->
+            </div>            <!-- Filas de armas -->
             <div class="divide-y divide-blue-200 max-h-96 overflow-y-auto">
               <div 
                 v-for="arma in armas" 
@@ -58,58 +51,52 @@
                   <div class="font-semibold text-blue-700">{{ arma.nombre }}</div>
                 </div>
 
-                <!-- Daño Lacerante -->
+                <!-- Daño Penetrante -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]">
-                    {{ arma.danoLacerante }}
+                    {{ arma.penetrante }}
                   </div>
                 </div>
 
-                <!-- Daño Cortante -->
+                <!-- Daño Lacerante -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]">
-                    {{ arma.danoCortante }}
+                    {{ arma.lacerante }}
                   </div>
                 </div>
 
                 <!-- Daño Contundente -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]">
-                    {{ arma.danoContundente }}
+                    {{ arma.contundente }}
                   </div>
                 </div>
 
-                <!-- Etiquetas -->
+                <!-- Categoría -->
                 <div class="col-span-3">
-                  <div class="flex flex-wrap gap-1">
-                    <span 
-                      v-for="etiqueta in arma.etiquetas" 
-                      :key="etiqueta"
-                      class="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium"
-                    >
-                      {{ etiqueta }}
-                    </span>
+                  <div class="text-sm text-blue-700">
+                    {{ arma.categoria }}
                   </div>
                 </div>
 
                 <!-- Crítico -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-bold text-sm">
-                    x{{ arma.critico }}
+                    {{ arma.critico }}
                   </div>
                 </div>
 
                 <!-- Rango Crítico -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm">
-                    {{ arma.rangoCritico }}
+                    {{ formatRangoCritico(arma.rango_critico) }}
                   </div>
                 </div>
 
                 <!-- Distancia -->
                 <div class="col-span-1 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm">
-                    {{ arma.distancia }}
+                    {{ formatDistancia(arma.distancia_min, arma.distancia_max) }}
                   </div>
                 </div>
               </div>
@@ -131,10 +118,10 @@
             <div class="bg-blue-600 text-white grid grid-cols-12 gap-3 px-4 py-3 font-semibold text-sm">
               <div class="col-span-1 text-center">Sel.</div>
               <div class="col-span-3">Armadura</div>
+              <div class="col-span-2 text-center">Pen.</div>
               <div class="col-span-2 text-center">Lac.</div>
-              <div class="col-span-2 text-center">Cor.</div>
               <div class="col-span-2 text-center">Con.</div>
-              <div class="col-span-2">Etiquetas</div>
+              <div class="col-span-2">Categoría</div>
             </div>
 
             <!-- Filas de armaduras -->
@@ -167,37 +154,31 @@
                   <div class="font-semibold text-blue-700">{{ armadura.nombre }}</div>
                 </div>
 
-                <!-- Daño Lacerante -->
+                <!-- Daño Penetrante -->
                 <div class="col-span-2 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]">
-                    {{ armadura.danoLacerante }}
+                    {{ armadura.penetrante }}
                   </div>
                 </div>
 
-                <!-- Daño Cortante -->
+                <!-- Daño Lacerante -->
                 <div class="col-span-2 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]">
-                    {{ armadura.danoCortante }}
+                    {{ armadura.lacerante }}
                   </div>
                 </div>
 
                 <!-- Daño Contundente -->
                 <div class="col-span-2 text-center">
                   <div class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]">
-                    {{ armadura.danoContundente }}
+                    {{ armadura.contundente }}
                   </div>
                 </div>
 
-                <!-- Etiquetas -->
+                <!-- Categoría -->
                 <div class="col-span-2">
-                  <div class="flex flex-wrap gap-1">
-                    <span 
-                      v-for="etiqueta in armadura.etiquetas" 
-                      :key="etiqueta"
-                      class="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium"
-                    >
-                      {{ etiqueta }}
-                    </span>
+                  <div class="text-sm text-blue-700">
+                    {{ armadura.categoria }}
                   </div>
                 </div>
               </div>
@@ -208,188 +189,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-const armas = ref([
-            {
-              id: 1,
-              nombre: 'Espada Larga',
-              danoLacerante: 4,
-              danoCortante: 8,
-              danoContundente: 0,
-              etiquetas: ['Versátil', 'Militar'],
-              critico: 2,
-              rangoCritico: '19/20',
-              distancia: 0
-            },
-            {
-              id: 2,
-              nombre: 'Daga',
-              danoLacerante: 2,
-              danoCortante: 4,
-              danoContundente: 0,
-              etiquetas: ['Ligera', 'Arrojadiza', 'Simple'],
-              critico: 2,
-              rangoCritico: '19/20',
-              distancia: 10
-            },
-            {
-              id: 3,
-              nombre: 'Hacha de Batalla',
-              danoLacerante: 0,
-              danoCortante: 12,
-              danoContundente: 0,
-              etiquetas: ['A Dos Manos', 'Hacha', 'Militar'],
-              critico: 3,
-              rangoCritico: '20',
-              distancia: 0
-            },
-            {
-              id: 4,
-              nombre: 'Martillo de Guerra',
-              danoLacerante: 0,
-              danoCortante: 0,
-              danoContundente: 10,
-              etiquetas: ['Versátil', 'Contundente', 'Militar'],
-              critico: 3,
-              rangoCritico: '20',
-              distancia: 0
-            },
-            {
-              id: 5,
-              nombre: 'Arco Largo',
-              danoLacerante: 8,
-              danoCortante: 0,
-              danoContundente: 0,
-              etiquetas: ['A Dos Manos', 'Arco', 'Militar'],
-              critico: 3,
-              rangoCritico: '20',
-              distancia: 100
-            },
-            {
-              id: 6,
-              nombre: 'Lanza',
-              danoLacerante: 6,
-              danoCortante: 0,
-              danoContundente: 0,
-              etiquetas: ['Enastada', 'Arrojadiza', 'Simple'],
-              critico: 3,
-              rangoCritico: '20',
-              distancia: 20
-            },
-            {
-              id: 7,
-              nombre: 'Escudo',
-              danoLacerante: 0,
-              danoCortante: 0,
-              danoContundente: 4,
-              etiquetas: ['Escudo', 'Defensivo'],
-              critico: 2,
-              rangoCritico: '20',
-              distancia: 0
-            },
-            {
-              id: 8,
-              nombre: 'Espada Corta',
-              danoLacerante: 3,
-              danoCortante: 6,
-              danoContundente: 0,
-              etiquetas: ['Ligera', 'Perforante', 'Militar'],
-              critico: 2,
-              rangoCritico: '19/20',
-              distancia: 0
-            },
-            {
-              id: 9,
-              nombre: 'Alabarda',
-              danoLacerante: 4,
-              danoCortante: 8,
-              danoContundente: 4,
-              etiquetas: ['A Dos Manos', 'Enastada', 'Pesada', 'Militar'],
-              critico: 3,
-              rangoCritico: '20',
-              distancia: 0
-            },
-            {
-              id: 10,
-              nombre: 'Ballesta Pesada',
-              danoLacerante: 10,
-              danoCortante: 0,
-              danoContundente: 0,
-              etiquetas: ['A Dos Manos', 'Ballesta', 'Pesada'],
-              critico: 2,
-              rangoCritico: '19/20',
-              distancia: 120
-            }
-          ]);
-const armaduras = ref([
-            {
-              id: 1,
-              nombre: 'Armadura de Cuero',
-              danoLacerante: 2,
-              danoCortante: 2,
-              danoContundente: 0,
-              etiquetas: ['Ligera']
-            },
-            {
-              id: 2,
-              nombre: 'Cota de Mallas',
-              danoLacerante: 5,
-              danoCortante: 6,
-              danoContundente: 3,
-              etiquetas: ['Media', 'Metal']
-            },
-            {
-              id: 3,
-              nombre: 'Armadura de Placas',
-              danoLacerante: 8,
-              danoCortante: 8,
-              danoContundente: 6,
-              etiquetas: ['Pesada', 'Metal']
-            },
-            {
-              id: 4,
-              nombre: 'Armadura Acolchada',
-              danoLacerante: 1,
-              danoCortante: 1,
-              danoContundente: 2,
-              etiquetas: ['Ligera', 'Tela']
-            },
-            {
-              id: 5,
-              nombre: 'Cota de Escamas',
-              danoLacerante: 4,
-              danoCortante: 5,
-              danoContundente: 2,
-              etiquetas: ['Media', 'Metal']
-            },
-            {
-              id: 6,
-              nombre: 'Coraza',
-              danoLacerante: 6,
-              danoCortante: 6,
-              danoContundente: 4,
-              etiquetas: ['Media', 'Metal']
-            },
-            {
-              id: 7,
-              nombre: 'Armadura de Cuero Tachonado',
-              danoLacerante: 3,
-              danoCortante: 3,
-              danoContundente: 1,
-              etiquetas: ['Ligera', 'Reforzada']
-            },
-            {
-              id: 8,
-              nombre: 'Armadura Completa',
-              danoLacerante: 10,
-              danoCortante: 10,
-              danoContundente: 8,
-              etiquetas: ['Pesada', 'Metal', 'Completa']
-            }
-          ]);
+import { ref, watch, onMounted } from 'vue'
+import armasData from '../../assets/armas.json'
+import armadurasData from '../../assets/armaduras.json'
+import { useCharacterCreation } from '../../domain/useCharacterCreation'
 
+const armas = ref(armasData.armas)
+const armaduras = ref(armadurasData.armaduras)
+
+// Use character creation composable
+const { characterData, loadCharacterData } = useCharacterCreation()
+
+// Use characterData's armas and armaduras directly
 const armasSeleccionadas = ref<number[]>([]);
 const armadurasSeleccionadas = ref<number[]>([]);
+
+// Load character data on mount
+onMounted(() => {
+  loadCharacterData()
+  // Initialize local refs with characterData values
+  armasSeleccionadas.value = [...characterData.value.armas]
+  armadurasSeleccionadas.value = [...characterData.value.armaduras]
+})
+
+// Watch local refs and sync with characterData
+watch(armasSeleccionadas, (newValue) => {
+  characterData.value.armas = [...newValue]
+}, { deep: true })
+
+watch(armadurasSeleccionadas, (newValue) => {
+  characterData.value.armaduras = [...newValue]
+}, { deep: true })
+
+function formatRangoCritico(rango: string | null): string {
+  if (rango === null) {
+    return '24'
+  }
+  return rango
+}
+
+function formatDistancia(min: number | null, max: number | null): string {
+  if (min === null && max === null) {
+    return '-'
+  }
+  if (min !== null && max !== null) {
+    return `${min} | ${max}`
+  }
+  if (min !== null) {
+    return `${min}`
+  }
+  if (max !== null) {
+    return `${max}`
+  }
+  return '-'
+}
+
 function toggleArma(armaId: number) {
     const index = armasSeleccionadas.value.indexOf(armaId);
     if (index === -1) {

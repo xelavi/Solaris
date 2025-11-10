@@ -5,14 +5,14 @@
             "nombre": "Cuerpo",
             "diminutivo": "B",
             "descripcion": "Determina la potencia física, la resistencia y la salud general.",
-            "tipo": 1
+            "tipo": 0
         },
         {
             "id": 2,
             "nombre": "Agilidad",
             "diminutivo": "A",
             "descripcion": "Mide la destreza, reflejos y coordinación.",
-            "tipo": 1
+            "tipo": 0
         
         },
         {
@@ -20,42 +20,42 @@
             "nombre": "Mente",
             "diminutivo": "MIND",
             "descripcion": "Indica la capacidad cognitiva y el enfoque mental.",
-            "tipo": 1
+            "tipo": 0
         },
         {
             "id": 4,
             "nombre": "Poderío",
             "diminutivo": "DL",
             "descripcion": "Determina la potencia física y la capacidad para realizar tareas que requieren esfuerzo.",
-            "tipo": 2
+            "tipo": 1
         },
         {
             "id": 5,
             "nombre": "Movimiento",
             "diminutivo": "M",
             "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
-            "tipo": 2
+            "tipo": 1
         },
         {
             "id": 6,
             "nombre": "Resistencia",
             "diminutivo": "R",
             "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
-            "tipo": 2
+            "tipo": 1
         },
         {
             "id": 7,
             "nombre": "HP",
             "diminutivo": "HP",
             "descripcion": "Indica la resistencia física y la salud general del personaje.",
-            "tipo": 2
+            "tipo": 1
         },
         {
             "id": 8,
             "nombre": "Regeneración",
             "diminutivo": "REG",
             "descripcion": "Indica la resistencia física y la salud general del personaje.",
-            "tipo": 2
+            "tipo": 1
         },
         {
             "id": 9,
@@ -83,28 +83,28 @@
             "nombre": "Acciones",
             "diminutivo": "ACC",
             "descripcion": "Indica la concentración y la capacidad de mantener la atención en tareas específicas.",
-            "tipo": 3
+            "tipo": 2
         },
         {
             "id": 13,
             "nombre": "Reacciones",
             "diminutivo": "REAC",
             "descripcion": "Refleja la fuerza de voluntad y la determinación del personaje.",
-            "tipo": 3
+            "tipo": 2
         },
         {
             "id": 14,
             "nombre": "Puntos de Habilidad",
             "diminutivo": "H",
             "descripcion": "Mide la sabiduría, el aprendizaje y la comprensión del entorno.",
-            "tipo": 2
+            "tipo": 3
         },
         {
             "id": 15,
             "nombre": "Voluntad",
             "diminutivo": "WP",
             "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
-            "tipo": 2
+            "tipo": 3
         },
         {
             "id": 16,
@@ -125,7 +125,7 @@
             "nombre": "Rango de Critico",
             "diminutivo": "IC",
             "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
-            "tipo": 3
+            "tipo": 0
         }
     ]
 }
