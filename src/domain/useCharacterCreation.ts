@@ -194,11 +194,89 @@ export function useCharacterCreation() {
   watch(() => characterData.value.armaduras, () => saveCharacterData(), { deep: true })
   watch(() => characterData.value.atributos, () => saveCharacterData(), { deep: true })
 
+  // Función para resetear todos los datos del personaje
+  function resetCharacterData() {
+    characterData.value = {
+      nombre: '',
+      nivel: 1,
+      oficio: '',
+      oficio_habilidades: [],
+      oficio_dotes: [],
+      estilo_marcial: '',
+      estilo_marcial_dotes: [],
+      trasfondo: '',
+      trasfondo_habilidades: [],
+      raza: '',
+      arbol: '',
+      habilidades: '',
+      armas: [],
+      armaduras: [],
+      atributos: {
+        cuerpo: 0,
+        agilidad: 0,
+        mente: 0,
+        rangoCritico: 0,
+        habilidadesExtra: 0,
+        limiteHabilidad: 0,
+        acciones: 0,
+        reacciones: 0,
+        poderio: 0,
+        movimiento: 3,
+        resistencia: 0,
+        regeneracion: 2,
+        evasion: 12,
+        iniciativa: 0,
+        punteria: 0,
+        puntosHabilidad: 10,
+        hp: 10
+      }
+    }
+    
+    // También resetear el personaje en la partida
+    const character = getCurrentCharacter()
+    if (character) {
+      character.name = ''
+      character.nivel = 1
+      character.oficio = ''
+      character.oficio_habilidades = []
+      character.oficio_dotes = []
+      character.estilo_marcial = ''
+      character.estilo_marcial_dotes = []
+      character.trasfondo = ''
+      character.trasfondo_habilidades = []
+      character.raza = ''
+      character.arbol = ''
+      character.habilidades = ''
+      character.armas = []
+      character.armaduras = []
+      character.atributos = {
+        cuerpo: 0,
+        agilidad: 0,
+        mente: 0,
+        rangoCritico: 0,
+        habilidadesExtra: 0,
+        limiteHabilidad: 0,
+        acciones: 0,
+        reacciones: 0,
+        poderio: 0,
+        movimiento: 3,
+        resistencia: 0,
+        regeneracion: 2,
+        evasion: 12,
+        iniciativa: 0,
+        punteria: 0,
+        puntosHabilidad: 10,
+        hp: 10
+      }
+    }
+  }
+
   return {
     characterData,
     getCurrentCharacter,
     loadCharacterData,
     saveCharacterData,
-    recalcularAtributos
+    recalcularAtributos,
+    resetCharacterData
   }
 }

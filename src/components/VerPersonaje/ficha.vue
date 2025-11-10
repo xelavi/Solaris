@@ -6,19 +6,60 @@
       <!-- Botón Volver -->
       <div class="mb-4">
         <button
-          @click="volverACreacion"
+          @click="volver"
           class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-gray-500 text-white hover:bg-gray-600 hover:shadow-lg flex items-center gap-2"
         >
-          ← Volver a Edición
+          ← Volver a Personajes
         </button>
+      </div>
+
+      <!-- Navegación por pestañas -->
+      <div class="mb-6">
+        <nav class="flex gap-2 border-b-2 border-gray-200">
+          <button
+            @click="currentTab = 'ficha'"
+            :class="[
+              'px-6 py-3 font-semibold transition-all duration-200',
+              currentTab === 'ficha'
+                ? 'border-b-4 border-blue-500 text-blue-600 -mb-0.5'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+            ]"
+          >
+            Ficha
+          </button>
+          <button
+            @click="currentTab = 'arbol'"
+            :class="[
+              'px-6 py-3 font-semibold transition-all duration-200',
+              currentTab === 'arbol'
+                ? 'border-b-4 border-blue-500 text-blue-600 -mb-0.5'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+            ]"
+          >
+            Árbol
+          </button>
+          <button
+            @click="currentTab = 'inventario'"
+            :class="[
+              'px-6 py-3 font-semibold transition-all duration-200',
+              currentTab === 'inventario'
+                ? 'border-b-4 border-blue-500 text-blue-600 -mb-0.5'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+            ]"
+          >
+            Inventario
+          </button>
+        </nav>
       </div>
       
       <h2 class="text-4xl font-bold text-gray-600 mb-6 pb-4 border-b border-gray-200 text-center">
         {{ personaje.nombre }}
       </h2>
-      
-      <!-- Grid Principal -->
-      <div class="grid grid-cols-12 gap-6">
+
+      <!-- Contenido de Ficha -->
+      <div v-if="currentTab === 'ficha'">
+        <!-- Grid Principal -->
+        <div class="grid grid-cols-12 gap-6">
         
         <!-- Columna Izquierda -->
         <div class="col-span-4 space-y-6">
@@ -55,46 +96,58 @@
           </div>
 
           <!-- Dotes de Oficio -->
-          <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
             <h3 class="text-lg font-bold text-gray-700 mb-3 pb-2 border-b border-blue-300">Dotes de Oficio</h3>
-            <div class="max-h-64 overflow-y-auto pr-2 space-y-2">
+            <div class="max-h-120 overflow-y-auto overflow-x-visible pr-2 space-y-2">
               <div 
                 v-for="dote in personaje.dotesOficio" 
                 :key="dote.nombre"
-                class="bg-white border border-blue-300 rounded-lg p-3"
+                class="bg-white border border-blue-300 rounded-lg p-3 relative group cursor-pointer hover:bg-blue-50 transition-colors"
+                style="overflow: visible;"
               >
                 <div class="font-semibold text-gray-600 text-sm">{{ dote.nombre }}</div>
-                <div class="text-xs text-blue-600 mt-1">{{ dote.descripcion }}</div>
+                <!-- Tooltip con descripción al hover -->
+                <div class="tooltip-box">
+                  {{ dote.descripcion }}
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Dotes de Estilo Marcial -->
-          <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
             <h3 class="text-lg font-bold text-gray-700 mb-3 pb-2 border-b border-blue-300">Dotes de Estilo Marcial</h3>
-            <div class="max-h-64 overflow-y-auto pr-2 space-y-2">
+            <div class="max-h-64 overflow-y-auto overflow-x-visible pr-2 space-y-2">
               <div 
                 v-for="dote in personaje.dotesEstilo" 
                 :key="dote.nombre"
-                class="bg-white border border-blue-300 rounded-lg p-3"
+                class="bg-white border border-blue-300 rounded-lg p-3 relative group cursor-pointer hover:bg-blue-50 transition-colors"
+                style="overflow: visible;"
               >
                 <div class="font-semibold text-gray-600 text-sm">{{ dote.nombre }}</div>
-                <div class="text-xs text-blue-600 mt-1">{{ dote.descripcion }}</div>
+                <!-- Tooltip con descripción al hover -->
+                <div class="tooltip-box">
+                  {{ dote.descripcion }}
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Habilidades Activas -->
-          <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
             <h3 class="text-lg font-bold text-gray-700 mb-3 pb-2 border-b border-blue-300">Habilidades Activas</h3>
-            <div class="space-y-2">
+            <div class="space-y-2 overflow-x-visible">
               <div 
                 v-for="activa in personaje.activas" 
                 :key="activa.nombre"
-                class="bg-white border border-blue-300 rounded-lg p-3"
+                class="bg-white border border-blue-300 rounded-lg p-3 relative group cursor-pointer hover:bg-blue-50 transition-colors"
+                style="overflow: visible;"
               >
                 <div class="font-semibold text-gray-600 text-sm">{{ activa.nombre }}</div>
-                <div class="text-xs text-blue-600 mt-1">{{ activa.descripcion }}</div>
+                <!-- Tooltip con descripción al hover -->
+                <div class="tooltip-box">
+                  {{ activa.descripcion }}
+                </div>
               </div>
             </div>
           </div>
@@ -316,7 +369,23 @@
 
         </div>
 
+        </div>
       </div>
+
+      <!-- Contenido de Árbol -->
+      <div v-if="currentTab === 'arbol'">
+        <Arbol v-if="personajeGuardado" :arbol-data="personajeGuardado.arbol || '[]'" />
+        <div v-else class="text-center py-16">
+          <p class="text-2xl text-gray-500">Cargando árbol...</p>
+        </div>
+      </div>
+
+      <!-- Contenido de Inventario -->
+      <div v-if="currentTab === 'inventario'" class="text-center py-16">
+        <p class="text-2xl text-gray-500">Vista de Inventario</p>
+        <p class="text-gray-400 mt-2">Contenido próximamente...</p>
+      </div>
+
     </div>
   </div>
 </body>
@@ -325,24 +394,27 @@
 
 <script setup lang="ts">
 import { ref, onMounted, inject } from 'vue'
-import armasData from '../assets/armas.json'
-import armadurasData from '../assets/armaduras.json'
-import oficiosData from '../assets/oficios/oficios.json'
-import estilosMarciales from '../assets/estiloMarcial/estiloMarcial.json'
-import activasData from '../assets/activas.json'
-import habilidadesData from '../assets/habilidades.json'
+import armasData from '../../assets/armas.json'
+import armadurasData from '../../assets/armaduras.json'
+import oficiosData from '../../assets/oficios/oficios.json'
+import estilosMarciales from '../../assets/estiloMarcial/estiloMarcial.json'
+import activasData from '../../assets/activas.json'
+import habilidadesData from '../../assets/habilidades.json'
+import Arbol from './arbol.vue'
 
-// Props - recibe el nombre del personaje (para futuro uso)
-defineProps<{
-  characterName?: string
+const props = defineProps<{
+  characterId?: string
 }>()
 
-// Inject navigation function from App.vue
-const navigateToCrear = inject<() => void>('navigateToCrear')
+// Estado para controlar la pestaña activa
+const currentTab = ref<'ficha' | 'arbol' | 'inventario'>('ficha')
 
-function volverACreacion() {
-  if (navigateToCrear) {
-    navigateToCrear()
+// Inject navigation function from App.vue
+const navigateToCharacters = inject<() => void>('navigateToCharacters')
+
+function volver() {
+  if (navigateToCharacters) {
+    navigateToCharacters()
   }
 }
 
@@ -402,11 +474,16 @@ const personaje = ref({
 // Función para cargar el personaje desde localStorage
 function cargarPersonaje() {
   try {
-    const personajeJSON = localStorage.getItem('personaje_guardado')
+    if (!props.characterId) {
+      console.warn('No se proporcionó ID de personaje para cargar la ficha.');
+      return;
+    }
+
+    const personajeJSON = localStorage.getItem(props.characterId);
     
     if (!personajeJSON) {
-      console.warn('No se encontró personaje guardado en localStorage')
-      return
+      console.warn(`No se encontró personaje guardado en localStorage con ID: ${props.characterId}`);
+      return;
     }
     
     personajeGuardado.value = JSON.parse(personajeJSON)
@@ -678,3 +755,55 @@ onMounted(() => {
 
         
 </script>
+
+<style scoped>
+/* Ocultar barra de scroll pero mantener funcionalidad */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.overflow-y-auto {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Estilos para los tooltips */
+.tooltip-box {
+  position: fixed;
+  left: auto;
+  top: auto;
+  margin-top: 0.5rem;
+  width: 20rem;
+  max-width: 90vw;
+  background-color: white;
+  color: #374151;
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+  border-radius: 0.75rem;
+  padding: 0.875rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  pointer-events: none;
+  border: 1px solid #e5e7eb;
+}
+
+.group:hover .tooltip-box {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Permitir que el tooltip salga del contenedor */
+.group {
+  position: relative;
+  z-index: 1;
+}
+
+.group:hover {
+  z-index: 9998;
+}
+</style>
+

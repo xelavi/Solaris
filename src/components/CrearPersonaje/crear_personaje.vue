@@ -1,6 +1,16 @@
 <template>
   <div class="bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen p-6">
     <div class="max-w-350 mx-auto">
+      <!-- Botón Volver a Personajes -->
+      <div class="mb-4">
+        <button
+          @click="volverAPersonajes"
+          class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-gray-500 text-white hover:bg-gray-600 hover:shadow-lg flex items-center gap-2"
+        >
+          ← Volver a Personajes
+        </button>
+      </div>
+
       <div class="text-center mb-8">
         <h1 class="text-4xl md:text-5xl font-bold text-gray-600 mb-2 drop-shadow-lg">
           Creación de Personaje
@@ -148,10 +158,52 @@ const steps = [
   'Equipo'
 ]
 
-const { characterData, saveCharacterData, loadCharacterData, getCurrentCharacter } = useCharacterCreation()
+const { characterData, saveCharacterData, loadCharacterData, getCurrentCharacter, resetCharacterData } = useCharacterCreation()
 
-// Inject navigation function from App.vue
-const navigateToFicha = inject<(name: string) => void>('navigateToFicha')
+// Inject navigation functions from App.vue
+const navigateToFicha = inject<(id: string) => void>('navigateToFicha')
+const navigateToCharacters = inject<() => void>('navigateToCharacters')
+
+function volverAPersonajes() {
+  // Verificar si el personaje está completo
+  const character = getCurrentCharacter()
+  const id = personajeId.value || localStorage.getItem('personaje_en_creacion_id')
+  
+  // Si el personaje no tiene los datos esenciales, eliminarlo
+  if (id && character) {
+    const tieneNombre = character.name && character.name.trim() !== ''
+    const tieneTrasfondo = character.trasfondo && character.trasfondo.trim() !== ''
+    const tieneOficio = character.oficio && character.oficio.trim() !== ''
+    const tieneEstiloMarcial = character.estilo_marcial && character.estilo_marcial.trim() !== ''
+    
+    if (!tieneNombre || !tieneTrasfondo || !tieneOficio || !tieneEstiloMarcial) {
+      console.log('⚠️ Personaje incompleto, eliminando del localStorage...')
+      
+      // Eliminar el personaje del localStorage
+      localStorage.removeItem(id)
+      
+      // Eliminar de la lista de personajes
+      const listaString = localStorage.getItem('lista_personajes')
+      if (listaString) {
+        const lista: string[] = JSON.parse(listaString)
+        const listaFiltrada = lista.filter(personajeId => personajeId !== id)
+        localStorage.setItem('lista_personajes', JSON.stringify(listaFiltrada))
+      }
+      
+      // Limpiar el ID de personaje en creación
+      localStorage.removeItem('personaje_en_creacion_id')
+      
+      // Resetear los datos del personaje en memoria
+      resetCharacterData()
+      
+      console.log('✅ Personaje incompleto eliminado')
+    }
+  }
+  
+  if (navigateToCharacters) {
+    navigateToCharacters()
+  }
+}
 
 function verFicha() {
   const character = getCurrentCharacter()
@@ -160,21 +212,23 @@ function verFicha() {
     return
   }
   
-  // Verificar que hay datos guardados en localStorage
-  const personajeGuardado = localStorage.getItem('personaje_guardado')
+  // Verificar que hay datos guardados en localStorage con el ID actual
+  const id = obtenerOGenerarId()
+  const personajeGuardado = localStorage.getItem(id)
   if (!personajeGuardado) {
     alert('⚠️ No hay personaje guardado. Por favor, guarda el personaje primero.')
     return
   }
   
-  // Navegar a la ficha
+  // Navegar a la ficha con el ID del personaje
   if (navigateToFicha) {
-    navigateToFicha(character.name)
+    navigateToFicha(id)
   }
 }
 
 function debugDatos() {
   console.log('=== DEBUG DATOS ===')
+  console.log('personajeId.value:', personajeId.value)
   console.log('characterData.value:', characterData.value)
   const character = getCurrentCharacter()
   console.log('character from partida:', character)
@@ -186,7 +240,56 @@ function debugDatos() {
   console.log('character.estilo_marcial:', character?.estilo_marcial)
   console.log('character.arbol:', character?.arbol)
   console.log('character.atributos:', character?.atributos)
+  
+  // Mostrar lista de personajes guardados
+  const listaString = localStorage.getItem('lista_personajes')
+  const lista = listaString ? JSON.parse(listaString) : []
+  console.log('Lista de personajes guardados:', lista)
+  lista.forEach((id: string) => {
+    const personaje = localStorage.getItem(id)
+    if (personaje) {
+      const datos = JSON.parse(personaje)
+      console.log(`  - ${id}: ${datos.nombre} (nivel ${datos.nivel})`)
+    }
+  })
+  
   console.log('==================')
+}
+
+// ID único del personaje actual (se genera una vez y se mantiene)
+const personajeId = ref<string>('')
+
+function obtenerOGenerarId(): string {
+  if (personajeId.value) {
+    return personajeId.value
+  }
+  
+  // Intentar recuperar el ID del localStorage si existe un personaje en creación
+  const idEnCreacion = localStorage.getItem('personaje_en_creacion_id')
+  if (idEnCreacion) {
+    personajeId.value = idEnCreacion
+    return idEnCreacion
+  }
+  
+  // Generar nuevo ID único
+  const nuevoId = `personaje_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  personajeId.value = nuevoId
+  localStorage.setItem('personaje_en_creacion_id', nuevoId)
+  return nuevoId
+}
+
+function agregarAListaPersonajes(id: string) {
+  try {
+    const listaString = localStorage.getItem('lista_personajes')
+    const lista: string[] = listaString ? JSON.parse(listaString) : []
+    
+    if (!lista.includes(id)) {
+      lista.push(id)
+      localStorage.setItem('lista_personajes', JSON.stringify(lista))
+    }
+  } catch (error) {
+    console.error('Error al actualizar lista de personajes:', error)
+  }
 }
 
 function guardarPersonaje() {
@@ -199,8 +302,12 @@ function guardarPersonaje() {
       return
     }
     
+    // Obtener o generar el ID del personaje
+    const id = obtenerOGenerarId()
+    
     // Guardar todos los datos de characterData directamente
     const datosParaGuardar = {
+      id: id,
       nombre: characterData.value.nombre,
       nivel: characterData.value.nivel,
       oficio: characterData.value.oficio,
@@ -219,10 +326,13 @@ function guardarPersonaje() {
       fechaGuardado: new Date().toISOString()
     }
     
-    console.log('✅ Datos preparados para guardar:', datosParaGuardar)
+    console.log('✅ Datos preparados para guardar con ID:', id, datosParaGuardar)
     
-    // Guardar en localStorage
-    localStorage.setItem('personaje_guardado', JSON.stringify(datosParaGuardar, null, 2))
+    // Guardar en localStorage con el ID como clave
+    localStorage.setItem(id, JSON.stringify(datosParaGuardar, null, 2))
+    
+    // Agregar a la lista de personajes
+    agregarAListaPersonajes(id)
     
     console.log('✅ Guardado en localStorage completado')
   } catch (error) {
@@ -234,18 +344,23 @@ onMounted(() => {
   // Cargar los datos del personaje en creación
   loadCharacterData()
   
-  // Verificar si hay personaje guardado en localStorage
-  const personajeGuardado = localStorage.getItem('personaje_guardado')
-  if (personajeGuardado) {
-    try {
-      const datos = JSON.parse(personajeGuardado)
-      console.log('Personaje guardado encontrado:', datos)
-      console.log('Fecha de guardado:', datos.fechaGuardado)
-    } catch (error) {
-      console.error('Error al cargar personaje guardado:', error)
+  // Intentar cargar personaje existente si hay uno en creación
+  const idEnCreacion = localStorage.getItem('personaje_en_creacion_id')
+  if (idEnCreacion) {
+    const personajeGuardado = localStorage.getItem(idEnCreacion)
+    if (personajeGuardado) {
+      try {
+        const datos = JSON.parse(personajeGuardado)
+        console.log('Personaje en creación encontrado:', datos)
+        console.log('ID:', datos.id)
+        console.log('Fecha de guardado:', datos.fechaGuardado)
+        personajeId.value = idEnCreacion
+      } catch (error) {
+        console.error('Error al cargar personaje en creación:', error)
+      }
     }
   } else {
-    console.log('No hay personaje guardado en localStorage')
+    console.log('No hay personaje en creación actualmente')
   }
   
   // Después de cargar, configurar el guardado automático

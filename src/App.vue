@@ -1,25 +1,53 @@
 <script setup lang="ts">
 import { ref, provide } from 'vue'
+import Characters from './components/characters.vue'
 import CrearPersonaje from './components/CrearPersonaje/crear_personaje.vue'
-import ficha from './components/ficha.vue'
+import Ficha from './components/VerPersonaje/ficha.vue'
+import Partidas from './components/Partida/partidas.vue'
+import CrearPartida from './components/Partida/crear_partida.vue'
+import Partida from './components/Partida/partida.vue'
 
-const currentView = ref<'crear' | 'ficha'>('crear')
-const characterName = ref<string>('')
+const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida'>('characters')
+const characterId = ref<string>('')
+const partidaId = ref<string>('')
 
 // Provide navigation functions
-provide('navigateToFicha', (name: string) => {
-  characterName.value = name
+provide('navigateToFicha', (id: string) => {
+  characterId.value = id
   currentView.value = 'ficha'
 })
 
 provide('navigateToCrear', () => {
+  // Limpiar el ID del personaje en creación para empezar uno nuevo
+  localStorage.removeItem('personaje_en_creacion_id')
   currentView.value = 'crear'
+})
+
+provide('navigateToCharacters', () => {
+  currentView.value = 'characters'
+})
+
+provide('navigateToPartidas', () => {
+  currentView.value = 'partidas'
+})
+
+provide('navigateToCrearPartida', () => {
+  currentView.value = 'crearPartida'
+})
+
+provide('navigateToVerPartida', (id: string) => {
+  partidaId.value = id
+  currentView.value = 'verPartida'
 })
 </script>
 
 <template>
-  <crear-personaje v-if="currentView === 'crear'"></crear-personaje>
-  <ficha v-else-if="currentView === 'ficha'" :character-name="characterName"></ficha>
+  <characters v-if="currentView === 'characters'"></characters>
+  <crear-personaje v-else-if="currentView === 'crear'"></crear-personaje>
+  <ficha v-else-if="currentView === 'ficha'" :character-id="characterId"></ficha>
+  <partidas v-else-if="currentView === 'partidas'"></partidas>
+  <crear-partida v-else-if="currentView === 'crearPartida'"></crear-partida>
+  <partida v-else-if="currentView === 'verPartida'" :partida-id="partidaId"></partida>
 </template>
 
 <style scoped>
