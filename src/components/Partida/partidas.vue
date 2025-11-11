@@ -39,8 +39,8 @@
             ✕
           </button>
 
-          <!-- Contenido de la partida (clickable) -->
-          <div @click="abrirPartida(partida.id)">
+          <!-- Contenido de la partida -->
+          <div>
             <h2 class="text-2xl font-bold text-gray-700 mb-3 border-b border-gray-200 pb-2">
               {{ partida.nombre }}
             </h2>
@@ -56,6 +56,22 @@
               <div class="text-xs text-gray-400 mt-2">
                 Creada: {{ formatearFecha(partida.fechaCreacion) }}
               </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="mt-4 flex gap-2">
+              <button
+                @click.stop="abrirPartida(partida.id)"
+                class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                📋 Vista Clásica
+              </button>
+              <button
+                @click.stop="jugarPartida(partida.id)"
+                class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-purple-500 text-white hover:bg-purple-600 hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                🎮 Mapa 3D
+              </button>
             </div>
           </div>
         </div>
@@ -77,6 +93,7 @@ const partidas = ref<PartidaData[]>([]);
 const navigateToCrearPartida = inject<() => void>('navigateToCrearPartida')
 const navigateToCharacters = inject<() => void>('navigateToCharacters')
 const navigateToVerPartida = inject<(id: string) => void>('navigateToVerPartida')
+const navigateToJugarPartida = inject<(id: string) => void>('navigateToJugarPartida')
 
 function cargarPartidas() {
   try {
@@ -112,6 +129,12 @@ function crearNuevaPartida() {
 function abrirPartida(id: string) {
   if (navigateToVerPartida) {
     navigateToVerPartida(id);
+  }
+}
+
+function jugarPartida(id: string) {
+  if (navigateToJugarPartida) {
+    navigateToJugarPartida(id);
   }
 }
 

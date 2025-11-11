@@ -44,6 +44,7 @@ export interface PersonajeInstancia {
   vidaActual: number;
   vidaTemporal: number;
   posicion: { x: number; y: number; z: number };
+  armaEquipada: number | null; // ID del arma actualmente en mano (null = sin arma)
 }
 
 export interface Equipo {
@@ -406,12 +407,42 @@ export function gastarAccion(partida: PartidaData, instanciaId: string): Partida
   const orden = partida.ordenIniciativa.find(o => o.instanciaId === instanciaId)
   if (!orden || orden.accionesRestantes <= 0) return partida
   
+  // Verificar que es el turno del personaje
+  const turnoActual = partida.ordenIniciativa[partida.turnoActualIndex]
+  if (!turnoActual || turnoActual.instanciaId !== instanciaId) {
+    console.warn(`No es el turno de ${orden.personajeNombre}`)
+    return partida
+  }
+  
   orden.accionesRestantes -= 1
   
-  return {
+  let partidaActualizada = {
     ...partida,
     ordenIniciativa: [...partida.ordenIniciativa]
   }
+  
+  // Si las acciones llegan a 0, pasar automáticamente al siguiente turno
+  if (orden.accionesRestantes === 0) {
+    console.log(`${orden.personajeNombre} ha gastado todas sus acciones. Pasando al siguiente turno...`)
+    partidaActualizada = siguienteTurno(partidaActualizada)
+  }
+  
+  return partidaActualizada
+}
+
+// Función para verificar si es el turno de un personaje específico
+export function esTurnoDePersonaje(partida: PartidaData, instanciaId: string): boolean {
+  if (!partida.combateActivo) return false
+  
+  const turnoActual = partida.ordenIniciativa[partida.turnoActualIndex]
+  return turnoActual?.instanciaId === instanciaId
+}
+
+// Función para obtener el personaje del turno actual
+export function obtenerPersonajeTurnoActual(partida: PartidaData): OrdenIniciativa | null {
+  if (!partida.combateActivo) return null
+  
+  return partida.ordenIniciativa[partida.turnoActualIndex] || null
 }
 
 // Función para agregar log
@@ -427,4 +458,236 @@ export function agregarLog(partida: PartidaData, tipo: LogEvento['tipo'], mensaj
     ...partida,
     logs: [...partida.logs, nuevoLog]
   }
+}
+
+// Función para pasar turno manualmente (sin gastar acciones)
+export function pasarTurno(partida: PartidaData, instanciaId: string): PartidaData {
+  if (!partida.combateActivo) return partida
+  
+  // Verificar que es el turno del personaje
+  const turnoActual = partida.ordenIniciativa[partida.turnoActualIndex]
+  if (!turnoActual || turnoActual.instanciaId !== instanciaId) {
+    console.warn(`No es el turno de este personaje`)
+    return partida
+  }
+  
+  // Agregar log
+  let partidaConLog = agregarLog(
+    partida,
+    'sistema',
+    `${turnoActual.personajeNombre} pasa su turno voluntariamente.`
+  )
+  
+  // Pasar al siguiente turno
+  return siguienteTurno(partidaConLog)
+}
+
+// Función para cambiar de arma (cuesta 1 acción)
+export function cambiarArma(
+  partida: PartidaData, 
+  instanciaId: string, 
+  nuevaArmaId: number | null
+): PartidaData {
+  if (!partida.combateActivo) return partida
+  
+  // Verificar que es el turno del personaje
+  const turnoActual = partida.ordenIniciativa[partida.turnoActualIndex]
+  if (!turnoActual || turnoActual.instanciaId !== instanciaId) {
+    console.warn(`No es el turno de este personaje`)
+    return partida
+  }
+  
+  // Verificar que tiene acciones disponibles
+  if (turnoActual.accionesRestantes <= 0) {
+    console.warn(`${turnoActual.personajeNombre} no tiene acciones disponibles`)
+    return partida
+  }
+  
+  // Buscar el personaje en los equipos
+  let personajeEncontrado: PersonajeInstancia | null = null
+  for (const equipo of partida.equipos) {
+    const personaje = equipo.personajes.find(p => p.instanciaId === instanciaId)
+    if (personaje) {
+      personajeEncontrado = personaje
+      break
+    }
+  }
+  
+  if (!personajeEncontrado) {
+    console.warn(`Personaje no encontrado`)
+    return partida
+  }
+  
+  // Verificar que el arma está en su inventario (si no es null)
+  if (nuevaArmaId !== null && !personajeEncontrado.armas.includes(nuevaArmaId)) {
+    console.warn(`El personaje no posee esa arma`)
+    return partida
+  }
+  
+  // Cambiar el arma equipada
+  const armaAnterior = personajeEncontrado.armaEquipada
+  personajeEncontrado.armaEquipada = nuevaArmaId
+  
+  // Agregar log
+  let mensaje = ''
+  if (nuevaArmaId === null) {
+    mensaje = `${personajeEncontrado.nombre} guarda su arma.`
+  } else if (armaAnterior === null) {
+    mensaje = `${personajeEncontrado.nombre} saca su arma (ID: ${nuevaArmaId}).`
+  } else {
+    mensaje = `${personajeEncontrado.nombre} cambia de arma (${armaAnterior} → ${nuevaArmaId}).`
+  }
+  
+  let partidaConLog = agregarLog(partida, 'sistema', mensaje)
+  
+  // Gastar 1 acción (esto puede pasar automáticamente al siguiente turno)
+  return gastarAccion(partidaConLog, instanciaId)
+}
+
+// Interfaz para el resultado de usar una habilidad
+export interface ResultadoHabilidad {
+  exito: boolean;
+  habilidadNombre: string;
+  tirada: number;
+  dado1: number;
+  dado2: number;
+  bonusHabilidad: number;
+  total: number;
+  mensaje: string;
+}
+
+// Función para usar una habilidad (tirar 2d12 + puntos de habilidad)
+export function usarHabilidad(
+  partida: PartidaData,
+  instanciaId: string,
+  habilidadNombre: string
+): { partida: PartidaData; resultado: ResultadoHabilidad } {
+  // Buscar el personaje
+  let personajeEncontrado: PersonajeInstancia | null = null
+  for (const equipo of partida.equipos) {
+    const personaje = equipo.personajes.find(p => p.instanciaId === instanciaId)
+    if (personaje) {
+      personajeEncontrado = personaje
+      break
+    }
+  }
+  
+  if (!personajeEncontrado) {
+    return {
+      partida,
+      resultado: {
+        exito: false,
+        habilidadNombre,
+        tirada: 0,
+        dado1: 0,
+        dado2: 0,
+        bonusHabilidad: 0,
+        total: 0,
+        mensaje: 'Personaje no encontrado'
+      }
+    }
+  }
+  
+  // Parsear las habilidades del personaje
+  let habilidades: any[] = []
+  try {
+    habilidades = JSON.parse(personajeEncontrado.habilidades)
+  } catch (e) {
+    console.error('Error parseando habilidades:', e)
+  }
+  
+  // Buscar la habilidad específica
+  const habilidad = habilidades.find(h => h.nombre === habilidadNombre)
+  
+  if (!habilidad) {
+    return {
+      partida,
+      resultado: {
+        exito: false,
+        habilidadNombre,
+        tirada: 0,
+        dado1: 0,
+        dado2: 0,
+        bonusHabilidad: 0,
+        total: 0,
+        mensaje: `Habilidad "${habilidadNombre}" no encontrada`
+      }
+    }
+  }
+  
+  // Tirar 2d12
+  const dado1 = tirarD12()
+  const dado2 = tirarD12()
+  const tirada = dado1 + dado2
+  
+  // Obtener el bonus de la habilidad
+  const bonusHabilidad = habilidad.total || 0
+  const total = tirada + bonusHabilidad
+  
+  // Crear resultado
+  const resultado: ResultadoHabilidad = {
+    exito: true,
+    habilidadNombre,
+    tirada,
+    dado1,
+    dado2,
+    bonusHabilidad,
+    total,
+    mensaje: `${personajeEncontrado.nombre} usa ${habilidadNombre}!\n` +
+             `🎲 Tirada: ${dado1} + ${dado2} = ${tirada}\n` +
+             `📊 Bonus: +${bonusHabilidad}\n` +
+             `✨ Total: ${total}`
+  }
+  
+  // Agregar log
+  const partidaConLog = agregarLog(partida, 'sistema', resultado.mensaje)
+  
+  return {
+    partida: partidaConLog,
+    resultado
+  }
+}
+
+// Función para usar una habilidad activa (consume 1 acción)
+export function usarActiva(
+  partida: PartidaData,
+  instanciaId: string,
+  activaNombre: string
+): PartidaData {
+  if (!partida.combateActivo) return partida
+  
+  // Verificar que es el turno del personaje
+  const turnoActual = partida.ordenIniciativa[partida.turnoActualIndex]
+  if (!turnoActual || turnoActual.instanciaId !== instanciaId) {
+    console.warn(`No es el turno de este personaje`)
+    return partida
+  }
+  
+  // Verificar que tiene acciones disponibles
+  if (turnoActual.accionesRestantes <= 0) {
+    console.warn(`${turnoActual.personajeNombre} no tiene acciones disponibles`)
+    return partida
+  }
+  
+  // Buscar el personaje
+  let personajeEncontrado: PersonajeInstancia | null = null
+  for (const equipo of partida.equipos) {
+    const personaje = equipo.personajes.find(p => p.instanciaId === instanciaId)
+    if (personaje) {
+      personajeEncontrado = personaje
+      break
+    }
+  }
+  
+  if (!personajeEncontrado) {
+    console.warn(`Personaje no encontrado`)
+    return partida
+  }
+  
+  // Agregar log
+  const mensaje = `${personajeEncontrado.nombre} usa la habilidad activa: ${activaNombre}`
+  let partidaConLog = agregarLog(partida, 'sistema', mensaje)
+  
+  // Gastar 1 acción (esto puede pasar automáticamente al siguiente turno)
+  return gastarAccion(partidaConLog, instanciaId)
 }

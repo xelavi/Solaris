@@ -192,16 +192,125 @@
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     @click="iniciarAtaque(personaje)"
-                    class="px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
+                    :disabled="!esTurnoActual(personaje.instanciaId) || accionesRestantes(personaje.instanciaId) <= 0"
+                    :class="[
+                      'px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200',
+                      esTurnoActual(personaje.instanciaId) && accionesRestantes(personaje.instanciaId) > 0
+                        ? 'bg-red-500 text-white hover:bg-red-600 hover:shadow-lg cursor-pointer'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                    ]"
                   >
                     ⚔️ Atacar
                   </button>
                   <button
-                    class="px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg"
+                    @click="pasarTurnoHandler(personaje.instanciaId)"
+                    :disabled="!esTurnoActual(personaje.instanciaId)"
+                    :class="[
+                      'px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200',
+                      esTurnoActual(personaje.instanciaId)
+                        ? 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-lg cursor-pointer'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                    ]"
                   >
-                    🏃 Moverse
+                    ⏭️ Pasar
                   </button>
                 </div>
+                
+                <!-- Cambiar Arma -->
+                <div class="bg-white rounded-lg p-2 border border-gray-300">
+                  <label class="text-xs font-semibold text-gray-600 block mb-1">🗡️ Arma Equipada</label>
+                  <select
+                    v-model="personaje.armaEquipada"
+                    @change="cambiarArmaHandler(personaje)"
+                    :disabled="!esTurnoActual(personaje.instanciaId) || accionesRestantes(personaje.instanciaId) <= 0"
+                    :class="[
+                      'w-full px-2 py-1 text-sm rounded border focus:outline-none',
+                      esTurnoActual(personaje.instanciaId) && accionesRestantes(personaje.instanciaId) > 0
+                        ? 'border-blue-300 focus:border-blue-500 cursor-pointer'
+                        : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
+                    ]"
+                  >
+                    <option :value="null">Sin arma</option>
+                    <option 
+                      v-for="armaId in personaje.armas" 
+                      :key="armaId"
+                      :value="armaId"
+                    >
+                      {{ obtenerNombreArma(armaId) }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Usar Habilidad -->
+                <div class="bg-white rounded-lg p-2 border border-gray-300">
+                  <label class="text-xs font-semibold text-gray-600 block mb-1">📊 Usar Habilidad</label>
+                  <div class="flex gap-1">
+                    <select
+                      v-model="habilidadSeleccionada[personaje.instanciaId]"
+                      class="flex-1 px-2 py-1 text-sm rounded border border-blue-300 focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option 
+                        v-for="hab in obtenerHabilidades(personaje)" 
+                        :key="hab.nombre"
+                        :value="hab.nombre"
+                      >
+                        {{ hab.nombre }} (+{{ hab.total }})
+                      </option>
+                    </select>
+                    <button
+                      @click="usarHabilidadHandler(personaje)"
+                      :disabled="!habilidadSeleccionada[personaje.instanciaId]"
+                      :class="[
+                        'px-3 py-1 rounded-lg font-semibold text-sm transition-all duration-200',
+                        habilidadSeleccionada[personaje.instanciaId]
+                          ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ]"
+                    >
+                      Tirar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Usar Activa -->
+                <div class="bg-white rounded-lg p-2 border border-gray-300">
+                  <label class="text-xs font-semibold text-gray-600 block mb-1">✨ Usar Activa</label>
+                  <div class="flex gap-1">
+                    <select
+                      v-model="activaSeleccionada[personaje.instanciaId]"
+                      :disabled="!esTurnoActual(personaje.instanciaId) || accionesRestantes(personaje.instanciaId) <= 0"
+                      :class="[
+                        'flex-1 px-2 py-1 text-sm rounded border focus:outline-none',
+                        esTurnoActual(personaje.instanciaId) && accionesRestantes(personaje.instanciaId) > 0
+                          ? 'border-purple-300 focus:border-purple-500 cursor-pointer'
+                          : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
+                      ]"
+                    >
+                      <option value="">Seleccionar...</option>
+                      <option 
+                        v-for="activa in obtenerActivas(personaje)" 
+                        :key="activa.nombre"
+                        :value="activa.nombre"
+                      >
+                        {{ activa.nombre }}
+                      </option>
+                    </select>
+                    <button
+                      @click="usarActivaHandler(personaje)"
+                      :disabled="!esTurnoActual(personaje.instanciaId) || accionesRestantes(personaje.instanciaId) <= 0 || !activaSeleccionada[personaje.instanciaId]"
+                      :class="[
+                        'px-3 py-1 rounded-lg font-semibold text-sm transition-all duration-200',
+                        esTurnoActual(personaje.instanciaId) && accionesRestantes(personaje.instanciaId) > 0 && activaSeleccionada[personaje.instanciaId]
+                          ? 'bg-purple-500 text-white hover:bg-purple-600 cursor-pointer'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ]"
+                    >
+                      Usar
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   @click="resetearVida(personaje)"
                   class="w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-green-500 text-white hover:bg-green-600 hover:shadow-lg"
@@ -332,7 +441,7 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, computed, nextTick } from 'vue'
 import type { PersonajeInstancia, PartidaData } from '../../domain/Partida'
-import { realizarAtaque, type ArmaData, type ResultadoAtaque, type DefensaData, iniciarCombate, siguienteTurno, gastarAccion, agregarLog } from '../../domain/Partida'
+import { realizarAtaque, type ArmaData, type DefensaData, iniciarCombate, siguienteTurno, gastarAccion, agregarLog, pasarTurno, cambiarArma, usarHabilidad, usarActiva } from '../../domain/Partida'
 import armasData from '../../assets/armas.json'
 import armadurasData from '../../assets/armaduras.json'
 
@@ -349,6 +458,10 @@ const navigateToPartidas = inject<() => void>('navigateToPartidas')
 const mostrarModalAtaque = ref(false)
 const atacanteActual = ref<PersonajeInstancia | null>(null)
 const mensajeAtaque = ref('')
+
+// Estado para las nuevas funcionalidades
+const habilidadSeleccionada = ref<Record<string, string>>({})
+const activaSeleccionada = ref<Record<string, string>>({})
 
 // Referencia para el contenedor de logs
 const logContainer = ref<HTMLElement | null>(null)
@@ -501,6 +614,99 @@ function resetearVida(personaje: PersonajeInstancia) {
   setTimeout(() => {
     mensajeAtaque.value = ''
   }, 3000)
+}
+
+function pasarTurnoHandler(instanciaId: string) {
+  if (!partidaActual.value) return
+  partidaActual.value = pasarTurno(partidaActual.value, instanciaId)
+  guardarCambios()
+  scrollLogsToBottom()
+}
+
+function cambiarArmaHandler(personaje: PersonajeInstancia) {
+  if (!partidaActual.value) return
+  
+  const armaId = personaje.armaEquipada
+  partidaActual.value = cambiarArma(partidaActual.value, personaje.instanciaId, armaId)
+  
+  guardarCambios()
+  scrollLogsToBottom()
+}
+
+function usarHabilidadHandler(personaje: PersonajeInstancia) {
+  if (!partidaActual.value) return
+  
+  const nombreHabilidad = habilidadSeleccionada.value[personaje.instanciaId]
+  if (!nombreHabilidad) return
+  
+  const { partida, resultado } = usarHabilidad(partidaActual.value, personaje.instanciaId, nombreHabilidad)
+  
+  partidaActual.value = partida
+  
+  // Mostrar resultado
+  const mensaje = resultado.exito 
+    ? `🎲 ${personaje.nombre} usó ${nombreHabilidad}: ${resultado.dado1}+${resultado.dado2}+${resultado.bonusHabilidad} = ${resultado.total}`
+    : resultado.mensaje
+  
+  mensajeAtaque.value = mensaje
+  setTimeout(() => {
+    mensajeAtaque.value = ''
+  }, 5000)
+  
+  guardarCambios()
+  scrollLogsToBottom()
+}
+
+function usarActivaHandler(personaje: PersonajeInstancia) {
+  if (!partidaActual.value) return
+  
+  const nombreActiva = activaSeleccionada.value[personaje.instanciaId]
+  if (!nombreActiva) return
+  
+  partidaActual.value = usarActiva(partidaActual.value, personaje.instanciaId, nombreActiva)
+  
+  mensajeAtaque.value = `✨ ${personaje.nombre} usó ${nombreActiva}!`
+  setTimeout(() => {
+    mensajeAtaque.value = ''
+  }, 5000)
+  
+  guardarCambios()
+  scrollLogsToBottom()
+  
+  // Limpiar selección
+  activaSeleccionada.value[personaje.instanciaId] = ''
+}
+
+function obtenerNombreArma(armaId: number): string {
+  const arma = armas.value.find(a => a.id === armaId)
+  return arma?.nombre || 'Desconocida'
+}
+
+function obtenerHabilidades(personaje: PersonajeInstancia): Array<{nombre: string, total: number}> {
+  try {
+    const habilidades = JSON.parse(personaje.habilidades)
+    return habilidades.map((h: any) => ({
+      nombre: h.nombre,
+      total: h.total || 0
+    }))
+  } catch (e) {
+    console.error('Error parseando habilidades:', e)
+    return []
+  }
+}
+
+function obtenerActivas(personaje: PersonajeInstancia): Array<{nombre: string}> {
+  try {
+    const arbol = JSON.parse(personaje.arbol)
+    // Buscar activas marcadas como activas
+    const activas = arbol.filter((nodo: any) => nodo.activa && nodo.tipo === 'activa')
+    return activas.map((nodo: any) => ({
+      nombre: nodo.nombre
+    }))
+  } catch (e) {
+    console.error('Error parseando árbol:', e)
+    return []
+  }
 }
 
 function cargarPartida() {

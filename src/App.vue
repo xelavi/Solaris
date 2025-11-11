@@ -6,8 +6,9 @@ import Ficha from './components/VerPersonaje/ficha.vue'
 import Partidas from './components/Partida/partidas.vue'
 import CrearPartida from './components/Partida/crear_partida.vue'
 import Partida from './components/Partida/partida.vue'
+import JugarPartida from './components/Partida/jugarPartida.vue'
 
-const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida'>('characters')
+const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida'>('characters')
 const characterId = ref<string>('')
 const partidaId = ref<string>('')
 
@@ -39,6 +40,11 @@ provide('navigateToVerPartida', (id: string) => {
   partidaId.value = id
   currentView.value = 'verPartida'
 })
+
+provide('navigateToJugarPartida', (id: string) => {
+  partidaId.value = id
+  currentView.value = 'jugarPartida'
+})
 </script>
 
 <template>
@@ -48,6 +54,7 @@ provide('navigateToVerPartida', (id: string) => {
   <partidas v-else-if="currentView === 'partidas'"></partidas>
   <crear-partida v-else-if="currentView === 'crearPartida'"></crear-partida>
   <partida v-else-if="currentView === 'verPartida'" :partida-id="partidaId"></partida>
+  <jugar-partida v-else-if="currentView === 'jugarPartida'" :partida-id="partidaId"></jugar-partida>
 </template>
 
 <style scoped>

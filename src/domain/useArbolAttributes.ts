@@ -110,7 +110,7 @@ export function useArbolAttributes(selectedNodes: ComputedRef<ArbolNode[]>, nive
     return baseSegunNivel + nodosDirectos + mente.value
   })
   
-  const acciones = computed(() => countNodesByAttributeId(12)) // ID 12 = Acciones
+  const acciones = computed(() => 3+ countNodesByAttributeId(12)) // ID 12 = Acciones
   
 
   // Atributos que suman 3 por nodo + 3 por atributo principal según su tipo
@@ -124,6 +124,7 @@ export function useArbolAttributes(selectedNodes: ComputedRef<ArbolNode[]>, nive
   const punteria = computed(() => calculateAttributeWithMultiplier(11)) // ID 11 = Puntería (tipo 2 = Agilidad)
   const puntosHabilidad = computed(() => calculateAttributeWithMultiplier(14,10,2*nivel.value,1,3)) // ID 14 = Puntos de Habilidad (tipo 3 = Mente)
   const reacciones = computed(() => calculateAttributeWithMultiplier(13,1,1)) // ID 13 = Reacciones
+  
   // Objeto con todos los atributos calculados
   const attributes = computed<ArbolAttributes>(() => ({
     cuerpo: cuerpo.value,
