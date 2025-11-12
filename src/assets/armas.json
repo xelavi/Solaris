@@ -20,7 +20,7 @@
             "critico": "x2",
             "rango_critico": null,
             "distancia_min": 2,
-            "distancia_max": 3,
+            "distancia_max": 2,
             "penetrante": 8,
             "lacerante": 2,
             "contundente": 2,
