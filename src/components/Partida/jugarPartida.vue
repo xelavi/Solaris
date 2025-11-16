@@ -484,7 +484,6 @@
           >
             {{ modoInstruir ? "✓ Instruyendo" : "🏇 Instruir" }}
           </button>
-          
         </div>
       </div>
     </div>
@@ -743,6 +742,68 @@ import { MapControls } from "three/addons/controls/MapControls.js";
 import type { PersonajeInstancia, PartidaData } from "../../domain/Partida";
 
 // --- ADVANTAGE/DISADVANTAGE STATE HELPERS ---
+
+// --- INICIO: Lógica de instruir aliado ---
+
+const ventajaInstruir = new Map<string, boolean>();
+
+function aplicarVentajaInstruir(aliadoId: string) {
+  ventajaInstruir.set(aliadoId, true);
+  // Buscar el personaje y aplicar ventaja
+  const aliado = buscarPersonajePorId(aliadoId);
+  if (aliado) {
+    setVentaja(aliado, 1, "Instruir");
+    console.log(
+      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`
+    );
+    agregarLog(
+      "sistema",
+      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`
+    );
+  }
+}
+
+function buscarPersonajePorId(id: string) {
+  if (!partidaActual.value) return null;
+  for (const eq of partidaActual.value.equipos) {
+    for (const pj of eq.personajes) {
+      if (pj.instanciaId === id) return pj;
+    }
+  }
+  return null;
+}
+
+function consumirVentajaSiCorresponde(personaje: any) {
+  if (ventajaInstruir.has(personaje.instanciaId)) {
+    clearVentaja(personaje);
+    ventajaInstruir.delete(personaje.instanciaId);
+    agregarLog(
+      "sistema",
+      `🎲 ${personaje.nombre} ha usado la ventaja de Instruir.`
+    );
+  }
+}
+
+function instruirAliadoListener(e: Event) {
+  const custom = e as CustomEvent;
+  if (custom.detail && custom.detail.aliadoId) {
+    aplicarVentajaInstruir(custom.detail.aliadoId);
+  }
+}
+
+onMounted(() => {
+  window.addEventListener(
+    "instruir-aliado",
+    instruirAliadoListener as EventListener
+  );
+});
+onBeforeUnmount(() => {
+  window.removeEventListener(
+    "instruir-aliado",
+    instruirAliadoListener as EventListener
+  );
+});
+// --- FIN: Lógica de instruir aliado ---
 // We extend PersonajeInstancia at runtime with:
 //   ventajaPendiente?: 0 | 1 | -1; // 1=adv, -1=dis, 0|undefined=none
 //   ventajaFuente?: string; // e.g. 'Instruir', 'Condición', etc.
@@ -1422,9 +1483,23 @@ function onPointerMove(event: PointerEvent) {
 function onPointerDown(event: PointerEvent) {
   const mesh = pick(event);
 
+
+  // Si estamos en modo instruir
+  if (modoInstruir.value) {
+    if (mesh && mesh.name.startsWith("personaje_")) {
+      // Obtener el id del personaje
+      const aliadoId = mesh.name.replace("personaje_", "");
+      aplicarVentajaInstruir(aliadoId);
+      desactivarModoInstruir();
+      return;
+    }
+    // Si se hace clic en cualquier otro sitio, desactivar modo instruir
+    desactivarModoInstruir();
+    return;
+  }
+
   // Si estamos en modo empujar
   if (modoEmpujar.value) {
-    // Si se hace clic en un personaje objetivo válido
     if (mesh && mesh.name.startsWith("personaje_")) {
       const esObjetivoValido = objetivosEmpujar.value.includes(mesh);
       if (esObjetivoValido) {
@@ -1432,14 +1507,12 @@ function onPointerDown(event: PointerEvent) {
         return;
       }
     }
-    // Si se hace clic en cualquier otro sitio, desactivar modo empujar
     desactivarModoEmpujar();
     return;
   }
 
   // Si estamos en modo ataque
   if (modoAtaque.value) {
-    // Si se hace clic en un personaje objetivo válido
     if (mesh && mesh.name.startsWith("personaje_")) {
       const esObjetivoValido = objetivosAtaque.value.includes(mesh);
       if (esObjetivoValido) {
@@ -1447,14 +1520,12 @@ function onPointerDown(event: PointerEvent) {
         return;
       }
     }
-    // Si se hace clic en cualquier otro sitio, desactivar modo ataque
     desactivarModoAtaque();
     return;
   }
 
   // Si estamos en modo carga
   if (modoCarga.value) {
-    // Si se hace clic en un personaje objetivo válido
     if (mesh && mesh.name.startsWith("personaje_")) {
       const esObjetivoValido = objetivosCarga.value.includes(mesh);
       if (esObjetivoValido) {
@@ -1462,7 +1533,6 @@ function onPointerDown(event: PointerEvent) {
         return;
       }
     }
-    // Si se hace clic en cualquier otro sitio, desactivar modo carga
     desactivarModoCarga();
     return;
   }
@@ -1490,6 +1560,21 @@ function onPointerDown(event: PointerEvent) {
     if (coords) {
       console.log(`🎯 Hexágono seleccionado: (${coords.x}, ${coords.y})`);
     }
+  }
+
+  if (modoInstruir.value) {
+    console.log("Instruyendo a aliado:", mesh);
+    // Si se hace clic en un personaje objetivo válido
+    if (mesh && mesh.name.startsWith("personaje_")) {
+      const esObjetivoValido = objetivosInstruir.value.includes(mesh);
+      if (esObjetivoValido) {
+        //setVentaja(mesh);
+        return;
+      }
+    }
+    // Si se hace clic en cualquier otro sitio, desactivar modo instruir
+    desactivarModoInstruir();
+    return;
   }
 }
 
@@ -1699,12 +1784,18 @@ function desactivarModoInstruir() {
   // Resetear resaltado de aliados
   if (personajeSeleccionado.value && partidaActual.value) {
     let aliados: PersonajeInstancia[] = [];
-    partidaActual.value.equipos.forEach(eq => {
-      if (eq.personajes.some(p => p.instanciaId === personajeSeleccionado.value!.instanciaId)) {
-        aliados = eq.personajes.filter(p => p.instanciaId !== personajeSeleccionado.value!.instanciaId);
+    partidaActual.value.equipos.forEach((eq) => {
+      if (
+        eq.personajes.some(
+          (p) => p.instanciaId === personajeSeleccionado.value!.instanciaId
+        )
+      ) {
+        aliados = eq.personajes.filter(
+          (p) => p.instanciaId !== personajeSeleccionado.value!.instanciaId
+        );
       }
     });
-    aliados.forEach(a => {
+    aliados.forEach((a) => {
       const mesh = personajesMeshes.get(a.instanciaId);
       if (mesh) {
         mesh.material.emissive?.setHex(0x000000);
@@ -2136,6 +2227,15 @@ async function procesarAtaqueConReaccion() {
    */
   function tirarDadosD12(ventaja = 0, extraDice = 0) {
     // Always roll at least 2 dice
+    // Si el personaje tiene ventaja por instruir, consumirla
+    if (
+      arguments.length > 2 &&
+      typeof arguments[2] === "object" &&
+      arguments[2] &&
+      arguments[2].personaje
+    ) {
+      consumirVentajaSiCorresponde(arguments[2].personaje);
+    }
     const numDice = 2 + Math.max(0, extraDice);
     const rolls = Array.from(
       { length: numDice },
@@ -2162,8 +2262,9 @@ async function procesarAtaqueConReaccion() {
       total: used[0] + used[1],
     };
   }
-  const dado1 = tirarD12();
-  const dado2 = tirarD12();
+  // USO CORRECTO: ejemplo de tirada de ataque con ventaja/desventaja
+  // const { all, used, type, total } = tirarDadosD12(ventaja, extraDice)
+  // if (used[0] === 1 || used[1] === 1) { ... }
   // --- DICE ROLLING LOGIC ---
   // (tirarDadosD12 is now defined above)
   // Example usage for attack:
@@ -2183,12 +2284,15 @@ async function procesarAtaqueConReaccion() {
 
   // (The actual replacement will be done in the next step for all usages)
 
+  // Tirada de dados con ventaja/desventaja
+  const { all, used, type, total } = tirarDadosD12(ventaja, extraDice, { personaje: atacante });
+
   // Verificar fallo automático (cualquier dado es 1)
-  if (dado1 === 1 || dado2 === 1) {
+  if (used[0] === 1 || used[1] === 1) {
     agregarLog(
       "ataque",
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
-        `🎲 Tirada: ${dado1} + ${dado2}\n` +
+        `🎲 Tirada: ${used[0]} + ${used[1]}${type === 'adv' ? ' (Ventaja)' : type === 'dis' ? ' (Desventaja)' : ''}\n` +
         `💀 ¡FALLO CRÍTICO! (sacó un 1)\n` +
         `El ataque falla estrepitosamente.`
     );
@@ -2206,7 +2310,7 @@ async function procesarAtaqueConReaccion() {
     return;
   }
 
-  const tirada = dado1 + dado2 + atacante.nivel;
+  const tirada = used[0] + used[1] + atacante.nivel;
   const evasionBase = defensorFinal.atributos.evasion || 12;
   const evasionDefensor = evasionBase + modificadorEvasion; // Aplicar modificador de Parry
 
@@ -2219,7 +2323,7 @@ async function procesarAtaqueConReaccion() {
     agregarLog(
       "ataque",
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
-        `🎲 Tirada: ${dado1} + ${dado2} + ${atacante.nivel} = ${tirada}\n` +
+        `🎲 Tirada: ${used[0]} + ${used[1]} + ${atacante.nivel} = ${tirada}\n` +
         `🛡️ ¡FALLO! (Evasión: ${evasionDefensor}${mensajeParry})\n` +
         `El ataque no logra conectar.`
     );
@@ -2352,7 +2456,7 @@ async function procesarAtaqueConReaccion() {
   const mensajeAtaquePesado = esAtaquePesado ? " 🔥 ATAQUE PESADO (x2)" : "";
   const mensaje =
     `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!${mensajeAtaquePesado}\n` +
-    `🎲 Tirada: ${dado1} + ${dado2} + ${atacante.nivel} = ${tirada} (Evasión: ${evasionDefensor})\n` +
+  `🎲 Tirada: ${used[0]} + ${used[1]} + ${atacante.nivel} = ${tirada} (Evasión: ${evasionDefensor})\n` +
     (esCritico
       ? `⭐ ¡CRÍTICO! ${
           armaAtacante?.critico || "x2"
@@ -2769,7 +2873,6 @@ function activarModoInstruir() {
   }
 
   desactivarModos();
-
   modoInstruir.value = true;
   agregarLog("activa", `📢 Modo instruir activado`);
 
@@ -2778,9 +2881,11 @@ function activarModoInstruir() {
   // Obtener aliados del mismo equipo (excluyendo a sí mismo)
   let aliados: PersonajeInstancia[] = [];
   if (partidaActual.value) {
-    partidaActual.value.equipos.forEach(eq => {
-      if (eq.personajes.some(p => p.instanciaId === personaje.instanciaId)) {
-        aliados = eq.personajes.filter(p => p.instanciaId !== personaje.instanciaId);
+    partidaActual.value.equipos.forEach((eq) => {
+      if (eq.personajes.some((p) => p.instanciaId === personaje.instanciaId)) {
+        aliados = eq.personajes.filter(
+          (p) => p.instanciaId !== personaje.instanciaId
+        );
       }
     });
   }
@@ -2792,15 +2897,13 @@ function activarModoInstruir() {
   }
 
   // Resaltar aliados en el UI (opcional: visual feedback)
-  aliados.forEach(a => {
+  aliados.forEach((a) => {
     const mesh = personajesMeshes.get(a.instanciaId);
     if (mesh) {
       // Ejemplo: cambiar color del mesh temporalmente
       mesh.material.emissive?.setHex(0xffe066);
     }
   });
-
-
 
   // Si el usuario cancela, desactivar modo instruir y quitar resaltado
   // (esto se maneja en la función de cancelar y en desactivarModoInstruir)
