@@ -619,4 +619,43 @@ function guardarDatos() {
   saveCharacterData();
 }
 
-</script>
+ </script>
+<style scoped>
+/* Responsive tablas habilidades */
+.max-h-200 {
+  max-height: 400px;
+}
+@media (max-width: 900px) {
+  .bg-blue-50.border-2 {
+    overflow-x: auto !important;
+  }
+  .grid-cols-12 {
+    min-width: 700px !important;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(60px, 1fr));
+  }
+  .divide-y > div {
+    min-width: 700px !important;
+  }
+}
+@media (max-width: 640px) {
+  .bg-blue-50.border-2 {
+    overflow-x: auto !important;
+    padding: 0 !important;
+  }
+  .grid-cols-12 {
+    min-width: 700px !important;
+    font-size: 0.95rem !important;
+  }
+  .divide-y > div {
+    min-width: 700px !important;
+    font-size: 0.95rem !important;
+  }
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+  .text-4xl {
+    font-size: 2rem !important;
+  }
+}
+</style>

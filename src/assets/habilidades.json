@@ -49,12 +49,6 @@
       "atributo": "Mente"
     },
     {
-      "id": 8,
-      "nombre": "Orientación",
-      "descripcion": "Conocimiento y habilidades para encontrar el camino y ubicarse en diferentes entornos.",
-      "atributo": "Mente"
-    },
-    {
       "id": 9,
       "nombre": "Supervivencia",
       "descripcion": "Conocimiento y habilidades para sobrevivir en entornos hostiles.",
@@ -191,6 +185,12 @@
       "id": 31,
       "nombre": "Naturaleza",
       "descripcion": "Habilidad para comprender y relacionarse con el entorno natural.",
+      "atributo": "Mente"
+    },  
+    {
+      "id": 32,
+      "nombre": "Orientación",
+      "descripcion": "Conocimiento y habilidades para encontrar el camino y ubicarse en diferentes entornos.",
       "atributo": "Mente"
     }
     

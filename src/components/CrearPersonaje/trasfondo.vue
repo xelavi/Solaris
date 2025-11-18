@@ -221,3 +221,32 @@ function toggleHabilidad(habilidad) {
   }
 }
 </script>
+<style scoped>
+@media (max-width: 640px) {
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+  .rounded-lg {
+    border-radius: 0.75rem !important;
+  }
+  .text-xl, .text-lg {
+    font-size: 1.1rem !important;
+  }
+  .flex, .gap-3 {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+  .w-full {
+    width: 100% !important;
+  }
+}
+</style>

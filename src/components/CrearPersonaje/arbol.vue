@@ -1,7 +1,7 @@
 <template>
-  <div class="flex gap-4">
-    <div ref="box" class="w-250 h-150 relative"></div>
-    <div class="flex flex-col gap-4">
+  <div class="flex gap-4 arbol-responsive-container">
+    <div ref="box" class="w-250 h-150 relative arbol-canvas"></div>
+    <div class="flex flex-col gap-4 arbol-paneles">
       <!-- Panel de Nodos Seleccionados -->
       <div class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
         <h3 class="text-lg font-bold mb-3">Nodos Seleccionados</h3>
@@ -1060,4 +1060,69 @@ onMounted(() => {
 onBeforeUnmount(() => {
   dispose();
 });
-</script>
+ </script>
+<style scoped>
+.arbol-responsive-container {
+  width: 100%;
+}
+.arbol-canvas {
+  min-width: 320px;
+  min-height: 200px;
+}
+@media (max-width: 900px) {
+  .arbol-responsive-container {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+  }
+  .arbol-canvas {
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    height: 50vw !important;
+    min-height: 200px !important;
+    overflow-x: auto !important;
+    margin-bottom: 1rem;
+  }
+  .arbol-paneles {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 1rem !important;
+  }
+  .w-64 {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+  }
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  .max-h-60 {
+    max-height: 200px !important;
+  }
+}
+@media (max-width: 640px) {
+  .arbol-canvas {
+    width: 100vw !important;
+    height: 60vw !important;
+    min-height: 180px !important;
+    max-width: 100vw !important;
+    overflow-x: auto !important;
+  }
+  .arbol-paneles {
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+  .w-64 {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+  }
+  .p-4 {
+    padding: 0.5rem !important;
+  }
+  .max-h-60 {
+    max-height: 120px !important;
+  }
+}
+</style>

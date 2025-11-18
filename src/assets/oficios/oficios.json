@@ -4,7 +4,7 @@
       "id": 1,
       "nombre": "Místic-o",
       "descripcion": "Practicante de artes místicas y espirituales.",
-      "habilidades": [1, 2, 3],
+      "habilidades": [10, 13, 14,4,3,6],
       "dotes": [
         {"id": 1, "nombre": "Eco de Corazones I", "descripcion": "El mero hecho de rozar con tu tacto a una criatura u objeto te confiere información sobre su estado vital y su pureza: si son puros, neutrales o están corruptos. ", "requisito_dote": ""},
         {"id": 2, "nombre": "Peregrinaje del Asceta", "descripcion": "Durante un día de viaje de una Exploración, puedes decidir gastar todo tu tiempo libre en meditar. Si meditas de esta forma, puedes ignorar los requisitos de comida y bebida para ese día.", "requisito_dote": ""},
@@ -21,7 +21,7 @@
       "id": 2,
       "nombre": "Agente",
       "descripcion": "La mayoría de gente caza animales. Tu cazas personas. Ya sea para capturar delincuentes, para matar a pobres desgraciados o para obtener información de personajes importantes, siempre sabes la forma mas eficaz de conseguirlo. Amigo de todo el mundo: Siempre sabes cómo conseguir información y como hablar con diferentes tipos de personas según te convengan para tus objetivos.",
-      "habilidades": [4, 5, 6],
+      "habilidades": [16, 8, 3,9,13,11],
       "dotes": [
         {"id": 1, "nombre": "Red I", "descripcion": "Tienes una red de contactos en varias ciudades que te pueden proporcionar información o servicios básicos. Puedes usar esta red para conseguir alojamiento, comida o información sobre sucesos recientes en la ciudad.", "requisito_dote": ""},
         {"id": 2, "nombre": "Arte del disfraz I", "descripcion": "Puedes alterar tu acento, manerismos y atuendo a voluntad si dedicas quince minutos a caracterizarte. Si bien el disfraz no es lo más convincente del mundo, es suficiente para engañar a cualquier persona que no tenga motivos para sospechar. Cuando estás caracterizado, puedes hacer creer a la gente que eres una persona cualquiera, posiblemente procedente de otro lugar; la tapadera no se sostiene ante escrutinio: una tirada exitosa de Averiguar intenciones contra tu Persuasión revelará que tu disfraz es una farsa.", "requisito_dote": ""},
@@ -37,7 +37,7 @@
       "id": 3,
       "nombre": "Erudito",
       "descripcion": "Dedicado a la preservación del conocimiento. Cada erudito tiene sus propios intereses pues la información es poder. Dependiendo de la orden u organización a la que dediques tus servicios estos, te van a dar búsquedas o misiones en las que tendrás que contribuir a su causa; tales como: buscar una reliquia perdida, llevar una pieza de suma importancia a un lugar seguro…",
-      "habilidades": [7, 8, 9, 10, 11, 12],
+      "habilidades": [7, 5, 9, 10, 13, 4],
       "dotes": [
         {"id": 1, "nombre": "Cultura con fundamento", "descripcion": "Al entrar en algun lugar civilizado, sabes localizar los principales lugares de interés gracias a tus vastos conocimientos, incluidos lugares donde conseguir tinta, papiros y otros utensilios de escriba. Además, (casi) siempre conoces información superficial sobre la historia y situación geopolítica del lugar.", "requisito_dote": ""},
         {"id": 2, "nombre": "Toque curativo", "descripcion": "Sabes cómo realizar primeros auxilios utilizando tan sólo el poder de tus manos. Poseer esta habilidad te permite realizar tiradas de Medicina como si siempre tuvieses un botiquín de Estrato 1 encima. Además, es imposible que falles las tiradas de Medicina realizadas durante un Descanso para curar a otras personas.", "requisito_dote": ""},
@@ -55,7 +55,7 @@
       "id": 4,
       "nombre": "Monster Hunter",
       "descripcion": "Acostumbrado a ser el depredador, has consagrado tu vida al noble arte de la caza ya sea por el romanticismo de perseguir a tu presa durante días para luego asestarle un único golpe certero, como para unirte a otros cazadores y atrapar una pieza mayor. Puedes formar parte de una Gran Cacería, grupos de cazadores a sueldo que se dedican a asegurar las tierras de una población o un noble. O bien puedes trabajar en solitario cogiendo encargos mas accesibles para un único depredador.",
-      "habilidades": [13, 14, 15, 16, 17, 18],
+      "habilidades": [3, 1, 9, 16, 31, 20],
       "dotes": [
         {"id": 1, "nombre": "Domar bestia", "descripcion": "Puedes instruir durante 1 día un animal salvaje de tamaño pequeño y domesticarlo. Con 1 semana, el animal te tiene confianza plena y desbloqueas habilidades y ordenes que puedes usar con ella.", "requisito_dote": ""},
         {"id": 2, "nombre": "Empatía animal", "descripcion": "Entiendes las intenciones de los animales y otras bestias. Sabes el estado anímico con sólo un vistazo, discierniendo si es agresivo o es manso. Si puede domesticarse o es un esfuerzo inútil.", "requisito_dote": ""},
@@ -72,7 +72,7 @@
       "id": 5,
       "nombre": "Pionero",
       "descripcion": "Explorador experto en recorrer tierras inexploradas y sobrevivir en los entornos más hostiles. Conocedor de los secretos de la naturaleza y capaz de guiar a otros a través de los peligros del mundo salvaje.",
-      "habilidades": [19, 20, 21, 22, 23, 24],
+      "habilidades": [32, 31, 15, 5, 4, 30],
       "dotes": [
         {"id": 1, "nombre": "Viaje rápido", "descripcion": "Reduce en 1 dia el tiempo que se tarda en atravesar casillas que no sean de camino.", "requisito_dote": ""},
         {"id": 2, "nombre": "Hallar el camino", "descripcion": "Sabes orientarte por los vientos, la vegetación, y los astros. Siempre que no tengas un elemento que perturbe gravementre los sentidos, sabes dónde está el norte.", "requisito_dote": ""},

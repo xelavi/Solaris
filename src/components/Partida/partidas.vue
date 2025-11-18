@@ -72,6 +72,12 @@
               >
                 🎮 Mapa 3D
               </button>
+              <button
+                @click.stop="irAEscena(partida.id)"
+                class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-green-500 text-white hover:bg-green-600 hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                🟩 Ir a Escena
+              </button>
             </div>
           </div>
         </div>
@@ -86,7 +92,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, inject } from 'vue'
-import type { PersonajeInstancia, Equipo, PartidaData } from '../../domain/Partida'
+import type { PartidaData } from '../../domain/Partida'
 
 const partidas = ref<PartidaData[]>([]);
 
@@ -94,6 +100,14 @@ const navigateToCrearPartida = inject<() => void>('navigateToCrearPartida')
 const navigateToCharacters = inject<() => void>('navigateToCharacters')
 const navigateToVerPartida = inject<(id: string) => void>('navigateToVerPartida')
 const navigateToJugarPartida = inject<(id: string) => void>('navigateToJugarPartida')
+
+const navigateToEscena = inject<(id?: string) => void>('navigateToEscena')
+
+function irAEscena(id: string) {
+  if (navigateToEscena) {
+    navigateToEscena(id);
+  }
+}
 
 function cargarPartidas() {
   try {

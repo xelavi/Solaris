@@ -791,18 +791,6 @@ function instruirAliadoListener(e: Event) {
   }
 }
 
-onMounted(() => {
-  window.addEventListener(
-    "instruir-aliado",
-    instruirAliadoListener as EventListener
-  );
-});
-onBeforeUnmount(() => {
-  window.removeEventListener(
-    "instruir-aliado",
-    instruirAliadoListener as EventListener
-  );
-});
 // --- FIN: Lógica de instruir aliado ---
 // We extend PersonajeInstancia at runtime with:
 //   ventajaPendiente?: 0 | 1 | -1; // 1=adv, -1=dis, 0|undefined=none
@@ -2262,9 +2250,8 @@ async function procesarAtaqueConReaccion() {
       total: used[0] + used[1],
     };
   }
-  // USO CORRECTO: ejemplo de tirada de ataque con ventaja/desventaja
-  // const { all, used, type, total } = tirarDadosD12(ventaja, extraDice)
-  // if (used[0] === 1 || used[1] === 1) { ... }
+  const dado1 = tirarD12();
+  const dado2 = tirarD12();
   // --- DICE ROLLING LOGIC ---
   // (tirarDadosD12 is now defined above)
   // Example usage for attack:
@@ -2284,15 +2271,12 @@ async function procesarAtaqueConReaccion() {
 
   // (The actual replacement will be done in the next step for all usages)
 
-  // Tirada de dados con ventaja/desventaja
-  const { all, used, type, total } = tirarDadosD12(ventaja, extraDice, { personaje: atacante });
-
   // Verificar fallo automático (cualquier dado es 1)
-  if (used[0] === 1 || used[1] === 1) {
+  if (dado1 === 1 || dado2 === 1) {
     agregarLog(
       "ataque",
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
-        `🎲 Tirada: ${used[0]} + ${used[1]}${type === 'adv' ? ' (Ventaja)' : type === 'dis' ? ' (Desventaja)' : ''}\n` +
+        `🎲 Tirada: ${dado1} + ${dado2}\n` +
         `💀 ¡FALLO CRÍTICO! (sacó un 1)\n` +
         `El ataque falla estrepitosamente.`
     );
@@ -2310,7 +2294,7 @@ async function procesarAtaqueConReaccion() {
     return;
   }
 
-  const tirada = used[0] + used[1] + atacante.nivel;
+  const tirada = dado1 + dado2 + atacante.nivel;
   const evasionBase = defensorFinal.atributos.evasion || 12;
   const evasionDefensor = evasionBase + modificadorEvasion; // Aplicar modificador de Parry
 
@@ -2323,7 +2307,7 @@ async function procesarAtaqueConReaccion() {
     agregarLog(
       "ataque",
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
-        `🎲 Tirada: ${used[0]} + ${used[1]} + ${atacante.nivel} = ${tirada}\n` +
+        `🎲 Tirada: ${dado1} + ${dado2} + ${atacante.nivel} = ${tirada}\n` +
         `🛡️ ¡FALLO! (Evasión: ${evasionDefensor}${mensajeParry})\n` +
         `El ataque no logra conectar.`
     );
@@ -2456,7 +2440,7 @@ async function procesarAtaqueConReaccion() {
   const mensajeAtaquePesado = esAtaquePesado ? " 🔥 ATAQUE PESADO (x2)" : "";
   const mensaje =
     `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!${mensajeAtaquePesado}\n` +
-  `🎲 Tirada: ${used[0]} + ${used[1]} + ${atacante.nivel} = ${tirada} (Evasión: ${evasionDefensor})\n` +
+    `🎲 Tirada: ${dado1} + ${dado2} + ${atacante.nivel} = ${tirada} (Evasión: ${evasionDefensor})\n` +
     (esCritico
       ? `⭐ ¡CRÍTICO! ${
           armaAtacante?.critico || "x2"

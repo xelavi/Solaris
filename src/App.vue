@@ -7,10 +7,11 @@ import Partidas from './components/Partida/partidas.vue'
 import CrearPartida from './components/Partida/crear_partida.vue'
 import Partida from './components/Partida/partida.vue'
 import JugarPartida from './components/Partida/jugarPartida.vue'
-
-const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida'>('characters')
+import Escena from './components/entornoPrueba/escena.vue'
+const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida' | 'escena'>('characters')
 const characterId = ref<string>('')
 const partidaId = ref<string>('')
+const escenaPartidaId = ref<string>('')
 
 // Provide navigation functions
 provide('navigateToFicha', (id: string) => {
@@ -45,6 +46,10 @@ provide('navigateToJugarPartida', (id: string) => {
   partidaId.value = id
   currentView.value = 'jugarPartida'
 })
+provide('navigateToEscena', (id?: string) => {
+  if (id) escenaPartidaId.value = id;
+  currentView.value = 'escena';
+})
 </script>
 
 <template>
@@ -55,6 +60,7 @@ provide('navigateToJugarPartida', (id: string) => {
   <crear-partida v-else-if="currentView === 'crearPartida'"></crear-partida>
   <partida v-else-if="currentView === 'verPartida'" :partida-id="partidaId"></partida>
   <jugar-partida v-else-if="currentView === 'jugarPartida'" :partida-id="partidaId"></jugar-partida>
+  <escena v-else-if="currentView === 'escena'" :partida-id="escenaPartidaId"></escena>
 </template>
 
 <style scoped>

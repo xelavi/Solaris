@@ -441,4 +441,52 @@ watch(() => {
 
 </script>
 <style scoped>
+/* Ajustes responsivos para móvil */
+.max-w-350 {
+  max-width: 350px;
+}
+@media (max-width: 640px) {
+  .max-w-350 {
+    max-width: 100vw;
+    padding: 0 !important;
+  }
+  .p-6 {
+    padding: 0.5rem !important;
+  }
+  .p-8 {
+    padding: 1rem !important;
+  }
+  .rounded-xl {
+    border-radius: 0.75rem !important;
+  }
+  .lg\\:flex-row {
+    flex-direction: column !important;
+  }
+  .lg\\:w-64 {
+    width: 100% !important;
+  }
+  .flex-col {
+    gap: 1rem !important;
+  }
+  .shadow-xl {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
+  }
+  .text-4xl, .text-5xl, .text-3xl {
+    font-size: 1.5rem !important;
+  }
+  .min-h-\[500px\] {
+    min-height: 300px !important;
+  }
+  .border-l-2 {
+    border-left: none !important;
+    margin: 0 !important;
+    height: 0 !important;
+  }
+  .flex {
+    flex-wrap: wrap !important;
+  }
+  .items-center {
+    align-items: stretch !important;
+  }
+}
 </style>
