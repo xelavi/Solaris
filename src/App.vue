@@ -8,7 +8,12 @@ import CrearPartida from './components/Partida/crear_partida.vue'
 import Partida from './components/Partida/partida.vue'
 import JugarPartida from './components/Partida/jugarPartida.vue'
 import Escena from './components/entornoPrueba/escena.vue'
-const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida' | 'escena'>('characters')
+//import Editor from './components/entornoPrueba/editorVoxeles.vue'
+const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida' | 'escena' | 'editorVoxeles'>('characters')
+
+provide('navigateToEditorVoxeles', () => {
+  currentView.value = 'editorVoxeles';
+});
 const characterId = ref<string>('')
 const partidaId = ref<string>('')
 const escenaPartidaId = ref<string>('')
@@ -50,6 +55,8 @@ provide('navigateToEscena', (id?: string) => {
   if (id) escenaPartidaId.value = id;
   currentView.value = 'escena';
 })
+
+
 </script>
 
 <template>
@@ -61,6 +68,7 @@ provide('navigateToEscena', (id?: string) => {
   <partida v-else-if="currentView === 'verPartida'" :partida-id="partidaId"></partida>
   <jugar-partida v-else-if="currentView === 'jugarPartida'" :partida-id="partidaId"></jugar-partida>
   <escena v-else-if="currentView === 'escena'" :partida-id="escenaPartidaId"></escena>
+  <editor v-else-if="currentView === 'editorVoxeles'"></editor>
 </template>
 
 <style scoped>

@@ -10,6 +10,7 @@
     "deploy": "npm run build && cd dist && git init && git add -A && git commit -m 'deploy' --allow-empty && git push -f https://github.com/xelavi/Solaris.git HEAD:gh-pages && cd .."
   },
   "dependencies": {
+    "three-pathfinding": "^1.3.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {

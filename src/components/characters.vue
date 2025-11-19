@@ -1,4 +1,4 @@
-    <template>
+<template>
   <div class="bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen p-6">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-8">
@@ -7,20 +7,28 @@
         </h1>
       </div>
 
+      <!-- Barra superior con botones -->
       <div class="flex justify-center gap-4 mb-8">
         <button
           @click="crearNuevoPersonaje"
           class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 flex items-center gap-3 text-lg"
         >
-          <span class="text-2xl">＋</span>
+        
           <span>Crear Nuevo Personaje</span>
         </button>
         <button
           @click="irAPartidas"
           class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/30 flex items-center gap-3 text-lg"
         >
-          <span class="text-2xl">⚔️</span>
+          
           <span>Partidas</span>
+        </button>
+        <button
+          @click="irAEditorVoxeles"
+          class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-purple-500 text-white hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/30 flex items-center gap-3 text-lg"
+        >
+          
+          <span>Editor de Voxeles</span>
         </button>
       </div>
 
@@ -85,6 +93,7 @@ const personajes = ref<PersonajeInfo[]>([]);
 const navigateToFicha = inject<(id: string) => void>('navigateToFicha')
 const navigateToCrear = inject<() => void>('navigateToCrear')
 const navigateToPartidas = inject<() => void>('navigateToPartidas')
+const navigateToEditorVoxeles = inject<() => void>('navigateToEditorVoxeles')
 
 function cargarPersonajes() {
   try {
@@ -136,6 +145,12 @@ function crearNuevoPersonaje() {
 function irAPartidas() {
   if (navigateToPartidas) {
     navigateToPartidas();
+  }
+}
+
+function irAEditorVoxeles() {
+  if (navigateToEditorVoxeles) {
+    navigateToEditorVoxeles();
   }
 }
 
