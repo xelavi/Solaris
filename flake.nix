@@ -14,7 +14,7 @@
       in {
         devShell = with pkgs; mkShell {
           buildInputs = [
-            deno
+            nodejs
             typescript
             typescript-language-server
           ];
