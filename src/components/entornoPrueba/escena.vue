@@ -12,12 +12,8 @@ opcional
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import * as THREE from "three";
-import { Pathfinding } from "three-pathfinding";
-// Pathfinding setup
-const pathfinder = new Pathfinding();
-const ZONE = "level1";
+import { astar, Cell } from '../../domain/composables/pathfinder';
 let cubes: THREE.Mesh[] = [];
-let navmeshZone: any = null;
 let lastPathCubes: THREE.Mesh[] = [];
 import type { PersonajeInstancia, PartidaData } from "../../domain/Partida";
 const props = defineProps<{ partidaId?: string }>();
@@ -312,87 +308,6 @@ function mostrarCirculoSuelo({
   return circleMesh;
 }
 
-type Cell = { x: number; z: number };
-
-const DIRS: [number, number][] = [
-  [1, 0],
-  [-1, 0],
-  [0, 1],
-  [0, -1],
-  [1, -1],
-  [-1, 1],
-  [1, 1],
-  [-1, -1],
-  // para diagonales:
-  // [ 1,  1], [ 1, -1], [-1, 1], [-1, -1],
-];
-function astar(start: Cell, goal: Cell, grid: boolean[][]): Cell[] | null {
-  const width = grid.length;
-  const height = grid[0].length;
-
-  const key = (x: number, z: number) => `${x},${z}`;
-
-  const heuristic = (a: Cell, b: Cell) =>
-    Math.abs(a.x - b.x) + Math.abs(a.z - b.z);
-
-  const open: { x: number; z: number; f: number }[] = [];
-  const closed = new Set<string>();
-  const cameFrom = new Map<string, Cell>();
-  const gScore = new Map<string, number>();
-
-  const startKey = key(start.x, start.z);
-  gScore.set(startKey, 0);
-  open.push({ x: start.x, z: start.z, f: heuristic(start, goal) });
-
-  while (open.length > 0) {
-    open.sort((a, b) => a.f - b.f);
-    const current = open.shift()!;
-    const ck = key(current.x, current.z);
-
-    if (current.x === goal.x && current.z === goal.z) {
-      const path: Cell[] = [{ x: current.x, z: current.z }];
-      let k = ck;
-      while (cameFrom.has(k)) {
-        const prev = cameFrom.get(k)!;
-        path.push({ x: prev.x, z: prev.z });
-        k = key(prev.x, prev.z);
-      }
-      return path.reverse();
-    }
-
-    closed.add(ck);
-
-    for (const [dx, dz] of DIRS) {
-      const nx = current.x + dx;
-      const nz = current.z + dz;
-
-      if (nx < 0 || nz < 0 || nx >= width || nz >= height) continue;
-      if (!canWalk(nx, nz)) continue;
-
-      const nk = key(nx, nz);
-      if (closed.has(nk)) continue;
-
-      const currentG = gScore.get(ck) ?? Infinity;
-      const tentativeG = currentG + 1;
-
-      const neighborG = gScore.get(nk) ?? Infinity;
-      if (tentativeG < neighborG) {
-        cameFrom.set(nk, { x: current.x, z: current.z });
-        gScore.set(nk, tentativeG);
-        const f = tentativeG + heuristic({ x: nx, z: nz }, goal);
-
-        const existing = open.find((n) => n.x === nx && n.z === nz);
-        if (existing) {
-          existing.f = f;
-        } else {
-          open.push({ x: nx, z: nz, f });
-        }
-      }
-    }
-  }
-
-  return null; // sin camino
-}
 
 let currentPath: THREE.Vector3[] | null = null;
 let currentPathIndex = 0;
@@ -414,17 +329,18 @@ function movePlayerTo(targetWorld: THREE.Vector3) {
     return;
 
   if (!walkable[goal.ix][goal.iz]) return;
- 
+
+  // Usar astar importado
   const pathCells = astar(
     { x: start.ix, z: start.iz },
     { x: goal.ix, z: goal.iz },
-    walkable
+    walkable,
+    canWalk
   );
 
   if (!pathCells) return;
 
   currentPath = pathCells.map((c) => gridIndexToWorld(c.x, c.z));
- 
   currentPathIndex = 0;
 }
 
@@ -440,9 +356,11 @@ function update() {
     const dir = new THREE.Vector3().subVectors(target, characterMesh.position);
     const dist = dir.length();
 
-    if (dist < 0.02) {
+    // Aumenta el umbral para evitar quedarse atascado
+    const threshold = Math.max(0.1, moveSpeed * delta * 1.5);
+    if (dist < threshold) {
+      characterMesh.position.copy(target); // Asegura que llegue exactamente
       currentPathIndex++;
-
     } else {
       dir.normalize();
       characterMesh.position.addScaledVector(dir, moveSpeed * delta);
@@ -509,38 +427,7 @@ function handleCubeClick(cube: THREE.Mesh) {
   const start = characterMesh.position.clone();
   const end = cube.position.clone();
   movePlayerTo(end);
-  // Pathfinding
-  //  const groupID = pathfinder.getGroup(ZONE, start);
-  /*const path = pathfinder.findPath(start, end, ZONE, groupID);
-  console.log("Camino encontrado:", path);
-  if (path && path.length > 0) {
-    // Para cada punto del path, encontrar el cubo más cercano y colorearlo
-    path.forEach((point, idx) => {
-      // Buscar el cubo más cercano a este punto
-      let minDist = Infinity;
-      let closestCube = null;
-      for (const c of cubes) {
-        const dist = c.position.distanceTo(
-          new THREE.Vector3(point.x, c.position.y, point.z)
-        );
-        if (dist < minDist) {
-          minDist = dist;
-          closestCube = c;
-        }
-      }
-      if (closestCube && !lastPathCubes.includes(closestCube)) {
-        (closestCube.material as THREE.MeshStandardMaterial).color.set(
-          0x00ff00
-        );
-        lastPathCubes.push(closestCube);
-      }
-    });
-    // Colorea el destino en rojo
-    (cube.material as THREE.MeshStandardMaterial).color.set(0xff0000);
-  } else {
-    // Si no hay camino, solo colorea el destino en rojo
-    (cube.material as THREE.MeshStandardMaterial).color.set(0xff0000);
-  }*/
+ 
 }
 
 onMounted(() => {
