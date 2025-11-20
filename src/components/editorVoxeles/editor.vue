@@ -114,7 +114,7 @@
               </div>
             </div>
 
-            <!-- Emissive Intensity -->
+            <!-- Emissive Intensity - INCREASED MAX TO 10 -->
             <div>
               <label class="text-xs font-semibold block mb-1" :class="darkMode ? 'text-gray-300' : 'text-gray-700'">
                 Intensity: {{ currentMaterial.emissiveIntensity.toFixed(2) }}
@@ -122,7 +122,7 @@
               <input
                 type="range"
                 min="0"
-                max="2"
+                max="10"
                 step="0.1"
                 v-model.number="currentMaterial.emissiveIntensity"
                 class="w-full"
@@ -267,6 +267,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass'; // NEW: OutputPass for ToneMapping
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
 
 export default {
@@ -391,27 +392,51 @@ export default {
       this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1;
+      
+      // IMPORTANT: Disable default tone mapping on renderer. 
+      // We will apply it via OutputPass at the END of the chain.
+      this.renderer.toneMapping = THREE.NoToneMapping; 
       
       if (this.$refs.canvasContainer.firstChild) {
         this.$refs.canvasContainer.removeChild(this.$refs.canvasContainer.firstChild);
       }
       this.$refs.canvasContainer.appendChild(this.renderer.domElement);
 
-      // Post-processing
-      this.composer = new EffectComposer(this.renderer);
+      // --- POST PROCESSING SETUP (HDR) ---
+
+      // 1. Use HalfFloatType for HDR rendering (Allows brightness > 1.0)
+      const renderTarget = new THREE.WebGLRenderTarget(
+        window.innerWidth,
+        window.innerHeight,
+        {
+          type: THREE.HalfFloatType,
+          format: THREE.RGBAFormat,
+          encoding: THREE.sRGBEncoding
+        }
+      );
+
+      this.composer = new EffectComposer(this.renderer, renderTarget);
       const renderPass = new RenderPass(this.scene, this.camera);
       this.composer.addPass(renderPass);
 
-      // Bloom
+      // 2. Bloom Pass (HDR Config)
+      // Strength: 1.0 (Standard glow)
+      // Radius: 0.2 (Small, tight aura)
+      // Threshold: 1.0 (Only things brighter than pure white will glow)
       this.bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        1.5, 0.4, 0.85
+        1.0, 
+        0.2, 
+        1.0  
       );
       this.composer.addPass(this.bloomPass);
 
-      // FXAA
+      // 3. Output Pass (Tone Mapping & Color Space)
+      // This compresses the HDR range down to the screen
+      const outputPass = new OutputPass();
+      this.composer.addPass(outputPass);
+
+      // 4. FXAA (Antialiasing)
       this.fxaaPass = new ShaderPass(FXAAShader);
       const pixelRatio = this.renderer.getPixelRatio();
       this.fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
@@ -488,8 +513,6 @@ export default {
       this.renderScene();
     },
     renderScene() {
-      // Simple, single-pass rendering. 
-      // The Composer handles Opaque -> Transparent sorting automatically.
       if (this.composer) {
         this.composer.render();
       }
@@ -623,7 +646,8 @@ export default {
       const presets = {
         default: { color: '#feb74c', emissive: '#000000', metalness: 0, roughness: 0.5, emissiveIntensity: 0, opacity: 1 },
         metal: { color: '#c0c0c0', emissive: '#000000', metalness: 1, roughness: 0.2, emissiveIntensity: 0, opacity: 1 },
-        glow: { color: '#ffffff', emissive: '#00ff00', metalness: 0, roughness: 0.8, emissiveIntensity: 1.5, opacity: 1 },
+        // Updated Glow preset to have higher intensity
+        glow: { color: '#ffffff', emissive: '#00ff00', metalness: 0, roughness: 0.8, emissiveIntensity: 5.0, opacity: 1 },
         wood: { color: '#8b4513', emissive: '#000000', metalness: 0, roughness: 0.9, emissiveIntensity: 0, opacity: 1 },
         glass: { color: '#88ccff', emissive: '#000000', metalness: 0.1, roughness: 0.1, emissiveIntensity: 0, opacity: 0.3 },
         plastic: { color: '#ff69b4', emissive: '#000000', metalness: 0, roughness: 0.3, emissiveIntensity: 0, opacity: 1 }
