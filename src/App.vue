@@ -8,12 +8,10 @@ import CrearPartida from './components/Partida/crear_partida.vue'
 import Partida from './components/Partida/partida.vue'
 import JugarPartida from './components/Partida/jugarPartida.vue'
 import Escena from './components/entornoPrueba/escena.vue'
-//import Editor from './components/editorVoxeles.vue'
+import Editor from './components/editorVoxeles/editor.vue'
 const currentView = ref<'characters' | 'crear' | 'ficha' | 'partidas' | 'crearPartida' | 'verPartida' | 'jugarPartida' | 'escena' | 'editorVoxeles'>('characters')
 
-provide('navigateToEditorVoxeles', () => {
-  currentView.value = 'editorVoxeles';
-});
+
 const characterId = ref<string>('')
 const partidaId = ref<string>('')
 const escenaPartidaId = ref<string>('')
@@ -55,6 +53,9 @@ provide('navigateToEscena', (id?: string) => {
   if (id) escenaPartidaId.value = id;
   currentView.value = 'escena';
 })
+provide('navigateToEditorVoxeles', () => {
+  currentView.value = 'editorVoxeles';
+});
 
 
 </script>
