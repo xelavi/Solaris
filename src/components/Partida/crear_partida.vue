@@ -112,11 +112,22 @@
                         <span>Vida:</span>
                         <span class="font-medium">{{ personaje.vidaActual }} / {{ personaje.atributos?.hp || 10 }}</span>
                       </div>
-                      <div class="flex justify-between">
+                      <div class="flex justify-between items-center">
                         <span>Posición:</span>
-                        <span class="font-mono text-xs">
-                          ({{ personaje.posicion.x }}, {{ personaje.posicion.y }}, {{ personaje.posicion.z }})
-                        </span>
+                        <div class="flex gap-2 items-center">
+                          <span class="text-xs text-gray-500">X:</span>
+                          <input
+                            v-model.number="personaje.posicion.x"
+                            type="number"
+                            class="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs text-center"
+                          />
+                          <span class="text-xs text-gray-500">Z:</span>
+                          <input
+                            v-model.number="personaje.posicion.z"
+                            type="number"
+                            class="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs text-center"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
