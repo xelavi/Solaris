@@ -886,9 +886,6 @@ class TransformControlsGizmo extends Object3D {
     };
 
     const gizmoRotate: any = {
-      XYZE: [
-        [new Mesh(CircleGeometry(0.5, 1), matGray), null, [0, Math.PI / 2, 0]],
-      ],
       X: [[new Mesh(CircleGeometry(0.5, 0.5), matRed)]],
       Y: [
         [
@@ -900,13 +897,6 @@ class TransformControlsGizmo extends Object3D {
       Z: [
         [
           new Mesh(CircleGeometry(0.5, 0.5), matBlue),
-          null,
-          [0, Math.PI / 2, 0],
-        ],
-      ],
-      E: [
-        [
-          new Mesh(CircleGeometry(0.75, 1), matYellowTransparent),
           null,
           [0, Math.PI / 2, 0],
         ],
@@ -948,7 +938,6 @@ class TransformControlsGizmo extends Object3D {
           [0, 0, -Math.PI / 2],
         ],
       ],
-      E: [[new Mesh(new TorusGeometry(0.75, 0.25, 2, 24), matInvisible)]],
     };
 
     const gizmoScale: any = {

@@ -159,6 +159,21 @@ export class VoxelEngine {
       (event: any) => {
         this.controls.enabled = !event.value;
         this.isTransforming = event.value;
+
+        // FIX: When dragging ends, force-snap the rotation to perfect 90-degree steps
+        if (!event.value && this.selectionGroup) {
+          const snap = Math.PI / 2;
+          const rot = this.selectionGroup.rotation;
+
+          // Round all axes to the nearest 90 degrees
+          this.selectionGroup.rotation.set(
+            Math.round(rot.x / snap) * snap,
+            Math.round(rot.y / snap) * snap,
+            Math.round(rot.z / snap) * snap
+          );
+
+          this.selectionGroup.updateMatrixWorld();
+        }
       }
     );
 
