@@ -1,9 +1,10 @@
 import * as THREE from "three";
 import { generateChunkGeometry } from "./greedyMeshing";
-import { CHUNK_SIZE, type VoxelMaterial } from "./types";
+import { CHUNK_SIZE, type VoxelMaterial, type GeometryData } from "./types";
 
 class Chunk {
-  public mesh: THREE.Mesh | null = null;
+  // A chunk now holds an array of meshes (1 opaque + N transparent)
+  public meshes: THREE.Mesh[] = [];
   public isDirty: boolean = false;
   public data: (VoxelMaterial | null)[];
 
@@ -15,20 +16,25 @@ class Chunk {
 export class ChunkManager {
   public chunks: Map<string, Chunk> = new Map();
   private scene: THREE.Scene;
-  private material: THREE.MeshStandardMaterial;
+  // This material is for the Opaque mesh (uses attributes for varying materials)
+  private opaqueMaterial: THREE.MeshStandardMaterial;
   public voxelSize: number = 12.5;
 
   constructor(scene: THREE.Scene, voxelSize: number) {
     this.scene = scene;
     this.voxelSize = voxelSize;
-    this.material = this.createCustomMaterial();
+    this.opaqueMaterial = this.createCustomMaterial();
   }
 
-  private createCustomMaterial() {
+  // Public because VoxelEngine needs it for the Brush Preview
+  public createCustomMaterial(
+    baseParams: THREE.MeshStandardMaterialParameters = {}
+  ) {
     const mat = new THREE.MeshStandardMaterial({
       vertexColors: true,
       side: THREE.FrontSide,
       shadowSide: THREE.BackSide,
+      ...baseParams,
     });
 
     mat.onBeforeCompile = (shader) => {
@@ -62,22 +68,18 @@ export class ChunkManager {
       `
         .replace(
           "#include <roughnessmap_fragment>",
-          `
-        float roughnessFactor = vRoughness;
-      `
+          `float roughnessFactor = vRoughness;`
         )
         .replace(
           "#include <metalnessmap_fragment>",
-          `
-        float metalnessFactor = vMetalness;
-      `
+          `float metalnessFactor = vMetalness;`
         )
         .replace(
           "#include <emissivemap_fragment>",
           `
-        vec3 emissiveColor = vEmissiveColor * vEmissiveIntensity;
-        totalEmissiveRadiance += emissiveColor; 
-      `
+          vec3 emissiveColor = vEmissiveColor * vEmissiveIntensity;
+          totalEmissiveRadiance += emissiveColor; 
+          `
         );
     };
     return mat;
@@ -91,21 +93,18 @@ export class ChunkManager {
     const cx = Math.floor(x / CHUNK_SIZE);
     const cy = Math.floor(y / CHUNK_SIZE);
     const cz = Math.floor(z / CHUNK_SIZE);
-
     const chunk = this.chunks.get(this.getChunkKey(cx, cy, cz));
     if (!chunk) return null;
-
     const lx = x - cx * CHUNK_SIZE;
     const ly = y - cy * CHUNK_SIZE;
     const lz = z - cz * CHUNK_SIZE;
-    return chunk.data[lx + ly * CHUNK_SIZE + lz * CHUNK_SIZE * CHUNK_SIZE];
+    return chunk.data[lx + ly * CHUNK_SIZE + lz * CHUNK_SIZE * CHUNK_SIZE]!;
   };
 
   public setVoxel(x: number, y: number, z: number, mat: VoxelMaterial | null) {
     const cx = Math.floor(x / CHUNK_SIZE);
     const cy = Math.floor(y / CHUNK_SIZE);
     const cz = Math.floor(z / CHUNK_SIZE);
-
     const lx = x - cx * CHUNK_SIZE;
     const ly = y - cy * CHUNK_SIZE;
     const lz = z - cz * CHUNK_SIZE;
@@ -114,7 +113,7 @@ export class ChunkManager {
     let chunk = this.chunks.get(key);
 
     if (!chunk) {
-      if (!mat) return; // Don't create chunks just to remove air
+      if (!mat) return;
       chunk = new Chunk();
       this.chunks.set(key, chunk);
     }
@@ -123,8 +122,6 @@ export class ChunkManager {
     if (chunk.data[idx] !== mat) {
       chunk.data[idx] = mat;
       chunk.isDirty = true;
-
-      // Flag neighbors if on border to update faces that touch this voxel
       if (lx === 0) this.flagDirty(cx - 1, cy, cz);
       if (lx === CHUNK_SIZE - 1) this.flagDirty(cx + 1, cy, cz);
       if (ly === 0) this.flagDirty(cx, cy - 1, cz);
@@ -143,23 +140,13 @@ export class ChunkManager {
     for (const [key, chunk] of this.chunks.entries()) {
       if (chunk.isDirty) {
         const [cx, cy, cz] = key.split(",").map(Number);
-        this.rebuildChunk(cx, cy, cz, chunk);
+        this.rebuildChunk(cx!, cy!, cz!, chunk);
         chunk.isDirty = false;
       }
     }
   }
 
-  private rebuildChunk(cx: number, cy: number, cz: number, chunk: Chunk) {
-    if (chunk.mesh) {
-      this.scene.remove(chunk.mesh);
-      chunk.mesh.geometry.dispose();
-      chunk.mesh = null;
-    }
-
-    const data = generateChunkGeometry(cx, cy, cz, this.getVoxel);
-
-    if (data.positions.length === 0) return;
-
+  private createGeometry(data: GeometryData): THREE.BufferGeometry {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -190,36 +177,80 @@ export class ChunkManager {
       new THREE.Float32BufferAttribute(data.emissiveColor, 3)
     );
     geometry.setIndex(data.indices);
+    return geometry;
+  }
 
-    chunk.mesh = new THREE.Mesh(geometry, this.material);
+  private rebuildChunk(cx: number, cy: number, cz: number, chunk: Chunk) {
+    // Dispose old meshes
+    chunk.meshes.forEach((mesh) => {
+      this.scene.remove(mesh);
+      mesh.geometry.dispose();
+      // Do not dispose the shared opaque material, but dispose unique transparent ones if needed
+      if (mesh.material !== this.opaqueMaterial) {
+        (mesh.material as THREE.Material).dispose();
+      }
+    });
+    chunk.meshes = [];
 
-    // FIX: Correct positioning logic
-    // 1. Scale (geometry is 0..8, so we scale by voxel size)
-    chunk.mesh.scale.set(this.voxelSize, this.voxelSize, this.voxelSize);
-
-    // 2. Position (move the whole chunk to its world location)
-    chunk.mesh.position.set(
+    const result = generateChunkGeometry(cx, cy, cz, this.getVoxel);
+    const posOffset = new THREE.Vector3(
       cx * CHUNK_SIZE * this.voxelSize,
       cy * CHUNK_SIZE * this.voxelSize,
       cz * CHUNK_SIZE * this.voxelSize
     );
 
-    chunk.mesh.castShadow = true;
-    chunk.mesh.receiveShadow = true;
-    chunk.mesh.userData = {
-      isChunk: true,
-      chunkKey: this.getChunkKey(cx, cy, cz),
-    };
+    // 1. Build Opaque Mesh
+    if (result.opaque.positions.length > 0) {
+      const geo = this.createGeometry(result.opaque);
+      const mesh = new THREE.Mesh(geo, this.opaqueMaterial);
+      mesh.scale.set(this.voxelSize, this.voxelSize, this.voxelSize);
+      mesh.position.copy(posOffset);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData = { isChunk: true, chunkKey: this.getChunkKey(cx, cy, cz) };
+      this.scene.add(mesh);
+      chunk.meshes.push(mesh);
+    }
 
-    this.scene.add(chunk.mesh);
+    // 2. Build Transparent Meshes (Layers)
+    // Each transparent group gets its own mesh with specific material settings
+    result.transparent.forEach((data) => {
+      const geo = this.createGeometry(data);
+
+      // For transparent shells, we don't strictly need the attribute-based shader
+      // because the material is uniform for the whole group.
+      // However, using the Custom Material ensures consistent lighting with the rest of the world.
+      const mat = this.createCustomMaterial({
+        transparent: true,
+        opacity: data.material.opacity,
+        // Important: depthWrite=true ensures we don't see "through" the block to its backface
+        // if DoubleSide is off. But for glass we often want to see the back.
+        // With Greedy Meshing culling internal faces, the "Shell" is hollow.
+        // depthWrite: false is standard for glass to allow seeing other glass behind it.
+        depthWrite: false,
+        side: THREE.DoubleSide, // See the back of the glass block
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.set(this.voxelSize, this.voxelSize, this.voxelSize);
+      mesh.position.copy(posOffset);
+      mesh.castShadow = false; // Transparent usually doesn't cast sharp shadows
+      mesh.receiveShadow = true;
+      // Render Order needs to be higher for transparents?
+      // Three.js handles transparent sorting automatically if depthWrite is false.
+
+      mesh.userData = { isChunk: true, chunkKey: this.getChunkKey(cx, cy, cz) };
+      this.scene.add(mesh);
+      chunk.meshes.push(mesh);
+    });
   }
 
   public clear() {
     for (const chunk of this.chunks.values()) {
-      if (chunk.mesh) {
-        this.scene.remove(chunk.mesh);
-        chunk.mesh.geometry.dispose();
-      }
+      chunk.meshes.forEach((m) => {
+        this.scene.remove(m);
+        m.geometry.dispose();
+      });
     }
     this.chunks.clear();
   }

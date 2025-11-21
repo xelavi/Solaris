@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
-import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { PMREMGenerator } from "three";
 import { TransformControls } from "./transformControls";
@@ -220,13 +220,15 @@ export class VoxelEngine {
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") this.clearSelection(true);
       if (e.key === "Enter" && this.currentTool === "select")
-        this.clearSelection(false);
+        this.confirmSelection();
     });
     window.addEventListener("resize", this.onWindowResize.bind(this));
   }
 
   private initToolsHelpers() {
     const geo = new THREE.BoxGeometry(1, 1, 1);
+
+    // --- Brush Cursor (Blue Ghost) ---
     const mat = new THREE.MeshBasicMaterial({
       color: 0x44aaff,
       opacity: 0.4,
@@ -238,14 +240,47 @@ export class VoxelEngine {
     this.brushPreviewMesh.frustumCulled = false;
     this.scene.add(this.brushPreviewMesh);
 
-    // Stroke Preview (for buffered drawing)
-    const strokeMat = new THREE.MeshStandardMaterial({});
-    this.strokePreviewMesh = new THREE.InstancedMesh(geo, strokeMat, 10000);
+    // --- Stroke Preview (Actual Painted Blocks) ---
+    // Use the Custom Material from ChunkManager so preview looks identical to world
+    const strokeMat = this.chunkManager.createCustomMaterial({
+      transparent: true,
+      opacity: 1.0,
+      vertexColors: false,
+    });
+
+    // Max stroke size buffer
+    const maxInstances = 10000;
+    this.strokePreviewMesh = new THREE.InstancedMesh(
+      geo,
+      strokeMat,
+      maxInstances
+    );
     this.strokePreviewMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.strokePreviewMesh.visible = false;
     this.strokePreviewMesh.frustumCulled = false;
+
+    // Add Instanced Attributes for the custom shader
+    const geometry = this.strokePreviewMesh.geometry;
+    geometry.setAttribute(
+      "roughness",
+      new THREE.InstancedBufferAttribute(new Float32Array(maxInstances), 1)
+    );
+    geometry.setAttribute(
+      "metalness",
+      new THREE.InstancedBufferAttribute(new Float32Array(maxInstances), 1)
+    );
+    geometry.setAttribute(
+      "emissiveIntensity",
+      new THREE.InstancedBufferAttribute(new Float32Array(maxInstances), 1)
+    );
+    geometry.setAttribute(
+      "emissiveColor",
+      new THREE.InstancedBufferAttribute(new Float32Array(maxInstances * 3), 3)
+    );
+
     this.scene.add(this.strokePreviewMesh);
 
+    // --- Box Tool Preview ---
     this.boxPreviewMesh = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshBasicMaterial({
@@ -258,6 +293,7 @@ export class VoxelEngine {
     this.boxPreviewMesh.visible = false;
     this.scene.add(this.boxPreviewMesh);
 
+    // --- Selection Helpers ---
     this.selectionPreviewBox = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshBasicMaterial({
@@ -487,7 +523,7 @@ export class VoxelEngine {
     ) {
       this.updateCursorGrid(hit);
       this.calculateBrushStroke(hit);
-      this.updateBrushPreview(hit);
+      // We don't need updateBrushPreview(hit) because updateStrokePreview called in calculateBrushStroke handles visuals
       return;
     }
 
@@ -586,18 +622,22 @@ export class VoxelEngine {
   private raycast(event: MouseEvent) {
     const objects = [
       this.plane,
-      ...this.scene.children.filter((c) => c.userData.isChunk),
+      // Need to raycast against all meshes in chunks
+      ...Array.from(this.chunkManager.chunks.values()).flatMap((c) => c.meshes),
     ];
     this.raycaster.setFromCamera(this.pointer, this.camera);
     const intersects = this.raycaster.intersectObjects(objects, true);
 
     for (let i = 0; i < intersects.length; i++) {
-      const hit = intersects[i];
+      const hit = intersects[i]!;
+      // Filter out invisible or helper objects explicitly if needed,
+      // though we constructed 'objects' list carefully above.
       if (!hit.object.visible) continue;
       if (
         hit.object === this.brushPreviewMesh ||
         hit.object === this.boxPreviewMesh ||
-        hit.object === this.selectionPreviewBox
+        hit.object === this.selectionPreviewBox ||
+        hit.object === this.strokePreviewMesh
       )
         continue;
 
@@ -663,7 +703,7 @@ export class VoxelEngine {
       const len = centers.length;
       for (let i = 0; i < len; i++)
         centers.push(
-          new THREE.Vector3(centers[i].x, centers[i].y, -centers[i].z - snap)
+          new THREE.Vector3(centers[i]!.x, centers[i]!.y, -centers[i]!.z - snap)
         );
     }
 
@@ -722,7 +762,7 @@ export class VoxelEngine {
       const len = centers.length;
       for (let i = 0; i < len; i++)
         centers.push(
-          new THREE.Vector3(centers[i].x, centers[i].y, -centers[i].z - snap)
+          new THREE.Vector3(centers[i]!.x, centers[i]!.y, -centers[i]!.z - snap)
         );
     }
 
@@ -771,6 +811,20 @@ export class VoxelEngine {
     }
 
     this.strokePreviewMesh.visible = true;
+
+    const roughnessAttr = this.strokePreviewMesh.geometry.getAttribute(
+      "roughness"
+    ) as THREE.InstancedBufferAttribute;
+    const metalnessAttr = this.strokePreviewMesh.geometry.getAttribute(
+      "metalness"
+    ) as THREE.InstancedBufferAttribute;
+    const emIntAttr = this.strokePreviewMesh.geometry.getAttribute(
+      "emissiveIntensity"
+    ) as THREE.InstancedBufferAttribute;
+    const emColAttr = this.strokePreviewMesh.geometry.getAttribute(
+      "emissiveColor"
+    ) as THREE.InstancedBufferAttribute;
+
     let i = 0;
     this.tempVoxels.forEach((v) => {
       this.dummy.position.set(
@@ -782,12 +836,26 @@ export class VoxelEngine {
       this.dummy.updateMatrix();
       this.strokePreviewMesh.setMatrixAt(i, this.dummy.matrix);
       this.strokePreviewMesh.setColorAt(i, new THREE.Color(v.color));
+
+      // Update material attributes so the preview looks like the real block
+      roughnessAttr.setX(i, v.roughness);
+      metalnessAttr.setX(i, v.metalness);
+      emIntAttr.setX(i, v.emissiveIntensity);
+      const eCol = new THREE.Color(v.emissive);
+      emColAttr.setXYZ(i, eCol.r, eCol.g, eCol.b);
+
       i++;
     });
+
     this.strokePreviewMesh.count = i;
     this.strokePreviewMesh.instanceMatrix.needsUpdate = true;
     if (this.strokePreviewMesh.instanceColor)
       this.strokePreviewMesh.instanceColor.needsUpdate = true;
+
+    roughnessAttr.needsUpdate = true;
+    metalnessAttr.needsUpdate = true;
+    emIntAttr.needsUpdate = true;
+    emColAttr.needsUpdate = true;
   }
 
   private commitBrushStroke() {
@@ -976,7 +1044,7 @@ export class VoxelEngine {
           const pos = new THREE.Vector3().setFromMatrixPosition(mat);
           pos.applyMatrix4(this.selectionGroup.matrixWorld);
 
-          // FIX: Use Math.round to correctly snap rotated coordinates (avoiding floating point floor errors)
+          // FIX: Use Math.round to correctly snap rotated coordinates
           const gx = Math.round(pos.x / this.voxelSize);
           const gy = Math.round(pos.y / this.voxelSize);
           const gz = Math.round(pos.z / this.voxelSize);
@@ -1087,7 +1155,7 @@ export class VoxelEngine {
 
   public undo() {
     if (this.historyIndex < 0) return;
-    const action = this.history[this.historyIndex];
+    const action = this.history[this.historyIndex]!;
     if (action.type === "batch") {
       action.changes.added.forEach((item) => {
         this.chunkManager.setVoxel(item.data.x, item.data.y, item.data.z, null);
@@ -1109,7 +1177,7 @@ export class VoxelEngine {
   public redo() {
     if (this.historyIndex >= this.history.length - 1) return;
     this.historyIndex++;
-    const action = this.history[this.historyIndex];
+    const action = this.history[this.historyIndex]!;
     if (action.type === "batch") {
       action.changes.removed.forEach((item) => {
         this.chunkManager.setVoxel(item.data.x, item.data.y, item.data.z, null);
@@ -1247,9 +1315,9 @@ export class VoxelEngine {
           const ly = Math.floor(idx / chunkSize) % chunkSize;
           const lz = Math.floor(idx / (chunkSize * chunkSize));
           voxels.push({
-            x: cx * chunkSize + lx,
-            y: cy * chunkSize + ly,
-            z: cz * chunkSize + lz,
+            x: cx! * chunkSize + lx,
+            y: cy! * chunkSize + ly,
+            z: cz! * chunkSize + lz,
             ...mat,
           });
         }

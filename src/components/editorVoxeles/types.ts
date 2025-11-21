@@ -7,6 +7,23 @@ export interface Symmetries {
   z: boolean;
 }
 
+// types.ts
+export interface GeometryData {
+  positions: number[];
+  normals: number[];
+  colors: number[];
+  indices: number[];
+  roughness: number[];
+  metalness: number[];
+  emissiveIntensity: number[];
+  emissiveColor: number[];
+}
+
+export interface MeshingResult {
+  opaque: GeometryData;
+  transparent: Map<string, GeometryData & { material: VoxelMaterial }>;
+}
+
 export interface VoxelMaterial {
   color: string | number;
   emissive: string | number;
