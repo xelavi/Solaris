@@ -114,7 +114,7 @@
               </div>
             </div>
 
-            <!-- Emissive Intensity - INCREASED MAX TO 10 -->
+            <!-- Emissive Intensity -->
             <div>
               <label class="text-xs font-semibold block mb-1" :class="darkMode ? 'text-gray-300' : 'text-gray-700'">
                 Intensity: {{ currentMaterial.emissiveIntensity.toFixed(2) }}
@@ -267,8 +267,11 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass'; // NEW: OutputPass for ToneMapping
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader';
+// --- NEW: Environment map logic ---
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { PMREMGenerator } from 'three';
 
 export default {
   name: 'VoxelPainter',
@@ -377,34 +380,55 @@ export default {
         geometry,
         new THREE.MeshBasicMaterial({ visible: false })
       );
+      // Plane receives shadows for grounded feel
+      this.plane.receiveShadow = true; 
       this.scene.add(this.plane);
       this.objects.push(this.plane);
 
-      // Lights
-      const ambientLight = new THREE.AmbientLight(0x606060, 3);
-      this.scene.add(ambientLight);
-
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-      directionalLight.position.set(1, 0.75, 0.5).normalize();
-      this.scene.add(directionalLight);
-
-      // Renderer
+      // --- RENDERER SETUP ---
       this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      
-      // IMPORTANT: Disable default tone mapping on renderer. 
-      // We will apply it via OutputPass at the END of the chain.
-      this.renderer.toneMapping = THREE.NoToneMapping; 
-      
+      this.renderer.toneMapping = THREE.NoToneMapping; // Handled by OutputPass
+      // Enable Shadows
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
       if (this.$refs.canvasContainer.firstChild) {
         this.$refs.canvasContainer.removeChild(this.$refs.canvasContainer.firstChild);
       }
       this.$refs.canvasContainer.appendChild(this.renderer.domElement);
 
-      // --- POST PROCESSING SETUP (HDR) ---
 
-      // 1. Use HalfFloatType for HDR rendering (Allows brightness > 1.0)
+      // --- LIGHTING & ENVIRONMENT (FIXED) ---
+      
+      // 1. Room Environment (Fixes Roughness/Metalness and Contrast)
+      const pmremGenerator = new PMREMGenerator(this.renderer);
+      this.scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+      // 2. Directional Light (The "Sun")
+      // Lower intensity because the Environment Map now provides light too
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); 
+      directionalLight.position.set(200, 400, 100);
+      directionalLight.castShadow = true;
+      
+      // Shadow properties for sharper voxel shadows
+      directionalLight.shadow.mapSize.width = 2048; 
+      directionalLight.shadow.mapSize.height = 2048;
+      const d = 500;
+      directionalLight.shadow.camera.left = -d;
+      directionalLight.shadow.camera.right = d;
+      directionalLight.shadow.camera.top = d;
+      directionalLight.shadow.camera.bottom = -d;
+      directionalLight.shadow.bias = -0.0005;
+
+      this.scene.add(directionalLight);
+
+      // 3. Removed AmbientLight (RoomEnvironment handles this much better)
+
+
+      // --- POST PROCESSING (HDR) ---
+
       const renderTarget = new THREE.WebGLRenderTarget(
         window.innerWidth,
         window.innerHeight,
@@ -419,10 +443,6 @@ export default {
       const renderPass = new RenderPass(this.scene, this.camera);
       this.composer.addPass(renderPass);
 
-      // 2. Bloom Pass (HDR Config)
-      // Strength: 1.0 (Standard glow)
-      // Radius: 0.2 (Small, tight aura)
-      // Threshold: 1.0 (Only things brighter than pure white will glow)
       this.bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
         1.0, 
@@ -431,12 +451,9 @@ export default {
       );
       this.composer.addPass(this.bloomPass);
 
-      // 3. Output Pass (Tone Mapping & Color Space)
-      // This compresses the HDR range down to the screen
       const outputPass = new OutputPass();
       this.composer.addPass(outputPass);
 
-      // 4. FXAA (Antialiasing)
       this.fxaaPass = new ShaderPass(FXAAShader);
       const pixelRatio = this.renderer.getPixelRatio();
       this.fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
@@ -464,7 +481,7 @@ export default {
     createCustomGrid() {
       const size = 1000;
       const step = 50;
-      const radius = 0.8; // Line thickness
+      const radius = 0.8; 
       const color = 0x888888;
 
       const divisions = size / step;
@@ -480,19 +497,18 @@ export default {
 
       this.customGrid = new THREE.InstancedMesh(geometry, material, count);
       this.customGrid.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+      this.customGrid.receiveShadow = true; // Grid receives shadows
 
       const matrix = new THREE.Matrix4();
       const halfSize = size / 2;
       let index = 0;
 
-      // X-axis lines
       for (let i = 0; i <= divisions; i++) {
         const z = -halfSize + i * step;
         matrix.makeTranslation(0, 0, z);
         this.customGrid.setMatrixAt(index++, matrix);
       }
 
-      // Z-axis lines
       const rotation = new THREE.Quaternion();
       rotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
 
@@ -605,6 +621,10 @@ export default {
             .floor()
             .multiplyScalar(50)
             .addScalar(25);
+          
+          // Shadows for Voxels
+          voxel.castShadow = true;
+          voxel.receiveShadow = true;
             
           this.scene.add(voxel);
           this.objects.push(voxel);
@@ -646,7 +666,6 @@ export default {
       const presets = {
         default: { color: '#feb74c', emissive: '#000000', metalness: 0, roughness: 0.5, emissiveIntensity: 0, opacity: 1 },
         metal: { color: '#c0c0c0', emissive: '#000000', metalness: 1, roughness: 0.2, emissiveIntensity: 0, opacity: 1 },
-        // Updated Glow preset to have higher intensity
         glow: { color: '#ffffff', emissive: '#00ff00', metalness: 0, roughness: 0.8, emissiveIntensity: 5.0, opacity: 1 },
         wood: { color: '#8b4513', emissive: '#000000', metalness: 0, roughness: 0.9, emissiveIntensity: 0, opacity: 1 },
         glass: { color: '#88ccff', emissive: '#000000', metalness: 0.1, roughness: 0.1, emissiveIntensity: 0, opacity: 0.3 },
