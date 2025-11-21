@@ -1,16 +1,15 @@
 <template>
   <div
-    class="relative w-screen h-screen overflow-hidden"
-    :class="darkMode ? 'bg-gray-900' : 'bg-gray-100'"
+    class="relative w-screen h-screen overflow-hidden font-sans select-none"
+    :class="darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'"
   >
     <!-- Canvas -->
     <div
       ref="canvasContainer"
       class="absolute inset-0"
-      :class="{ 'cursor-crosshair': isAltDown }"
+      :class="{ 'cursor-crosshair': currentTool !== 'select' }"
     ></div>
 
-    <!-- Input Oculto para Importar -->
     <input
       type="file"
       ref="fileInput"
@@ -19,725 +18,747 @@
       @change="handleFileImport"
     />
 
-    <!-- MODAL DE CONFIRMACIÓN -->
+    <!-- TOP BAR -->
     <div
-      v-if="showClearModal"
-      class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+      class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 pointer-events-none"
     >
       <div
-        class="p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4"
-        :class="
-          darkMode
-            ? 'bg-gray-800 border border-gray-700 text-white'
-            : 'bg-white text-gray-900'
-        "
+        class="flex gap-2 pointer-events-auto flex-wrap max-w-[calc(100%-4rem)]"
       >
-        <h3 class="text-xl font-bold mb-2">¿Borrar Escena?</h3>
-        <p class="mb-6 opacity-80 text-sm">
-          Esto eliminará todos los vóxeles. Esta acción no se puede deshacer
-          mediante el historial.
-        </p>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="showClearModal = false"
-            class="px-4 py-2 rounded-lg font-semibold transition-colors"
-            :class="
-              darkMode
-                ? 'bg-gray-700 hover:bg-gray-600'
-                : 'bg-gray-200 hover:bg-gray-300'
-            "
-          >
-            Cancelar
-          </button>
-          <button
-            @click="confirmClear"
-            class="px-4 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-500 shadow-lg transition-transform active:scale-95"
-          >
-            Sí, Borrar Todo
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL DE AYUDA -->
-    <div
-      v-if="showHelpModal"
-      class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
-      @click.self="showHelpModal = false"
-    >
-      <div
-        class="p-6 rounded-xl shadow-2xl max-w-md w-full mx-4"
-        :class="
-          darkMode
-            ? 'bg-gray-800 border border-gray-700 text-white'
-            : 'bg-white text-gray-900'
-        "
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold">Atajos y Controles</h3>
-          <button
-            @click="showHelpModal = false"
-            class="text-2xl leading-none hover:text-red-500"
-          >
-            &times;
-          </button>
-        </div>
-        <ul class="space-y-2 text-sm opacity-80 font-mono">
-          <li class="flex justify-between">
-            <span>Pintar</span> <span>Clic Izquierdo</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Borrar</span> <span>Shift + Clic</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Rotar Cámara</span> <span>Clic Derecho / Arrastrar</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Mover Cámara</span> <span>Clic Central / Arrastrar</span>
-          </li>
-          <li class="flex justify-between text-blue-400 font-bold">
-            <span>Cuentagotas</span> <span>Alt + Clic</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Subir/Bajar Nivel</span> <span>RePág / AvPág</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Deshacer</span> <span>Ctrl + Z</span>
-          </li>
-          <li class="flex justify-between">
-            <span>Rehacer</span> <span>Ctrl + Y</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- CONTROLES - ARRIBA IZQUIERDA -->
-    <div class="absolute top-4 left-4 flex flex-col gap-2 z-10">
-      <!-- Acciones Principales -->
-      <div class="flex gap-2">
         <button
           @click="darkMode = !darkMode"
-          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
-          :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          "
-          title="Cambiar Tema"
+          class="btn-icon"
+          :class="btnClass"
+          title="Tema"
         >
           {{ darkMode ? "☀️" : "🌙" }}
         </button>
-
         <button
           @click="toggleCamera"
-          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
-          :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          "
-          title="Cámara (Perspectiva/Ortográfica)"
+          class="btn-icon"
+          :class="btnClass"
+          title="Cámara"
         >
           {{ isOrthographic ? "🎲" : "👁️" }}
         </button>
-
-        <button
-          @click="toggleSymmetry"
-          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl border-2"
-          :class="[
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100',
-            symmetryMode
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent',
-          ]"
-          title="Simetría en X"
-        >
-          🦋
-        </button>
-
         <button
           @click="takeScreenshot"
-          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
-          :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          "
-          title="Captura de Pantalla"
+          class="btn-icon"
+          :class="btnClass"
+          title="Captura"
         >
           📷
         </button>
-
         <button
           @click="showHelpModal = true"
-          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
-          :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          "
+          class="btn-icon"
+          :class="btnClass"
           title="Ayuda"
         >
           ?
         </button>
-      </div>
 
-      <!-- Archivo -->
-      <div class="flex gap-2">
-        <button
-          @click="triggerImport"
-          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
-          :class="
-            darkMode
-              ? 'bg-purple-600 text-white hover:bg-purple-500'
-              : 'bg-purple-500 text-white hover:bg-purple-600'
-          "
-        >
-          📂 Abrir
-        </button>
-        <button
-          @click="exportVoxels"
-          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
-          :class="
-            darkMode
-              ? 'bg-blue-600 text-white hover:bg-blue-500'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          "
-        >
-          💾 Guardar
-        </button>
-        <button
-          @click="requestClear"
-          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
-          :class="
-            darkMode
-              ? 'bg-red-600 text-white hover:bg-red-500'
-              : 'bg-red-500 text-white hover:bg-red-600'
-          "
-        >
-          🗑️ Borrar
-        </button>
-      </div>
+        <div class="w-px h-10 bg-gray-400 opacity-30 mx-1"></div>
 
-      <!-- Historial -->
-      <div class="flex gap-2">
         <button
           @click="undo"
           :disabled="historyIndex < 0"
-          class="flex-1 px-4 py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 text-sm"
-          :class="
-            darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-700'
-          "
+          class="btn-icon"
+          :class="btnClass"
         >
-          ↩️ Deshacer
+          ↩️
         </button>
         <button
           @click="redo"
           :disabled="historyIndex >= historyLength - 1"
-          class="flex-1 px-4 py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 text-sm"
-          :class="
-            darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-700'
-          "
+          class="btn-icon"
+          :class="btnClass"
         >
-          ↪️ Rehacer
+          ↪️
+        </button>
+
+        <div class="w-px h-10 bg-gray-400 opacity-30 mx-1"></div>
+
+        <button
+          @click="triggerImport"
+          class="btn-icon bg-purple-600 text-white hover:bg-purple-500 shadow-lg border-none"
+        >
+          📂
+        </button>
+        <button
+          @click="exportVoxels"
+          class="btn-icon bg-blue-600 text-white hover:bg-blue-500 shadow-lg border-none"
+        >
+          💾
+        </button>
+        <button
+          @click="requestClear"
+          class="btn-icon bg-red-600 text-white hover:bg-red-500 shadow-lg border-none"
+        >
+          🗑️
         </button>
       </div>
+
+      <!-- Panel Toggle -->
+      <button
+        @click="isPanelOpen = !isPanelOpen"
+        class="pointer-events-auto btn-icon text-xl z-50 shadow-xl transition-transform duration-300"
+        :class="[btnClass, isPanelOpen ? 'rotate-0' : 'rotate-180']"
+        title="Alternar Panel"
+      >
+        →
+      </button>
     </div>
 
-    <!-- ANDAMIO / NIVELES -->
+    <!-- BOTTOM BAR -->
     <div
-      class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-3"
+      class="absolute bottom-8 left-4 right-4 z-20 pointer-events-none flex justify-between items-end"
     >
       <div
-        class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border-2 transition-opacity duration-200"
-        :class="[
-          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300',
-          screenshotMode ? 'opacity-0' : 'opacity-100',
-        ]"
+        class="pointer-events-auto flex items-end gap-3 flex-wrap max-w-[70%]"
       >
-        <button
-          @click="adjustLevel(-1)"
-          class="w-10 h-10 rounded-lg font-bold text-xl transition-all"
-          :class="
-            darkMode
-              ? 'text-white hover:bg-gray-700'
-              : 'text-gray-700 hover:bg-gray-100'
-          "
-          title="Bajar Nivel"
-        >
-          ⬇
-        </button>
-        <div class="px-4 text-center min-w-[100px]">
-          <div
-            class="text-xs font-bold opacity-50 uppercase tracking-wider"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-          >
-            Andamio
-          </div>
-          <div
-            class="text-lg font-bold"
-            :class="darkMode ? 'text-white' : 'text-gray-900'"
-          >
-            Nivel {{ currentLevel }}
-          </div>
-        </div>
-        <button
-          @click="adjustLevel(1)"
-          class="w-10 h-10 rounded-lg font-bold text-xl transition-all"
-          :class="
-            darkMode
-              ? 'text-white hover:bg-gray-700'
-              : 'text-gray-700 hover:bg-gray-100'
-          "
-          title="Subir Nivel"
-        >
-          ⬆
-        </button>
-      </div>
-    </div>
-
-    <!-- PANEL DE PROPIEDADES (DERECHA) -->
-    <div
-      class="absolute top-4 right-4 bottom-4 w-80 rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col transition-opacity duration-200"
-      :class="[
-        darkMode
-          ? 'bg-gray-800 border-2 border-gray-700'
-          : 'bg-white border-2 border-gray-300',
-        screenshotMode ? 'opacity-0' : 'opacity-100',
-      ]"
-    >
-      <div
-        class="px-4 py-3 flex-shrink-0"
-        :class="darkMode ? 'bg-gray-700' : 'bg-blue-500'"
-      >
-        <h3 class="font-bold text-lg text-white">🎨 Editor Vóxel</h3>
-        <p class="text-xs text-white opacity-75 mt-1">
-          <span v-if="isAltDown" class="text-yellow-300 font-bold animate-pulse"
-            >CUENTAGOTAS ACTIVO</span
-          >
-          <span v-else
-            ><strong>Clic</strong>: pintar • <strong>Shift</strong>:
-            borrar</span
-          >
-        </p>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4 space-y-3">
-        <!-- MATERIAL ACTUAL -->
+        <!-- Level -->
         <div
-          class="rounded-lg border"
-          :class="
-            darkMode
-              ? 'bg-gray-700 border-gray-600'
-              : 'bg-gray-50 border-gray-300'
-          "
+          class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border backdrop-blur-md transition-colors"
+          :class="panelClass"
         >
           <button
-            @click="
-              sectionsOpen.currentMaterial = !sectionsOpen.currentMaterial
-            "
-            class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
-            :class="darkMode ? 'text-white' : 'text-gray-700'"
+            @click="adjustLevel(-1)"
+            class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
           >
-            <span>Material Actual</span>
-            <span>{{ sectionsOpen.currentMaterial ? "▼" : "▶" }}</span>
+            ⬇
           </button>
-          <div v-if="sectionsOpen.currentMaterial" class="px-3 pb-3 space-y-2">
-            <!-- Previsualización 3D -->
-            <div class="flex gap-3 mb-3">
-              <!-- Icono sin borde -->
-              <div class="w-16 h-16 relative">
-                <img
-                  v-if="currentMaterialPreview"
-                  :src="currentMaterialPreview"
-                  class="w-full h-full object-contain drop-shadow-xl"
-                />
-              </div>
-              <div class="flex-1 flex flex-col justify-center gap-2">
-                <!-- Color Picker + HEX Input Restaurado -->
-                <div class="flex items-center gap-2">
-                  <label
-                    class="text-[10px] font-bold uppercase w-14 opacity-70"
-                    :class="darkMode ? 'text-white' : 'text-black'"
-                    >Color</label
-                  >
-                  <input
-                    type="color"
-                    v-model="currentMaterial.color"
-                    class="w-6 h-6 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    v-model="currentMaterial.color"
-                    class="w-16 px-1 text-[10px] rounded border font-mono h-6 uppercase"
-                    :class="
-                      darkMode
-                        ? 'bg-gray-800 text-white border-gray-600'
-                        : 'bg-white text-black border-gray-300'
-                    "
-                  />
-                </div>
-                <!-- Emissive Picker -->
-                <div class="flex items-center gap-2">
-                  <label
-                    class="text-[10px] font-bold uppercase w-14 opacity-70"
-                    :class="darkMode ? 'text-white' : 'text-black'"
-                    >Luz</label
-                  >
-                  <input
-                    type="color"
-                    v-model="currentMaterial.emissive"
-                    class="w-6 h-6 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    v-model="currentMaterial.emissive"
-                    class="w-16 px-1 text-[10px] rounded border font-mono h-6 uppercase"
-                    :class="
-                      darkMode
-                        ? 'bg-gray-800 text-white border-gray-600'
-                        : 'bg-white text-black border-gray-300'
-                    "
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Sliders -->
-            <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-              <div>
-                <label
-                  class="text-[10px] font-bold uppercase opacity-70"
-                  :class="darkMode ? 'text-white' : 'text-black'"
-                  >Opacidad</label
-                >
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  v-model.number="currentMaterial.opacity"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label
-                  class="text-[10px] font-bold uppercase opacity-70"
-                  :class="darkMode ? 'text-white' : 'text-black'"
-                  >Emisión</label
-                >
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  v-model.number="currentMaterial.emissiveIntensity"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label
-                  class="text-[10px] font-bold uppercase opacity-70"
-                  :class="darkMode ? 'text-white' : 'text-black'"
-                  >Metal</label
-                >
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  v-model.number="currentMaterial.metalness"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label
-                  class="text-[10px] font-bold uppercase opacity-70"
-                  :class="darkMode ? 'text-white' : 'text-black'"
-                  >Rugosidad</label
-                >
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  v-model.number="currentMaterial.roughness"
-                  class="w-full"
-                />
-              </div>
-            </div>
-
-            <button
-              @click="addToBrushPalette"
-              class="w-full mt-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded transition-colors"
+          <div class="px-2 text-center min-w-[3rem]">
+            <div
+              class="text-[9px] uppercase opacity-60 font-bold tracking-wider"
             >
-              + Añadir al Pincel
+              Nivel
+            </div>
+            <div class="text-lg font-bold leading-none">{{ currentLevel }}</div>
+          </div>
+          <button
+            @click="adjustLevel(1)"
+            class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
+          >
+            ⬆
+          </button>
+        </div>
+
+        <!-- Grid Snap -->
+        <div class="flex flex-col justify-end items-center">
+          <div
+            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
+          >
+            GRID
+          </div>
+          <div
+            class="flex items-center px-2 py-2 rounded-xl shadow-2xl border gap-1 backdrop-blur-md"
+            :class="panelClass"
+          >
+            <button
+              v-for="n in [1, 2, 4, 8]"
+              :key="n"
+              @click="gridSnap = n"
+              class="w-8 h-8 rounded-lg font-bold text-xs transition-all border-2"
+              :class="
+                gridSnap === n
+                  ? 'bg-blue-500 text-white border-blue-600 scale-110'
+                  : 'border-transparent hover:bg-gray-500/20'
+              "
+            >
+              {{ n }}
             </button>
           </div>
         </div>
 
-        <!-- AJUSTES DE PINCEL -->
+        <!-- Symmetry -->
+        <div class="flex flex-col justify-end items-center">
+          <div
+            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
+          >
+            SIMETRÍA
+          </div>
+          <div
+            class="flex items-center px-2 py-2 rounded-xl shadow-2xl border gap-2 backdrop-blur-md"
+            :class="panelClass"
+          >
+            <button
+              v-for="axis in ['x', 'z']"
+              :key="axis"
+              @click="toggleSymmetry(axis)"
+              class="w-8 h-8 rounded-lg font-bold text-xs uppercase border-2 transition-all"
+              :class="
+                symmetries[axis]
+                  ? 'bg-purple-500 text-white border-purple-600 scale-110'
+                  : 'border-transparent opacity-60 hover:opacity-100 hover:bg-gray-500/20'
+              "
+            >
+              {{ axis }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div
+      class="absolute top-16 right-4 bottom-4 w-80 z-30 transition-all duration-300 ease-in-out pointer-events-none flex flex-col"
+      :class="
+        isPanelOpen
+          ? 'translate-x-0 opacity-100'
+          : 'translate-x-[110%] opacity-0'
+      "
+    >
+      <div
+        class="flex-1 rounded-2xl shadow-2xl border backdrop-blur-xl overflow-hidden flex flex-col pointer-events-auto"
+        :class="
+          darkMode
+            ? 'bg-gray-900/95 border-gray-700'
+            : 'bg-white/95 border-gray-200'
+        "
+      >
         <div
-          class="rounded-lg border"
+          class="px-4 py-3 border-b flex-shrink-0"
           :class="
             darkMode
-              ? 'bg-gray-700 border-gray-600'
-              : 'bg-gray-50 border-gray-300'
+              ? 'border-gray-700 bg-gray-800/50'
+              : 'border-gray-200 bg-gray-50/50'
           "
         >
-          <button
-            @click="sectionsOpen.brush = !sectionsOpen.brush"
-            class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
-            :class="darkMode ? 'text-white' : 'text-gray-700'"
+          <h3 class="font-bold text-sm uppercase tracking-wider opacity-80">
+            Editor Vóxel
+          </h3>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin">
+          <!-- Tools -->
+          <div class="grid grid-cols-4 gap-2">
+            <button
+              v-for="t in tools"
+              :key="t.id"
+              @click="setTool(t.id)"
+              class="aspect-square flex flex-col items-center justify-center rounded-xl border-2 transition-all shadow-sm group"
+              :class="[
+                currentTool === t.id
+                  ? 'bg-blue-500 border-blue-600 text-white scale-105 z-10'
+                  : darkMode
+                    ? 'bg-gray-800 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                    : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300',
+              ]"
+              :title="t.label"
+            >
+              <span
+                class="text-2xl group-hover:scale-110 transition-transform"
+                >{{ t.icon }}</span
+              >
+              <span class="text-[9px] font-bold mt-1 uppercase opacity-70">{{
+                t.label
+              }}</span>
+            </button>
+          </div>
+
+          <!-- Selection Transform Options -->
+          <div
+            v-if="currentTool === 'select'"
+            class="rounded-xl border overflow-hidden p-3 animate-fadeIn space-y-2"
+            :class="
+              darkMode
+                ? 'border-gray-700 bg-gray-800/50'
+                : 'border-gray-200 bg-gray-50/50'
+            "
           >
-            <span>Pincel</span>
-            <span>{{ sectionsOpen.brush ? "▼" : "▶" }}</span>
-          </button>
-          <div v-if="sectionsOpen.brush" class="px-3 pb-3 space-y-3">
-            <!-- Selector de Forma -->
-            <div>
-              <label
-                class="text-xs font-bold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Forma</label
+            <div class="text-[10px] font-bold uppercase opacity-60 mb-1">
+              Modo Transformación (R)
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                @click="setTransformMode('translate')"
+                class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all border"
+                :class="
+                  transformMode === 'translate'
+                    ? 'bg-blue-500 border-blue-600 text-white'
+                    : darkMode
+                      ? 'border-gray-600 hover:bg-gray-700'
+                      : 'border-gray-300 hover:bg-gray-100'
+                "
               >
-              <div class="grid grid-cols-2 gap-1">
-                <button
-                  v-for="(label, s) in {
-                    cube: 'Cubo',
-                    sphere: 'Esfera',
-                    square: 'Cuadrado',
-                    circle: 'Círculo',
-                  }"
-                  :key="s"
-                  @click="brush.shape = s"
-                  class="px-2 py-1 text-xs rounded capitalize border"
-                  :class="
-                    brush.shape === s
-                      ? 'bg-blue-500 text-white border-blue-600'
-                      : darkMode
-                        ? 'bg-gray-800 border-gray-600 text-gray-300'
-                        : 'bg-white border-gray-300 text-gray-700'
-                  "
+                Mover
+              </button>
+              <button
+                @click="setTransformMode('rotate')"
+                class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all border"
+                :class="
+                  transformMode === 'rotate'
+                    ? 'bg-blue-500 border-blue-600 text-white'
+                    : darkMode
+                      ? 'border-gray-600 hover:bg-gray-700'
+                      : 'border-gray-300 hover:bg-gray-100'
+                "
+              >
+                Rotar
+              </button>
+            </div>
+            <button
+              @click="confirmSelection"
+              class="w-full py-2 mt-2 rounded-lg font-bold text-xs uppercase bg-green-600 text-white hover:bg-green-500 transition-all shadow-lg"
+            >
+              ✓ Aceptar (Enter)
+            </button>
+          </div>
+
+          <!-- Material -->
+          <div
+            class="rounded-xl border overflow-hidden"
+            :class="
+              darkMode
+                ? 'border-gray-700 bg-gray-800/50'
+                : 'border-gray-200 bg-gray-50/50'
+            "
+          >
+            <button
+              class="w-full p-3 text-xs font-bold uppercase tracking-wider flex justify-between hover:bg-black/5 transition-colors"
+              @click="sectionsOpen.mat = !sectionsOpen.mat"
+            >
+              <span>Material</span
+              ><span class="opacity-50">{{
+                sectionsOpen.mat ? "−" : "+"
+              }}</span>
+            </button>
+
+            <div v-if="sectionsOpen.mat" class="p-3 pt-0 animate-fadeIn">
+              <div class="flex gap-3 mb-4">
+                <div
+                  class="w-16 h-16 rounded-lg border-2 shadow-sm relative overflow-hidden bg-gray-500/10 flex-shrink-0"
+                  :class="darkMode ? 'border-gray-600' : 'border-gray-300'"
                 >
-                  {{ label }}
-                </button>
+                  <img
+                    v-if="currentMaterialPreview"
+                    :src="currentMaterialPreview"
+                    class="w-full h-full object-contain drop-shadow-xl"
+                  />
+                </div>
+
+                <div class="flex-1 flex flex-col justify-center gap-2">
+                  <div class="flex items-center justify-between">
+                    <label
+                      class="text-[10px] font-bold opacity-60 uppercase tracking-wide text-right"
+                      >Color</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="color"
+                        v-model="currentMaterial.color"
+                        class="w-5 h-5 rounded-full cursor-pointer border-none p-0 flex-shrink-0 shadow-sm ring-1 ring-black/10"
+                      />
+                      <input
+                        type="text"
+                        v-model="currentMaterial.color"
+                        class="w-16 text-[10px] bg-black/5 rounded py-0.5 px-1 font-mono text-center uppercase outline-none focus:bg-blue-500/10 focus:text-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <label
+                      class="text-[10px] font-bold opacity-60 uppercase tracking-wide text-right"
+                      >Emisión</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="color"
+                        v-model="currentMaterial.emissive"
+                        class="w-5 h-5 rounded-full cursor-pointer border-none p-0 flex-shrink-0 shadow-sm ring-1 ring-black/10"
+                      />
+                      <input
+                        type="text"
+                        v-model="currentMaterial.emissive"
+                        class="w-16 text-[10px] bg-black/5 rounded py-0.5 px-1 font-mono text-center uppercase outline-none focus:bg-blue-500/10 focus:text-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div v-for="(conf, key) in sliders" :key="key">
+                  <div
+                    class="flex justify-between text-[10px] font-bold uppercase opacity-60 mb-1"
+                  >
+                    <span>{{ conf.label }}</span
+                    ><span>{{ currentMaterial[key] }}</span>
+                  </div>
+                  <input
+                    type="range"
+                    :min="conf.min"
+                    :max="conf.max"
+                    :step="conf.step"
+                    v-model.number="currentMaterial[key]"
+                    class="w-full h-1.5 bg-gray-500/30 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400"
+                  />
+                </div>
               </div>
             </div>
+          </div>
 
-            <!-- Tamaño -->
-            <div>
-              <label
-                class="text-xs font-bold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-              >
-                Radio: {{ brush.size }}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="5"
-                step="1"
-                v-model.number="brush.size"
-                class="w-full"
-              />
-            </div>
+          <!-- Brush / Mix -->
+          <div
+            v-if="currentTool === 'brush' || currentTool === 'box'"
+            class="rounded-xl border overflow-hidden"
+            :class="
+              darkMode
+                ? 'border-gray-700 bg-gray-800/50'
+                : 'border-gray-200 bg-gray-50/50'
+            "
+          >
+            <button
+              class="w-full p-3 text-xs font-bold uppercase tracking-wider flex justify-between hover:bg-black/5 transition-colors"
+              @click="sectionsOpen.brush = !sectionsOpen.brush"
+            >
+              <span>Pincel & Mezcla</span
+              ><span class="opacity-50">{{
+                sectionsOpen.brush ? "−" : "+"
+              }}</span>
+            </button>
 
-            <!-- Orientación (Solo pinceles 2D) -->
-            <div v-if="brush.shape === 'square' || brush.shape === 'circle'">
-              <label
-                class="text-xs font-bold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Eje / Orientación</label
-              >
-              <div class="flex gap-1">
-                <button
-                  v-for="axis in ['x', 'y', 'z']"
-                  :key="axis"
-                  @click="brush.axis = axis"
-                  class="flex-1 px-2 py-1 text-xs rounded uppercase border"
-                  :class="
-                    brush.axis === axis
-                      ? 'bg-green-500 text-white border-green-600'
-                      : darkMode
-                        ? 'bg-gray-800 border-gray-600 text-gray-300'
-                        : 'bg-white border-gray-300 text-gray-700'
-                  "
-                >
-                  {{ axis }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Paleta de Mezcla -->
-            <div>
-              <div class="flex justify-between items-end mb-1">
-                <label
-                  class="text-xs font-bold"
-                  :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                  >Mezclar Materiales</label
-                >
-                <button
-                  @click="brushPalette = []"
-                  v-if="brushPalette.length > 0"
-                  class="text-[10px] text-red-400 hover:text-red-300"
-                >
-                  Limpiar
-                </button>
+            <div
+              v-if="sectionsOpen.brush"
+              class="p-3 pt-0 animate-fadeIn space-y-4"
+            >
+              <div v-if="currentTool === 'brush'">
+                <div class="grid grid-cols-4 gap-1 mb-3">
+                  <button
+                    v-for="(l, s) in shapes"
+                    :key="s"
+                    @click="brush.shape = s"
+                    class="py-1 text-[9px] rounded border uppercase tracking-wide transition-colors"
+                    :class="
+                      brush.shape === s
+                        ? 'bg-blue-500 text-white border-blue-600 font-bold'
+                        : darkMode
+                          ? 'border-gray-600 hover:bg-gray-700'
+                          : 'border-gray-300 hover:bg-gray-100'
+                    "
+                  >
+                    {{ l }}
+                  </button>
+                </div>
+                <div>
+                  <div
+                    class="flex justify-between text-[10px] font-bold uppercase opacity-60 mb-1"
+                  >
+                    <span>Radio Pincel</span> <span>{{ brush.size }}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    v-model.number="brush.size"
+                    class="w-full h-1.5 bg-gray-500/30 rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400"
+                  />
+                </div>
               </div>
 
               <div
-                v-if="brushPalette.length === 0"
-                class="text-[10px] italic opacity-60 mb-2"
-                :class="darkMode ? 'text-white' : 'text-black'"
+                class="border-t pt-3"
+                :class="darkMode ? 'border-gray-700' : 'border-gray-200'"
               >
-                Vacío: Usando solo Material Actual.
-              </div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-[10px] font-bold opacity-70"
+                    >VARIACIÓN (RANDOM)</label
+                  >
+                  <button
+                    @click="addToBrushPalette"
+                    class="text-[9px] px-2 py-1 bg-blue-600 text-white rounded-md font-bold hover:bg-blue-500 active:scale-95 transition-transform"
+                  >
+                    + Usar Actual
+                  </button>
+                </div>
 
-              <div class="space-y-2 max-h-32 overflow-y-auto pr-1">
                 <div
-                  v-for="(item, idx) in brushPalette"
-                  :key="idx"
-                  class="flex items-center gap-2 bg-black bg-opacity-10 p-1 rounded"
+                  v-if="brushPalette.length > 0"
+                  class="space-y-1.5 max-h-32 overflow-y-auto pr-1 scrollbar-thin"
                 >
-                  <!-- Icono Flotante -->
-                  <div class="w-6 h-6 relative">
-                    <img
-                      v-if="item.preview"
-                      :src="item.preview"
-                      class="w-full h-full object-contain drop-shadow-sm"
-                    />
+                  <div
+                    v-for="(item, idx) in brushPalette"
+                    :key="idx"
+                    class="flex items-center gap-2 bg-black/5 p-1.5 rounded-lg"
+                  >
                     <div
-                      v-else
-                      class="w-full h-full rounded"
-                      :style="{ backgroundColor: item.mat.color }"
-                    ></div>
-                  </div>
-                  <!-- Slider Peso -->
-                  <div class="flex-1">
+                      class="w-6 h-6 rounded shadow-sm border flex-shrink-0"
+                      :class="darkMode ? 'border-gray-600' : 'border-gray-300'"
+                    >
+                      <img
+                        v-if="item.preview"
+                        :src="item.preview"
+                        class="w-full h-full object-contain"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full"
+                        :style="{ backgroundColor: item.mat.color }"
+                      ></div>
+                    </div>
                     <input
                       type="range"
                       min="1"
                       max="100"
                       v-model.number="item.weight"
-                      class="w-full h-1 bg-gray-500 rounded-lg appearance-none cursor-pointer"
+                      class="flex-1 h-1 accent-green-500 cursor-pointer"
                     />
+                    <button
+                      @click="brushPalette.splice(idx, 1)"
+                      class="text-red-500 font-bold px-1.5 hover:bg-red-500/10 rounded"
+                    >
+                      ×
+                    </button>
                   </div>
-                  <div
-                    class="text-[10px] font-mono w-6 text-right"
-                    :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                  >
-                    {{ item.weight }}
-                  </div>
-                  <button
-                    @click="brushPalette.splice(idx, 1)"
-                    class="text-red-500 font-bold px-1"
-                  >
-                    ×
-                  </button>
                 </div>
+                <div
+                  v-else
+                  class="text-[10px] opacity-40 text-center italic py-2 border rounded border-dashed"
+                  :class="darkMode ? 'border-gray-700' : 'border-gray-300'"
+                >
+                  Solo material actual
+                </div>
+                <button
+                  v-if="brushPalette.length > 0"
+                  @click="brushPalette = []"
+                  class="w-full text-[9px] text-red-400 hover:text-red-300 mt-2 font-bold uppercase tracking-wide"
+                >
+                  Limpiar todo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div
+            class="rounded-xl border overflow-hidden flex-1 flex flex-col min-h-0"
+            :class="
+              darkMode
+                ? 'border-gray-700 bg-gray-800/50'
+                : 'border-gray-200 bg-white'
+            "
+          >
+            <div
+              class="p-3 font-bold text-sm flex justify-between cursor-pointer"
+              @click="sectionsOpen.pal = !sectionsOpen.pal"
+            >
+              <span>Historial</span
+              ><span>{{ sectionsOpen.pal ? "▼" : "▶" }}</span>
+            </div>
+            <div
+              v-if="sectionsOpen.pal"
+              class="p-3 pt-0 grid grid-cols-5 gap-1.5 content-start"
+            >
+              <button
+                v-for="(m, i) in usedMaterials"
+                :key="i"
+                @click="loadMaterial(m)"
+                class="aspect-square rounded-lg border hover:scale-110 transition-transform relative group overflow-hidden shadow-sm"
+                :class="
+                  darkMode
+                    ? 'border-gray-600 bg-gray-700'
+                    : 'border-gray-300 bg-gray-100'
+                "
+                :title="m.color"
+              >
+                <img
+                  v-if="m.preview"
+                  :src="m.preview"
+                  class="w-full h-full object-contain"
+                />
+                <div
+                  v-else
+                  class="w-full h-full"
+                  :style="{ backgroundColor: m.color }"
+                ></div>
+              </button>
+              <div
+                v-if="usedMaterials.length === 0"
+                class="col-span-5 text-[10px] text-center opacity-40 py-4 italic"
+              >
+                Sin materiales usados
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- HISTORIAL DE MATERIALES -->
-        <div
-          class="rounded-lg border"
-          :class="
-            darkMode
-              ? 'bg-gray-700 border-gray-600'
-              : 'bg-gray-50 border-gray-300'
-          "
-        >
+    <!-- Modals -->
+    <div
+      v-if="showClearModal"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+    >
+      <div
+        class="p-6 rounded-2xl shadow-2xl max-w-xs w-full mx-4 bg-white text-gray-900 transform scale-100 transition-all"
+      >
+        <h3 class="font-bold text-xl mb-2">¿Borrar Todo?</h3>
+        <p class="text-sm opacity-70 mb-6">
+          Esta acción no se puede deshacer con el historial.
+        </p>
+        <div class="flex justify-end gap-3">
           <button
-            @click="sectionsOpen.palette = !sectionsOpen.palette"
-            class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
-            :class="darkMode ? 'text-white' : 'text-gray-700'"
+            @click="showClearModal = false"
+            class="px-4 py-2 bg-gray-100 rounded-lg font-bold hover:bg-gray-200 transition-colors"
           >
-            <span>Historial ({{ usedMaterials.length }})</span>
-            <span>{{ sectionsOpen.palette ? "▼" : "▶" }}</span>
+            Cancelar
           </button>
-          <div v-if="sectionsOpen.palette" class="px-3 pb-3">
-            <div
-              v-if="usedMaterials.length === 0"
-              class="text-xs text-center py-3 opacity-50"
+          <button
+            @click="confirmClear"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 shadow-lg shadow-red-600/30 transition-colors"
+          >
+            Borrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showHelpModal"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      @click.self="showHelpModal = false"
+    >
+      <div
+        class="bg-white p-6 rounded-2xl shadow-2xl max-w-md text-gray-900 w-full mx-4"
+      >
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+          <h3 class="font-bold text-lg">Atajos de Teclado</h3>
+          <button
+            @click="showHelpModal = false"
+            class="text-xl font-bold text-gray-400 hover:text-gray-900"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-6 text-sm mb-6">
+          <div>
+            <h4
+              class="font-bold text-blue-600 mb-2 text-xs uppercase tracking-wider"
             >
-              Sin materiales aún
-            </div>
-            <div v-else class="grid grid-cols-5 gap-1">
-              <!-- Botón Historial -->
-              <button
-                v-for="(mat, index) in usedMaterials"
-                :key="index"
-                @click="loadMaterial(mat)"
-                class="w-10 h-10 transition-transform hover:scale-110 relative group"
-                :title="`Color: ${mat.color}`"
-              >
-                <img
-                  v-if="mat.preview"
-                  :src="mat.preview"
-                  class="w-full h-full object-contain drop-shadow-md"
-                />
-                <div
-                  v-else
-                  class="w-full h-full rounded"
-                  :style="{ backgroundColor: mat.color }"
-                ></div>
-              </button>
+              Herramientas
+            </h4>
+            <ul class="space-y-1.5">
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >B</span
+                >
+                Pincel
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >V</span
+                >
+                Caja
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >M</span
+                >
+                Selección
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >Esc</span
+                >
+                Cancelar
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4
+              class="font-bold text-blue-600 mb-2 text-xs uppercase tracking-wider"
+            >
+              Ratón
+            </h4>
+            <ul class="space-y-1.5">
+              <li><b>Click Izq:</b> Pintar</li>
+              <li><b>Click Der:</b> Rotar</li>
+              <li><b>Click Cen:</b> Panear</li>
+              <li><b>Rueda:</b> Zoom</li>
+            </ul>
+          </div>
+          <div class="col-span-2">
+            <h4
+              class="font-bold text-blue-600 mb-2 text-xs uppercase tracking-wider"
+            >
+              Modificadores
+            </h4>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >R</span
+                >
+                Rotar / Mover
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >Shift</span
+                >
+                Borrar
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >Alt</span
+                >
+                Gotero
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >Ctrl+Z</span
+                >
+                Deshacer
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- CONTADOR -->
-        <div
-          class="rounded-lg border px-3 py-2 text-center"
-          :class="
-            darkMode
-              ? 'bg-gray-700 border-gray-600 text-white'
-              : 'bg-gray-50 border-gray-300 text-gray-700'
-          "
+        <button
+          @click="showHelpModal = false"
+          class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all active:scale-95"
         >
-          <div class="text-xs font-semibold">Bloques Totales</div>
-          <div class="text-2xl font-bold">{{ voxelCount }}</div>
-        </div>
+          Entendido
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// Asegúrate de que VoxelEngine.ts está en la misma carpeta
 import { VoxelEngine } from "./voxelEngine";
 import { toRaw } from "vue";
 
 export default {
-  name: "VoxelPainter",
+  name: "VoxelEditor",
   data() {
     return {
-      // Estado UI
       darkMode: true,
+      isPanelOpen: true, // Default Open
       showClearModal: false,
       showHelpModal: false,
-      screenshotMode: false,
-
-      // Flags de Teclado/Estado
-      isAltDown: false,
-      isOrthographic: false,
-      symmetryMode: false,
-
-      // Sincronización con Motor
+      tools: [
+        { id: "brush", label: "Pincel", icon: "🖌️" },
+        { id: "box", label: "Caja", icon: "📦" },
+        { id: "select", label: "Selección", icon: "✂️" },
+        { id: "picker", label: "Gotero", icon: "🧪" },
+      ],
+      currentTool: "brush",
+      transformMode: "translate", // 'translate' | 'rotate'
       currentLevel: 0,
+      gridSnap: 1,
+      symmetries: { x: false, z: false },
       voxelCount: 0,
       historyIndex: -1,
       historyLength: 0,
-
-      // Datos
-      sectionsOpen: { currentMaterial: true, brush: true, palette: true },
-      brush: { shape: "cube", size: 0, axis: "y" },
-      brushPalette: [],
+      isOrthographic: false,
+      sectionsOpen: { mat: true, brush: true, pal: true, mix: true },
       currentMaterial: {
         color: "#feb74c",
         emissive: "#000000",
@@ -749,72 +770,113 @@ export default {
       },
       currentMaterialPreview: null,
       usedMaterials: [],
+      sliders: {
+        opacity: { label: "Opacidad", min: 0, max: 1, step: 0.1 },
+        emissiveIntensity: {
+          label: "Intensidad Luz",
+          min: 0,
+          max: 10,
+          step: 0.1,
+        },
+        metalness: { label: "Metal", min: 0, max: 1, step: 0.1 },
+        roughness: { label: "Rugosidad", min: 0, max: 1, step: 0.1 },
+      },
+      brush: { shape: "cube", size: 0, axis: "y" },
+      shapes: {
+        cube: "Cubo",
+        sphere: "Esfera",
+        square: "Plano",
+        circle: "Disco",
+      },
+      brushPalette: [],
     };
   },
+  computed: {
+    btnClass() {
+      return this.darkMode
+        ? "bg-gray-800 text-white hover:bg-gray-700 shadow-lg border border-gray-700"
+        : "bg-white text-gray-800 hover:bg-gray-50 shadow-lg border border-gray-200";
+    },
+    panelClass() {
+      return this.darkMode
+        ? "bg-gray-900/90 border-gray-700 text-white"
+        : "bg-white/90 border-gray-200 text-gray-800";
+    },
+    inputClass() {
+      return this.darkMode
+        ? "bg-gray-800 border-gray-600 text-white focus:border-blue-500"
+        : "bg-gray-50 border-gray-300 text-black focus:border-blue-500";
+    },
+  },
   mounted() {
-    // Inicializar Motor
-    // Usamos $refs para pasar el contenedor del DOM
     this.engine = new VoxelEngine(this.$refs.canvasContainer, {
-      onVoxelCountChange: (count) => {
-        this.voxelCount = count;
+      onVoxelCountChange: (c) => (this.voxelCount = c),
+      onHistoryChange: (i, l) => {
+        this.historyIndex = i;
+        this.historyLength = l;
       },
-      onHistoryChange: (idx, len) => {
-        this.historyIndex = idx;
-        this.historyLength = len; // Actualizamos la variable Vue
+      onMaterialPick: (m) => {
+        this.loadMaterial(m);
+        if (this.currentTool === "picker") this.setTool("brush");
       },
-      onMaterialPick: (mat) => {
-        this.loadMaterial(mat);
-      },
-      onActionRecord: () => {
-        this.addToMaterialPalette(this.currentMaterial);
-      },
+      onToolChange: (t) => (this.currentTool = t),
+      onActionRecord: () => this.addToUsedMaterials(this.currentMaterial),
     });
-
-    // Sincronizar estado inicial
-    this.updateEngineSettings();
-    this.updatePreview();
-
-    // Listeners globales
+    this.updateEngine();
+    setTimeout(() => this.updatePreview(), 100);
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
   },
   beforeUnmount() {
-    if (this.engine) this.engine.dispose(); // Limpieza memoria
+    if (this.engine) this.engine.dispose();
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
   },
   watch: {
-    darkMode(val) {
-      if (this.engine) this.engine.setDarkMode(val);
+    darkMode(v) {
+      this.engine?.setDarkMode(v);
     },
     currentMaterial: {
       handler() {
-        this.updateEngineSettings();
+        this.updateEngine();
         this.updatePreview();
       },
       deep: true,
     },
     brush: {
       handler() {
-        this.updateEngineSettings();
+        this.updateEngine();
       },
       deep: true,
     },
     brushPalette: {
       handler() {
-        this.updateEngineSettings();
+        this.updateEngine();
       },
       deep: true,
     },
+    gridSnap(v) {
+      this.engine?.setGridSnap(v);
+    },
+    symmetries: {
+      handler(v) {
+        this.engine?.setSymmetries(toRaw(v));
+      },
+      deep: true,
+    },
+    currentTool(v) {
+      this.engine?.setTool(v);
+      if (v !== "select") this.transformMode = "translate";
+    },
   },
   methods: {
-    updateEngineSettings() {
-      if (this.engine)
-        this.engine.updateSettings(
-          toRaw(this.currentMaterial),
-          toRaw(this.brush),
-          toRaw(this.brushPalette)
-        );
+    updateEngine() {
+      if (!this.engine) return;
+      this.engine.updateSettings(
+        toRaw(this.currentMaterial),
+        toRaw(this.brush),
+        toRaw(this.brushPalette)
+      );
     },
     updatePreview() {
       if (this.engine)
@@ -822,44 +884,19 @@ export default {
           toRaw(this.currentMaterial)
         );
     },
-    onKeyDown(e) {
-      if (e.key === "Shift") this.engine.setModifiers(true, this.isAltDown);
-      if (e.key === "Alt") {
-        this.isAltDown = true;
-        this.engine.setModifiers(this.engine.isShiftDown, true);
-      }
-
-      // Deshacer/Rehacer
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key.toLowerCase() === "z" &&
-        !e.shiftKey
-      ) {
-        e.preventDefault();
-        this.undo();
-      }
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key.toLowerCase() === "y" ||
-          (e.shiftKey && e.key.toLowerCase() === "z"))
-      ) {
-        e.preventDefault();
-        this.redo();
-      }
-
-      // Andamio
-      if (e.key === "PageUp") this.adjustLevel(1);
-      if (e.key === "PageDown") this.adjustLevel(-1);
+    setTool(t) {
+      this.currentTool = t;
     },
-    onKeyUp(e) {
-      if (e.key === "Shift") this.engine.setModifiers(false, this.isAltDown);
-      if (e.key === "Alt") {
-        this.isAltDown = false;
-        this.engine.setModifiers(this.engine.isShiftDown, false);
-      }
+    setTransformMode(m) {
+      this.transformMode = m;
+      this.engine.setTransformMode(m);
     },
-
-    // Delegación de acciones al motor
+    confirmSelection() {
+      this.engine.confirmSelection();
+    },
+    toggleSymmetry(axis) {
+      this.symmetries[axis] = !this.symmetries[axis];
+    },
     adjustLevel(d) {
       this.engine.adjustLevel(d);
       this.currentLevel = this.engine.currentLevel;
@@ -874,26 +911,13 @@ export default {
       this.isOrthographic = !this.isOrthographic;
       this.engine.toggleCamera(this.isOrthographic);
     },
-    toggleSymmetry() {
-      this.symmetryMode = !this.symmetryMode;
-      this.engine.toggleSymmetry();
-    },
     takeScreenshot() {
-      this.screenshotMode = true;
-      this.$nextTick(() => {
-        requestAnimationFrame(() => {
-          this.engine.takeScreenshot((url) => {
-            const link = document.createElement("a");
-            link.download = `voxel-art-${Date.now()}.png`;
-            link.href = url;
-            link.click();
-            this.screenshotMode = false;
-          });
-        });
+      this.engine.takeScreenshot((url) => {
+        const l = document.createElement("a");
+        l.download = "voxel-art.png";
+        l.href = url;
+        l.click();
       });
-    },
-    clearAll() {
-      this.requestClear();
     },
     requestClear() {
       this.showClearModal = true;
@@ -902,80 +926,122 @@ export default {
       this.engine.clearAll();
       this.showClearModal = false;
     },
-
-    // Lógica de Paleta
     addToBrushPalette() {
       const mat = toRaw(this.currentMaterial);
       const thumb = this.engine.generateMaterialThumbnail(mat);
-      this.brushPalette.push({ mat, weight: 50, preview: thumb });
+      this.brushPalette.push({ mat: { ...mat }, weight: 50, preview: thumb });
+      this.addToUsedMaterials(mat);
     },
-    addToMaterialPalette(mat) {
-      // Comprobación simple de duplicados
-      const raw = toRaw(mat);
+    addToUsedMaterials(m) {
+      const mat = toRaw(m);
       const exists = this.usedMaterials.some(
-        (m) =>
-          m.color === raw.color &&
-          m.emissive === raw.emissive &&
-          m.metalness === raw.metalness &&
-          m.roughness === raw.roughness &&
-          m.opacity === raw.opacity
+        (x) =>
+          x.color === mat.color &&
+          x.emissive === mat.emissive &&
+          x.metalness === mat.metalness &&
+          x.roughness === mat.roughness &&
+          x.emissiveIntensity === mat.emissiveIntensity &&
+          x.opacity === mat.opacity
       );
       if (!exists) {
-        const thumb = this.engine.generateMaterialThumbnail(raw);
-        this.usedMaterials.push({ ...raw, preview: thumb });
+        const thumb = this.engine.generateMaterialThumbnail(mat);
+        this.usedMaterials.push({ ...mat, preview: thumb });
       }
     },
-    loadMaterial(mat) {
-      this.currentMaterial = { ...mat };
-      delete this.currentMaterial.preview; // No queremos la imagen en los datos del material
+    loadMaterial(m) {
+      this.currentMaterial = { ...this.currentMaterial, ...m };
+      delete this.currentMaterial.preview;
     },
+    onKeyDown(e) {
+      if (e.target.tagName === "INPUT") return;
+      if (e.key === "Shift") this.engine.setModifiers(true, e.altKey);
+      if (e.key === "Alt") this.engine.setModifiers(e.shiftKey, true);
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        this.undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+        e.preventDefault();
+        this.redo();
+      }
+      if (e.key === "b") this.setTool("brush");
+      if (e.key === "v") this.setTool("box");
+      if (e.key === "m") this.setTool("select");
+      if (e.key === "PageUp") this.adjustLevel(1);
+      if (e.key === "PageDown") this.adjustLevel(-1);
 
-    // Importar/Exportar
-    exportVoxels() {
-      this.engine.exportVoxels();
+      if (e.key === "r" && this.currentTool === "select") {
+        const newMode =
+          this.transformMode === "translate" ? "rotate" : "translate";
+        this.setTransformMode(newMode);
+      }
+    },
+    onKeyUp(e) {
+      if (e.key === "Shift" || e.key === "Alt")
+        this.engine.setModifiers(false, false);
     },
     triggerImport() {
       this.$refs.fileInput.click();
     },
-    handleFileImport(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
+    handleFileImport(e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = (ev) => {
         try {
-          const json = JSON.parse(e.target.result);
-          if (json.voxels && Array.isArray(json.voxels)) {
+          const json = JSON.parse(ev.target.result);
+          if (json.voxels) {
             this.engine.clearAll();
             json.voxels.forEach((v) => {
               this.engine.addVoxelMesh(v);
-              this.addToMaterialPalette(v);
+              this.addToUsedMaterials(v);
             });
-            event.target.value = "";
           }
         } catch (err) {
-          console.error("Error al analizar JSON", err);
-          alert("Archivo JSON inválido");
+          alert("Error JSON");
         }
       };
-      reader.readAsText(file);
+      r.readAsText(f);
+    },
+    exportVoxels() {
+      this.engine.exportVoxels();
     },
   },
 };
 </script>
 
 <style scoped>
-/* Scrollbar personalizado para el modo oscuro */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 8px;
+.btn-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
+.btn-icon:active {
+  transform: scale(0.9);
 }
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 4px;
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
 }
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.7);
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 2px;
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

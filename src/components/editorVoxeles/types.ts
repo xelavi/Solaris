@@ -1,8 +1,15 @@
-import * as THREE from 'three';
+export const CHUNK_SIZE = 8;
+
+export type ToolMode = 'brush' | 'box' | 'select' | 'picker';
+
+export interface Symmetries {
+  x: boolean;
+  z: boolean;
+}
 
 export interface VoxelMaterial {
-  color: string;
-  emissive: string;
+  color: string | number;
+  emissive: string | number;
   metalness: number;
   roughness: number;
   emissiveIntensity: number;
@@ -28,22 +35,8 @@ export interface PaletteItem {
   preview?: string;
 }
 
-export interface EngineCallbacks {
-  onVoxelCountChange?: (count: number) => void;
-  onHistoryChange?: (index: number, length: number) => void;
-  onMaterialPick?: (material: VoxelMaterial) => void;
-  onActionRecord?: () => void;
-}
-
-export interface HistoryChangeAdd {
-  mesh: THREE.Mesh;
-  data: VoxelData;
-}
-
-export interface HistoryChangeRemove {
-  mesh?: THREE.Mesh | null;
-  data: VoxelData;
-}
+export interface HistoryChangeAdd { data: VoxelData; }
+export interface HistoryChangeRemove { data: VoxelData; }
 
 export interface HistoryAction {
   type: 'batch';
@@ -51,4 +44,12 @@ export interface HistoryAction {
     added: HistoryChangeAdd[];
     removed: HistoryChangeRemove[];
   };
+}
+
+export interface EngineCallbacks {
+  onVoxelCountChange?: (count: number) => void;
+  onHistoryChange?: (index: number, length: number) => void;
+  onMaterialPick?: (material: VoxelMaterial) => void;
+  onActionRecord?: () => void;
+  onToolChange?: (tool: ToolMode) => void;
 }
