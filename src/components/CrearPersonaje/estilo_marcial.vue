@@ -28,7 +28,7 @@
     </div>
 
     <!-- Habilidades -->
-    
+
     <!-- Dotes -->
     <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
       <h4 class="text-lg font-semibold text-blue-700 mb-4">
@@ -68,7 +68,8 @@
                 @click="toggleDote(dote)"
                 :disabled="
                   (!estaDoteSeleccionada(dote.id) &&
-                    dotesSeleccionadas.length >= estiloMarcialActual.numDotes) ||
+                    dotesSeleccionadas.length >=
+                      estiloMarcialActual.numDotes) ||
                   !puedeSeleccionarDote(dote)
                 "
                 :class="[
@@ -76,8 +77,8 @@
                   estaDoteSeleccionada(dote.id)
                     ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
                     : puedeSeleccionarDote(dote)
-                    ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
-                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50',
+                      ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
+                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50',
                   dote.requiere ? 'ml-8' : '',
                 ]"
               >
@@ -132,7 +133,8 @@ import estiloMarcialData from "../../assets/estiloMarcial/estiloMarcial.json";
 import activasData from "../../assets/activas.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
-const { characterData, loadCharacterData, saveCharacterData } = useCharacterCreation();
+const { characterData, loadCharacterData, saveCharacterData } =
+  useCharacterCreation();
 
 const selectedEstiloMarcial = ref("");
 const dotesSeleccionadas = ref([]);
@@ -146,7 +148,7 @@ const activas = activasData.activas;
 // Crear un mapa de activas por ID para búsqueda rápida
 const activasMap = computed(() => {
   const map = new Map();
-  activas.forEach(activa => {
+  activas.forEach((activa) => {
     map.set(activa.id.toString(), activa);
   });
   return map;
@@ -164,8 +166,10 @@ onMounted(async () => {
   estaCargandoDatos.value = true;
   await loadCharacterData();
   selectedEstiloMarcial.value = characterData.value.estilo_marcial || "";
-  dotesSeleccionadas.value = [...(characterData.value.estilo_marcial_dotes || [])];
-  
+  dotesSeleccionadas.value = [
+    ...(characterData.value.estilo_marcial_dotes || []),
+  ];
+
   datosCompletosCargados.value = true;
   console.log("Cargado estilo marcial:", selectedEstiloMarcial.value);
   console.log("Cargado dotes:", dotesSeleccionadas.value);
@@ -177,7 +181,7 @@ onMounted(async () => {
 // Watcher para guardar el estilo marcial seleccionado
 watch(selectedEstiloMarcial, (newValue, oldValue) => {
   if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
-  
+
   characterData.value.estilo_marcial = newValue;
   // Resetear dotes solo si cambió de un estilo a otro (no en la carga inicial)
   if (oldValue && oldValue !== newValue) {
@@ -189,26 +193,32 @@ watch(selectedEstiloMarcial, (newValue, oldValue) => {
 });
 
 // Watcher para guardar las dotes seleccionadas
-watch(dotesSeleccionadas, (newValue) => {
-  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
-  console.log("Dotes seleccionadas cambiaron:", newValue);
-  characterData.value.estilo_marcial_dotes = [...newValue];
-  saveCharacterData();
-  console.log("Guardado dotes:", newValue);
-}, { deep: true });
+watch(
+  dotesSeleccionadas,
+  (newValue) => {
+    if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+    console.log("Dotes seleccionadas cambiaron:", newValue);
+    characterData.value.estilo_marcial_dotes = [...newValue];
+    saveCharacterData();
+    console.log("Guardado dotes:", newValue);
+  },
+  { deep: true },
+);
 
 const estiloMarcialActual = computed(() => {
-  const estilo = estiloMarcials.find((t) => t.nombre === selectedEstiloMarcial.value);
+  const estilo = estiloMarcials.find(
+    (t) => t.nombre === selectedEstiloMarcial.value,
+  );
   if (!estilo) return null;
 
   // Procesar las dotes para agruparlas por categoría
-  const dotesConCategoria = estilo.dotes.filter(d => d.categoria);
-  const dotesSinCategoria = estilo.dotes.filter(d => !d.categoria);
+  const dotesConCategoria = estilo.dotes.filter((d) => d.categoria);
+  const dotesSinCategoria = estilo.dotes.filter((d) => !d.categoria);
 
   // Agrupar dotes por categoría
   const categorias = new Map();
-  
-  dotesConCategoria.forEach(dote => {
+
+  dotesConCategoria.forEach((dote) => {
     if (!categorias.has(dote.categoria)) {
       categorias.set(dote.categoria, []);
     }
@@ -217,18 +227,20 @@ const estiloMarcialActual = computed(() => {
 
   // Crear grupos de dotes
   const gruposDotes = [];
-  
+
   // Añadir dotes sin categoría primero
   if (dotesSinCategoria.length > 0) {
     gruposDotes.push({
       categoria: "Dotes Generales",
-      dotes: dotesSinCategoria.map(d => ({
+      dotes: dotesSinCategoria.map((d) => ({
         id: `${estilo.nombre}_${d.id}`,
         nombre: d.nombre,
         descripcion: d.descripcion,
-        requiere: d.requisito_dote ? `${estilo.nombre}_${d.requisito_dote}` : null,
+        requiere: d.requisito_dote
+          ? `${estilo.nombre}_${d.requisito_dote}`
+          : null,
         activaId: d.activa,
-      }))
+      })),
     });
   }
 
@@ -236,13 +248,15 @@ const estiloMarcialActual = computed(() => {
   categorias.forEach((dotes, categoria) => {
     gruposDotes.push({
       categoria: categoria,
-      dotes: dotes.map(d => ({
+      dotes: dotes.map((d) => ({
         id: `${estilo.nombre}_${d.id}`,
         nombre: d.nombre,
         descripcion: d.descripcion,
-        requiere: d.requisito_dote ? `${estilo.nombre}_${d.requisito_dote}` : null,
+        requiere: d.requisito_dote
+          ? `${estilo.nombre}_${d.requisito_dote}`
+          : null,
         activaId: d.activa,
-      }))
+      })),
     });
   });
 
@@ -273,7 +287,9 @@ function toggleDote(dote) {
     // Quitar y remover dependientes
     dotesSeleccionadas.value.splice(idx, 1);
     removerDotesDependientes(dote);
-  } else if (dotesSeleccionadas.value.length < estiloMarcialActual.value.numDotes) {
+  } else if (
+    dotesSeleccionadas.value.length < estiloMarcialActual.value.numDotes
+  ) {
     // Añadir si no superamos el límite
     dotesSeleccionadas.value.push(dote.id);
   }

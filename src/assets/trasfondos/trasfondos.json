@@ -49,19 +49,19 @@
       "atributos": [6, 15],
       "habilidades": ["12", "16", "3", "17", "13", "19"]
     },
-     {
+    {
       "nombre": "Monaguillo de la Cofradía de Bharak",
       "descripcion": "La congregación religiosa mas importante de Limsa Lomensa, tienen mucha influéncia política, al nivel de que sin ellos el imperio de Mudab Il Nam no habría podido desarrollarse. Tienen conocimientos muy antiguos y valiosos que se remontan a centenares de años. Muchos eruditos y líderes buscan pasar años estudiando en las bibliotecas de sus templos. Guardan muchos secretos y tienen su propia Orden Militar. Los maestros de armas son integrantes en su mayoría de dicha organización.",
       "atributos": [10, 16],
       "habilidades": ["5", "7", "31", "15", "31", "19"]
     },
-     {
+    {
       "nombre": "Agojé",
       "descripcion": "Entrenamiento militar obligatorio que los ciudadanos que viven en Lenam deben realizar. En tiempos de guerra, la población debe realizar otro entrenamiento cada año. Los ciudadanos que completan el entrenamiento reciben la oferta de formar parte de la Armatha, el ejercito del imperio. En caso de no querer formar parte de la Armatha, un ciudadano puede reanudar sus actividades previas, pero recibe un permiso a modo de pasaporte que debe llevar siempre encima para poder ser identificado, esto no se suele cumplir por la mayoría, aunque perderlo conlleva un castigo grave en el que se extirpa una oreja. En la ciudad-capital son muy estrictos con esto, pero en las otras regiones del imperio son mas laxos con la vigilancia.",
       "atributos": [18, 5],
       "habilidades": ["1", "2", "15", "30", "9", "7"]
     },
-     {
+    {
       "nombre": "Protegido de la espina mortecina",
       "descripcion": "Miembro de una organización anárquica que quiere ver en llamas la forma de gobierno de Lenam. Viven en las sombras de los lugares mas recónditos del reino y aguardan su venganza. De cara al mundo, son una organización privada de servicios. Suelen ser contratados para vigilar, escoltar, secuestrar y matar. Pero son muy caros comparados con otras organizaciones, aunque estos son letales y tienen la fama de jamás fracasar en sus misiones. Se dice por las tabernas y los barracones que un asesino de la espina mortecina equivale a veinte asesinos al uso.",
       "atributos": [4, 12],

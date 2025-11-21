@@ -1,131 +1,130 @@
 {
-    "caracteristicasSecundarias": [
-        {
-            "id": 1,
-            "nombre": "Cuerpo",
-            "diminutivo": "B",
-            "descripcion": "Determina la potencia física, la resistencia y la salud general.",
-            "tipo": 0
-        },
-        {
-            "id": 2,
-            "nombre": "Agilidad",
-            "diminutivo": "A",
-            "descripcion": "Mide la destreza, reflejos y coordinación.",
-            "tipo": 0
-        
-        },
-        {
-            "id": 3,
-            "nombre": "Mente",
-            "diminutivo": "MIND",
-            "descripcion": "Indica la capacidad cognitiva y el enfoque mental.",
-            "tipo": 0
-        },
-        {
-            "id": 4,
-            "nombre": "Poderío",
-            "diminutivo": "DL",
-            "descripcion": "Determina la potencia física y la capacidad para realizar tareas que requieren esfuerzo.",
-            "tipo": 1
-        },
-        {
-            "id": 5,
-            "nombre": "Movimiento",
-            "diminutivo": "M",
-            "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
-            "tipo": 1
-        },
-        {
-            "id": 6,
-            "nombre": "Resistencia",
-            "diminutivo": "R",
-            "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
-            "tipo": 1
-        },
-        {
-            "id": 7,
-            "nombre": "HP",
-            "diminutivo": "HP",
-            "descripcion": "Indica la resistencia física y la salud general del personaje.",
-            "tipo": 1
-        },
-        {
-            "id": 8,
-            "nombre": "Regeneración",
-            "diminutivo": "REG",
-            "descripcion": "Indica la resistencia física y la salud general del personaje.",
-            "tipo": 1
-        },
-        {
-            "id": 9,
-            "nombre": "Evasión",
-            "diminutivo": "AC",
-            "descripcion": "Refleja la capacidad de evitar ataques y peligros.",
-            "tipo": 2
-        },
-        {
-            "id": 10,
-            "nombre": "Iniciativa",
-            "diminutivo": "INI",
-            "descripcion": "Representa el sentido común, la percepción y la intuición.",
-            "tipo": 2
-        },
-        {
-            "id": 11,
-            "nombre": "Puntería",
-            "diminutivo": "DE",
-            "descripcion": "Mide la habilidad para influir en otros y la presencia personal.",
-            "tipo": 2
-        },
-        {
-            "id": 12,
-            "nombre": "Acciones",
-            "diminutivo": "ACC",
-            "descripcion": "Indica la concentración y la capacidad de mantener la atención en tareas específicas.",
-            "tipo": 2
-        },
-        {
-            "id": 13,
-            "nombre": "Reacciones",
-            "diminutivo": "REAC",
-            "descripcion": "Refleja la fuerza de voluntad y la determinación del personaje.",
-            "tipo": 2
-        },
-        {
-            "id": 14,
-            "nombre": "Puntos de Habilidad",
-            "diminutivo": "H",
-            "descripcion": "Mide la sabiduría, el aprendizaje y la comprensión del entorno.",
-            "tipo": 3
-        },
-        {
-            "id": 15,
-            "nombre": "Voluntad",
-            "diminutivo": "WP",
-            "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
-            "tipo": 3
-        },
-        {
-            "id": 16,
-            "nombre": "Limite de Habilidad",
-            "diminutivo": "CAP",
-            "descripcion": "Refleja la memoria, el razonamiento y la agudeza mental.",
-            "tipo": 3
-        },
-        {
-            "id": 17,
-            "nombre": "Habilidades extras",
-            "diminutivo": "SKILL",
-            "descripcion": "Mide la capacidad de enfoque y atención en tareas complejas.",
-            "tipo": 3
-        },
-        {
-            "id": 18,
-            "nombre": "Rango de Critico",
-            "diminutivo": "IC",
-            "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
-            "tipo": 0
-        }
-    ]
+  "caracteristicasSecundarias": [
+    {
+      "id": 1,
+      "nombre": "Cuerpo",
+      "diminutivo": "B",
+      "descripcion": "Determina la potencia física, la resistencia y la salud general.",
+      "tipo": 0
+    },
+    {
+      "id": 2,
+      "nombre": "Agilidad",
+      "diminutivo": "A",
+      "descripcion": "Mide la destreza, reflejos y coordinación.",
+      "tipo": 0
+    },
+    {
+      "id": 3,
+      "nombre": "Mente",
+      "diminutivo": "MIND",
+      "descripcion": "Indica la capacidad cognitiva y el enfoque mental.",
+      "tipo": 0
+    },
+    {
+      "id": 4,
+      "nombre": "Poderío",
+      "diminutivo": "DL",
+      "descripcion": "Determina la potencia física y la capacidad para realizar tareas que requieren esfuerzo.",
+      "tipo": 1
+    },
+    {
+      "id": 5,
+      "nombre": "Movimiento",
+      "diminutivo": "M",
+      "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
+      "tipo": 1
+    },
+    {
+      "id": 6,
+      "nombre": "Resistencia",
+      "diminutivo": "R",
+      "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
+      "tipo": 1
+    },
+    {
+      "id": 7,
+      "nombre": "HP",
+      "diminutivo": "HP",
+      "descripcion": "Indica la resistencia física y la salud general del personaje.",
+      "tipo": 1
+    },
+    {
+      "id": 8,
+      "nombre": "Regeneración",
+      "diminutivo": "REG",
+      "descripcion": "Indica la resistencia física y la salud general del personaje.",
+      "tipo": 1
+    },
+    {
+      "id": 9,
+      "nombre": "Evasión",
+      "diminutivo": "AC",
+      "descripcion": "Refleja la capacidad de evitar ataques y peligros.",
+      "tipo": 2
+    },
+    {
+      "id": 10,
+      "nombre": "Iniciativa",
+      "diminutivo": "INI",
+      "descripcion": "Representa el sentido común, la percepción y la intuición.",
+      "tipo": 2
+    },
+    {
+      "id": 11,
+      "nombre": "Puntería",
+      "diminutivo": "DE",
+      "descripcion": "Mide la habilidad para influir en otros y la presencia personal.",
+      "tipo": 2
+    },
+    {
+      "id": 12,
+      "nombre": "Acciones",
+      "diminutivo": "ACC",
+      "descripcion": "Indica la concentración y la capacidad de mantener la atención en tareas específicas.",
+      "tipo": 2
+    },
+    {
+      "id": 13,
+      "nombre": "Reacciones",
+      "diminutivo": "REAC",
+      "descripcion": "Refleja la fuerza de voluntad y la determinación del personaje.",
+      "tipo": 2
+    },
+    {
+      "id": 14,
+      "nombre": "Puntos de Habilidad",
+      "diminutivo": "H",
+      "descripcion": "Mide la sabiduría, el aprendizaje y la comprensión del entorno.",
+      "tipo": 3
+    },
+    {
+      "id": 15,
+      "nombre": "Voluntad",
+      "diminutivo": "WP",
+      "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
+      "tipo": 3
+    },
+    {
+      "id": 16,
+      "nombre": "Limite de Habilidad",
+      "diminutivo": "CAP",
+      "descripcion": "Refleja la memoria, el razonamiento y la agudeza mental.",
+      "tipo": 3
+    },
+    {
+      "id": 17,
+      "nombre": "Habilidades extras",
+      "diminutivo": "SKILL",
+      "descripcion": "Mide la capacidad de enfoque y atención en tareas complejas.",
+      "tipo": 3
+    },
+    {
+      "id": 18,
+      "nombre": "Rango de Critico",
+      "diminutivo": "IC",
+      "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
+      "tipo": 0
+    }
+  ]
 }

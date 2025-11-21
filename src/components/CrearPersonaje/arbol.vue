@@ -3,7 +3,9 @@
     <div ref="box" class="w-250 h-150 relative arbol-canvas"></div>
     <div class="flex flex-col gap-4 arbol-paneles">
       <!-- Panel de Nodos Seleccionados -->
-      <div class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
+      <div
+        class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg"
+      >
         <h3 class="text-lg font-bold mb-3">Nodos Seleccionados</h3>
         <div class="mb-4">
           <p class="text-sm">
@@ -14,33 +16,42 @@
         <div class="mb-4">
           <p class="text-sm">
             <span class="font-semibold">Puntos disponibles: </span>
-            <span :class="remainingNodes < 0 ? 'text-red-600' : 'text-green-600'">
+            <span
+              :class="remainingNodes < 0 ? 'text-red-600' : 'text-green-600'"
+            >
               {{ remainingNodes }}
             </span>
           </p>
         </div>
         <div class="max-h-60 overflow-y-auto">
-          <div 
-            v-for="node in selectedNodes" 
+          <div
+            v-for="node in selectedNodes"
             :key="node.nodeId"
             :class="[
               'mb-2 p-2 rounded text-sm',
-              node.isTrasfondo ? 'bg-blue-100 border-2 border-blue-400' : 'bg-gray-100'
+              node.isTrasfondo
+                ? 'bg-blue-100 border-2 border-blue-400'
+                : 'bg-gray-100',
             ]"
           >
             <div class="font-semibold">
               {{ node.skillName }}
-              <span v-if="node.isTrasfondo" class="text-xs text-blue-600 ml-1">(Trasfondo)</span>
+              <span v-if="node.isTrasfondo" class="text-xs text-blue-600 ml-1"
+                >(Trasfondo)</span
+              >
             </div>
             <div class="text-xs text-gray-600">
-              {{ node.type === 'circle' ? 'Atributo' : 'Activa' }} - Layer {{ node.layer }}
+              {{ node.type === "circle" ? "Atributo" : "Activa" }} - Layer
+              {{ node.layer }}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Panel de Atributos Calculados -->  
-      <div class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
+      <!-- Panel de Atributos Calculados -->
+      <div
+        class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg"
+      >
         <h3 class="text-lg font-bold mb-3">Atributos</h3>
         <div class="space-y-2 text-sm">
           <!-- Atributos principales -->
@@ -57,10 +68,12 @@
             <span>Mente:</span>
             <span class="font-bold">{{ mente }}</span>
           </div>
-          
+
           <!-- Atributos derivados (+3 por nodo) -->
-          <div class="font-semibold text-green-700 mt-3 mb-2">Derivados (×3)</div>
-           <div class="flex justify-between">
+          <div class="font-semibold text-green-700 mt-3 mb-2">
+            Derivados (×3)
+          </div>
+          <div class="flex justify-between">
             <span>HP:</span>
             <span class="font-bold">{{ hp }}</span>
           </div>
@@ -96,9 +109,11 @@
             <span>Pts Habilidad:</span>
             <span class="font-bold">{{ puntosHabilidad }}</span>
           </div>
-          
+
           <!-- Atributos simples (+1 por nodo) -->
-          <div class="font-semibold text-purple-700 mt-3 mb-2">Especiales (×1)</div>
+          <div class="font-semibold text-purple-700 mt-3 mb-2">
+            Especiales (×1)
+          </div>
           <div class="flex justify-between">
             <span>Rango Crítico:</span>
             <span class="font-bold">{{ rangoCritico }}</span>
@@ -126,7 +141,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  watch,
+  nextTick,
+} from "vue";
 import * as THREE from "three";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import arbolData from "../../assets/arbol.json";
@@ -134,7 +156,10 @@ import atributosData from "../../assets/atributos.json";
 import activasData from "../../assets/activas.json";
 import trasfondosData from "../../assets/trasfondos/trasfondos.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
-import { useArbolAttributes, type ArbolNode } from "../../domain/useArbolAttributes";
+import {
+  useArbolAttributes,
+  type ArbolNode,
+} from "../../domain/useArbolAttributes";
 
 const box = ref<HTMLDivElement | null>(null);
 let renderer: THREE.WebGLRenderer | null = null;
@@ -166,7 +191,7 @@ const characterLevel = computed({
   get: () => characterData.value.nivel,
   set: (value: number) => {
     characterData.value.nivel = value;
-  }
+  },
 });
 
 const maxNodes = computed(() => characterLevel.value * 2);
@@ -184,31 +209,35 @@ const selectedNodes = computed({
   },
   set: (value) => {
     characterData.value.arbol = JSON.stringify(value);
-  }
+  },
 });
 
 // Get trasfondo node IDs
 const trasfondoNodeIds = computed(() => {
   if (!characterData.value.trasfondo) return [];
-  
+
   const trasfondo = trasfondosData.trasfondos.find(
-    t => t.nombre === characterData.value.trasfondo
+    (t) => t.nombre === characterData.value.trasfondo,
   );
-  
+
   return trasfondo ? trasfondo.atributos : [];
 });
 
 // Filter selected nodes to separate trasfondo nodes from regular nodes
-const regularSelectedNodes = computed(() => 
-  selectedNodes.value.filter((node: ArbolNode) => !trasfondoNodeIds.value.includes(node.nodeId))
+const regularSelectedNodes = computed(() =>
+  selectedNodes.value.filter(
+    (node: ArbolNode) => !trasfondoNodeIds.value.includes(node.nodeId),
+  ),
 );
 
-const remainingNodes = computed(() => maxNodes.value - regularSelectedNodes.value.length);
+const remainingNodes = computed(
+  () => maxNodes.value - regularSelectedNodes.value.length,
+);
 
 // Use arbol attributes composable to calculate stats
 const {
   cuerpo,
-  agilidad, 
+  agilidad,
   mente,
   hp,
   rangoCritico,
@@ -224,7 +253,7 @@ const {
   iniciativa,
   punteria,
   puntosHabilidad,
-  attributes
+  attributes,
 } = useArbolAttributes(selectedNodes, characterLevel);
 
 function init() {
@@ -240,8 +269,8 @@ function init() {
   el.appendChild(renderer.domElement);
 
   // Add mouse event listeners
-  renderer.domElement.addEventListener('mousemove', onMouseMove);
-  renderer.domElement.addEventListener('click', onClick);
+  renderer.domElement.addEventListener("mousemove", onMouseMove);
+  renderer.domElement.addEventListener("click", onClick);
 
   // Escena
   scene = new THREE.Scene();
@@ -259,7 +288,7 @@ function init() {
   controls.minPolarAngle = 0;
   controls.maxPolarAngle = Math.PI / 2.5;
   controls.minDistance = 80; // Prevent zooming too close
-  controls.maxDistance = 250  ; // Prevent zooming too far
+  controls.maxDistance = 250; // Prevent zooming too far
   controls.enableDamping = true;
 
   // Luz
@@ -272,10 +301,10 @@ function init() {
 
   const base = new THREE.Mesh(
     new THREE.CircleGeometry(100, 200),
-    new THREE.MeshStandardMaterial({ color: baseColor })
+    new THREE.MeshStandardMaterial({ color: baseColor }),
   );
   base.rotation.x = -Math.PI / 2;
- // scene.add(base);
+  // scene.add(base);
 
   // Function to create text sprite
   function createTextSprite(text: string, color = "#ffffff", fontSize = 180) {
@@ -306,12 +335,12 @@ function init() {
     // Create texture and sprite
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
-    
-    const spriteMaterial = new THREE.SpriteMaterial({ 
+
+    const spriteMaterial = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
       alphaTest: 0.05,
-      depthTest: false  // Para que siempre se vea por encima
+      depthTest: false, // Para que siempre se vea por encima
     });
     const sprite = new THREE.Sprite(spriteMaterial);
 
@@ -326,26 +355,32 @@ function init() {
 
   // Helper function to get diminutivo from atributos or activas
   function getDiminutivo(atributoId: string | number, shape: string): string {
-    const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-    
+    const id =
+      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
     if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+      const atributo = atributosData.caracteristicasSecundarias.find(
+        (a) => a.id === id,
+      );
       return atributo?.diminutivo || "";
     } else {
-      const activa = activasData.activas.find(a => a.id === id);
-      return activa?.diminutivo || "";  
+      const activa = activasData.activas.find((a) => a.id === id);
+      return activa?.diminutivo || "";
     }
   }
 
   // Helper function to get description
   function getDescription(atributoId: string | number, shape: string): string {
-    const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-    
+    const id =
+      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
     if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+      const atributo = atributosData.caracteristicasSecundarias.find(
+        (a) => a.id === id,
+      );
       return atributo?.descripcion || "";
     } else {
-      const activa = activasData.activas.find(a => a.id === id);
+      const activa = activasData.activas.find((a) => a.id === id);
       return activa?.descripcion || "";
     }
   }
@@ -353,7 +388,7 @@ function init() {
   // Build layers structure from arbol.json
   const layerSizes = [3, 12, 24, 24];
   const layerRadii = [15, 45, 90, 135];
-  
+
   // Initialize layers with empty arrays
   const layers: Array<{
     count: number;
@@ -384,7 +419,7 @@ function init() {
   function createCurvedLine(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    isRadial = false
+    isRadial = false,
   ) {
     const points = [];
     const segments = 50;
@@ -417,7 +452,7 @@ function init() {
         const point = new THREE.Vector3(
           Math.cos(angle) * radius,
           -0.1, // Negative Y to render below the meshes
-          Math.sin(angle) * radius
+          Math.sin(angle) * radius,
         );
         points.push(point);
       }
@@ -444,7 +479,7 @@ function init() {
 
     for (let i = 0; i < layer.count; i++) {
       const nodeData = layer.nodeData[i];
-      
+
       // Skip if no node data for this position
       if (!nodeData) {
         // Still need to add a null position for proper indexing
@@ -456,18 +491,18 @@ function init() {
       const position = new THREE.Vector3(
         Math.cos(theta + Math.PI / 6) * layer.radius,
         0.1,
-        Math.sin(theta + Math.PI / 6) * layer.radius
+        Math.sin(theta + Math.PI / 6) * layer.radius,
       );
 
       // Create square or circle based on shape
-      if(layer.shape && layer.shape[i] === "square") {
+      if (layer.shape && layer.shape[i] === "square") {
         // Create square
         const square = new THREE.Mesh(
           new THREE.BoxGeometry(rSmall * 2, 1, rSmall * 2),
           new THREE.MeshBasicMaterial({
-            color: 0x4A90E2, // Azul vibrante
+            color: 0x4a90e2, // Azul vibrante
             side: THREE.DoubleSide,
-          })
+          }),
         );
 
         square.position.copy(position);
@@ -482,13 +517,13 @@ function init() {
           skillName: skillName,
           description: description,
           isSelected: false,
-          originalColor: 0x4A90E2, // Azul vibrante
+          originalColor: 0x4a90e2, // Azul vibrante
           selectedColor: 0x00ff00, // Verde brillante
-          hoverColor: 0x7EC8E3,    // Azul claro
-          trasfondoNodeColor: 0x6366F1, // Indigo para nodos de trasfondo
-          type: 'square',
+          hoverColor: 0x7ec8e3, // Azul claro
+          trasfondoNodeColor: 0x6366f1, // Indigo para nodos de trasfondo
+          type: "square",
           layer: layerIndex,
-          index: i
+          index: i,
         };
 
         scene.add(square);
@@ -496,7 +531,7 @@ function init() {
         clickables.push(square);
 
         // Add text sprite
-        if(skillName) {
+        if (skillName) {
           const textSprite = createTextSprite(skillName, "#ffffff", 350);
           textSprite.position.copy(square.position);
           scene.add(textSprite);
@@ -506,9 +541,9 @@ function init() {
         const circle = new THREE.Mesh(
           new THREE.CircleGeometry(rSmall, 64),
           new THREE.MeshBasicMaterial({
-            color: 0x4A90E2, // Azul vibrante
+            color: 0x4a90e2, // Azul vibrante
             side: THREE.DoubleSide,
-          })
+          }),
         );
 
         // Position circle on XZ plane
@@ -525,13 +560,13 @@ function init() {
           skillName: skillName,
           description: description,
           isSelected: false,
-          originalColor: 0x4A90E2, // Azul vibrante
+          originalColor: 0x4a90e2, // Azul vibrante
           selectedColor: 0x00ff00, // Verde brillante
-          hoverColor: 0x7EC8E3,    // Azul claro
-          trasfondoNodeColor: 0x6366F1, // Indigo para nodos de trasfondo
-          type: 'circle',
+          hoverColor: 0x7ec8e3, // Azul claro
+          trasfondoNodeColor: 0x6366f1, // Indigo para nodos de trasfondo
+          type: "circle",
           layer: layerIndex,
-          index: i
+          index: i,
         };
 
         scene.add(circle);
@@ -539,7 +574,7 @@ function init() {
         clickables.push(circle);
 
         // Add text sprite
-        if(skillName) {
+        if (skillName) {
           const textSprite = createTextSprite(skillName, "#ffffff", 350);
           textSprite.position.copy(circle.position);
           scene.add(textSprite);
@@ -555,7 +590,7 @@ function init() {
   // Function to get circle position by layer and index
   function getCirclePosition(
     layerIndex: number,
-    circleIndex: number
+    circleIndex: number,
   ): THREE.Vector3 | null {
     if (layerIndex < 0 || layerIndex >= circlePositions.length) return null;
     const layer = circlePositions[layerIndex];
@@ -571,7 +606,7 @@ function init() {
     toCircle: number,
     connectionType: "straight" | "curved" = "straight",
     color: number = 0x666666,
-    connectionId?: string
+    connectionId?: string,
   ): string | null {
     const startPos = getCirclePosition(fromLayer, fromCircle);
     const endPos = getCirclePosition(toLayer, toCircle);
@@ -612,7 +647,7 @@ function init() {
   // Function to remove a specific connection by ID
   function removeConnection(connectionId: string): boolean {
     const index = connections.findIndex(
-      (conn) => conn.userData.id === connectionId
+      (conn) => conn.userData.id === connectionId,
     );
     if (index !== -1) {
       const connection = connections[index];
@@ -630,7 +665,7 @@ function init() {
     fromLayer: number,
     fromCircle: number,
     toLayer: number,
-    toCircle: number
+    toCircle: number,
   ): number {
     let removedCount = 0;
     for (let i = connections.length - 1; i >= 0; i--) {
@@ -664,7 +699,7 @@ function init() {
   // Function to create a ring of connections within a layer
   function createLayerRing(
     layerIndex: number,
-    color: number = 0x666666
+    color: number = 0x666666,
   ): string[] {
     const connectionIds: string[] = [];
     const layer = circlePositions[layerIndex];
@@ -678,7 +713,7 @@ function init() {
         layerIndex,
         nextIndex,
         "curved",
-        color
+        color,
       );
       if (id) connectionIds.push(id);
     }
@@ -699,9 +734,15 @@ function init() {
   (window as any).skillTreeAPI = skillTreeAPI;
 
   // Create a map from node ID to layer and position
-  const nodeIdToPosition = new Map<number, { layer: number; position: number }>();
+  const nodeIdToPosition = new Map<
+    number,
+    { layer: number; position: number }
+  >();
   arbolData.arbol.nodos.forEach((nodo) => {
-    nodeIdToPosition.set(nodo.id, { layer: nodo.layer, position: nodo.posicion });
+    nodeIdToPosition.set(nodo.id, {
+      layer: nodo.layer,
+      position: nodo.posicion,
+    });
   });
 
   // Create connections from arbol.json
@@ -711,14 +752,15 @@ function init() {
 
     if (origen && destino) {
       // Determine connection type: straight if different layers, curved if same layer
-      const connectionType = origen.layer === destino.layer ? "curved" : "straight";
+      const connectionType =
+        origen.layer === destino.layer ? "curved" : "straight";
       skillTreeAPI.createConnection(
         origen.layer,
         origen.position,
         destino.layer,
         destino.position,
         connectionType,
-        0x000000
+        0x000000,
       );
     }
   });
@@ -726,11 +768,15 @@ function init() {
   // Restore visual selection state for loaded nodes
   function restoreSelectionState() {
     selectedNodes.value.forEach((savedNode: ArbolNode) => {
-      const mesh = circles.find(circle => circle.userData.nodeId === savedNode.nodeId);
+      const mesh = circles.find(
+        (circle) => circle.userData.nodeId === savedNode.nodeId,
+      );
       if (mesh) {
         mesh.userData.isSelected = true;
         // Always use green selected color for all selected nodes
-        (mesh.material as THREE.MeshBasicMaterial).color.setHex(mesh.userData.selectedColor);
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(
+          mesh.userData.selectedColor,
+        );
       }
     });
   }
@@ -744,32 +790,36 @@ function onMouseMove(event: MouseEvent) {
   const rect = renderer!.domElement.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  
+
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(clickables);
-  
+
   // Remove hover effect from previous object
   if (hovered && !hovered.userData.isSelected) {
-    (hovered.material as THREE.MeshStandardMaterial).color.setHex(hovered.userData.originalColor);
+    (hovered.material as THREE.MeshStandardMaterial).color.setHex(
+      hovered.userData.originalColor,
+    );
   }
-  
+
   if (intersects.length > 0) {
     const intersect = intersects[0];
     const object = intersect.object as THREE.Mesh;
-    
+
     // Apply hover effect if not selected
     if (!object.userData.isSelected) {
       hovered = object;
-      (object.material as THREE.MeshStandardMaterial).color.setHex(object.userData.hoverColor);
+      (object.material as THREE.MeshStandardMaterial).color.setHex(
+        object.userData.hoverColor,
+      );
     }
-    
+
     // Show tooltip
     showTooltip(event, object);
-    renderer!.domElement.style.cursor = 'pointer';
+    renderer!.domElement.style.cursor = "pointer";
   } else {
     hovered = null;
     hideTooltip();
-    renderer!.domElement.style.cursor = 'default';
+    renderer!.domElement.style.cursor = "default";
   }
 }
 
@@ -777,31 +827,36 @@ function onClick(event: MouseEvent) {
   const rect = renderer!.domElement.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  
+
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(clickables);
-  
+
   if (intersects.length > 0) {
     const object = intersects[0].object as THREE.Mesh;
-    
+
     // Check if this is a trasfondo node (cannot be deselected)
-    const isTrasfondoNode = trasfondoNodeIds.value.includes(object.userData.nodeId);
-    
+    const isTrasfondoNode = trasfondoNodeIds.value.includes(
+      object.userData.nodeId,
+    );
+
     // Check if clicking on already selected object (toggle off)
     if (object.userData.isSelected) {
       // Prevent deselecting trasfondo nodes
       if (isTrasfondoNode) {
-        
         return;
       }
-      
+
       // Deselect current object
       object.userData.isSelected = false;
-      (object.material as THREE.MeshStandardMaterial).color.setHex(object.userData.originalColor);
-      
+      (object.material as THREE.MeshStandardMaterial).color.setHex(
+        object.userData.originalColor,
+      );
+
       // Remove from selectedNodes array - use filter to trigger setter
-      selectedNodes.value = selectedNodes.value.filter((n: ArbolNode) => n.nodeId !== object.userData.nodeId);
-      
+      selectedNodes.value = selectedNodes.value.filter(
+        (n: ArbolNode) => n.nodeId !== object.userData.nodeId,
+      );
+
       console.log(`Deselected skill: ${object.userData.skillName}`);
     } else {
       // Check if we've reached the maximum number of nodes (excluding trasfondo nodes)
@@ -809,24 +864,31 @@ function onClick(event: MouseEvent) {
         console.warn(`No quedan puntos disponibles!`);
         return;
       }
-      
+
       // Select new object
       object.userData.isSelected = true;
       // Always use green selected color for all selected nodes
-      (object.material as THREE.MeshStandardMaterial).color.setHex(object.userData.selectedColor);
-      
+      (object.material as THREE.MeshStandardMaterial).color.setHex(
+        object.userData.selectedColor,
+      );
+
       // Add to selectedNodes array - create new array to trigger setter
-      selectedNodes.value = [...selectedNodes.value, {
-        nodeId: object.userData.nodeId,
-        skillName: object.userData.skillName,
-        type: object.userData.type,
-        layer: object.userData.layer,
-        index: object.userData.index,
-        description: object.userData.description,
-        isTrasfondo: isTrasfondoNode
-      }];
-      
-      console.log(`Selected skill: ${object.userData.skillName} (Layer ${object.userData.layer}, Index ${object.userData.index})`);
+      selectedNodes.value = [
+        ...selectedNodes.value,
+        {
+          nodeId: object.userData.nodeId,
+          skillName: object.userData.skillName,
+          type: object.userData.type,
+          layer: object.userData.layer,
+          index: object.userData.index,
+          description: object.userData.description,
+          isTrasfondo: isTrasfondoNode,
+        },
+      ];
+
+      console.log(
+        `Selected skill: ${object.userData.skillName} (Layer ${object.userData.layer}, Index ${object.userData.index})`,
+      );
       console.log(`Puntos restantes: ${remainingNodes.value}`);
     }
   }
@@ -834,7 +896,7 @@ function onClick(event: MouseEvent) {
 
 function showTooltip(event: MouseEvent, object: THREE.Mesh) {
   if (!tooltip) {
-    tooltip = document.createElement('div');
+    tooltip = document.createElement("div");
     tooltip.style.cssText = `
       position: fixed;
       background: rgba(0, 0, 0, 0.8);
@@ -849,22 +911,22 @@ function showTooltip(event: MouseEvent, object: THREE.Mesh) {
     `;
     document.body.appendChild(tooltip);
   }
-  
+
   tooltip.innerHTML = `
   <strong>${object.userData.nodeId}</strong><br>
     <strong>${object.userData.skillName}</strong><br>
     <small>${object.userData.description}</small><br>
-    <em>Tipo: ${object.userData.type === 'circle' ? 'Pasiva' : 'Activa'}</em>
+    <em>Tipo: ${object.userData.type === "circle" ? "Pasiva" : "Activa"}</em>
   `;
-  
-  tooltip.style.left = event.clientX + 10 + 'px';
-  tooltip.style.top = event.clientY - 10 + 'px';
-  tooltip.style.display = 'block';
+
+  tooltip.style.left = event.clientX + 10 + "px";
+  tooltip.style.top = event.clientY - 10 + "px";
+  tooltip.style.display = "block";
 }
 
 function hideTooltip() {
   if (tooltip) {
-    tooltip.style.display = 'none';
+    tooltip.style.display = "none";
   }
 }
 
@@ -916,8 +978,8 @@ function dispose() {
 
   // 4. Remove event listeners
   if (renderer?.domElement) {
-    renderer.domElement.removeEventListener('mousemove', onMouseMove);
-    renderer.domElement.removeEventListener('click', onClick);
+    renderer.domElement.removeEventListener("mousemove", onMouseMove);
+    renderer.domElement.removeEventListener("click", onClick);
   }
 
   // 5. Dispose renderer
@@ -929,95 +991,114 @@ function dispose() {
 }
 
 // Watch for trasfondo changes and update selected nodes
-watch(() => characterData.value.trasfondo, (newTrasfondo, oldTrasfondo) => {
-  if (newTrasfondo !== oldTrasfondo) {
-    console.log('🔄 [arbol.vue] Trasfondo cambió:', newTrasfondo);
-    
-    // Remove old trasfondo nodes (keep regular selections)
-    const regularNodes = selectedNodes.value.filter((n: ArbolNode) => !n.isTrasfondo);
-    
-    // Reset visual state for old trasfondo nodes
-    circles.forEach(mesh => {
-      const wasTrasfondo = selectedNodes.value.find((n: ArbolNode) => 
-        n.nodeId === mesh.userData.nodeId && n.isTrasfondo
+watch(
+  () => characterData.value.trasfondo,
+  (newTrasfondo, oldTrasfondo) => {
+    if (newTrasfondo !== oldTrasfondo) {
+      console.log("🔄 [arbol.vue] Trasfondo cambió:", newTrasfondo);
+
+      // Remove old trasfondo nodes (keep regular selections)
+      const regularNodes = selectedNodes.value.filter(
+        (n: ArbolNode) => !n.isTrasfondo,
       );
-      if (wasTrasfondo) {
-        mesh.userData.isSelected = false;
-        (mesh.material as THREE.MeshBasicMaterial).color.setHex(mesh.userData.originalColor);
-      }
-    });
-    
-    // Set selectedNodes to only regular nodes first
-    selectedNodes.value = regularNodes;
-    
-    // Add new trasfondo nodes if a trasfondo is selected
-    if (newTrasfondo) {
-      addTrasfondoNodes();
-      // Update visual state after adding trasfondo nodes
-      nextTick(() => {
-        updateTrasfondoVisuals();
+
+      // Reset visual state for old trasfondo nodes
+      circles.forEach((mesh) => {
+        const wasTrasfondo = selectedNodes.value.find(
+          (n: ArbolNode) => n.nodeId === mesh.userData.nodeId && n.isTrasfondo,
+        );
+        if (wasTrasfondo) {
+          mesh.userData.isSelected = false;
+          (mesh.material as THREE.MeshBasicMaterial).color.setHex(
+            mesh.userData.originalColor,
+          );
+        }
       });
+
+      // Set selectedNodes to only regular nodes first
+      selectedNodes.value = regularNodes;
+
+      // Add new trasfondo nodes if a trasfondo is selected
+      if (newTrasfondo) {
+        addTrasfondoNodes();
+        // Update visual state after adding trasfondo nodes
+        nextTick(() => {
+          updateTrasfondoVisuals();
+        });
+      }
     }
-  }
-});
+  },
+);
 
 // Function to add trasfondo nodes to selected nodes
 function addTrasfondoNodes() {
   const trasfondo = trasfondosData.trasfondos.find(
-    t => t.nombre === characterData.value.trasfondo
+    (t) => t.nombre === characterData.value.trasfondo,
   );
-  
+
   if (!trasfondo) return;
-  
+
   const newNodes: ArbolNode[] = [];
-  
-  trasfondo.atributos.forEach(nodeId => {
+
+  trasfondo.atributos.forEach((nodeId) => {
     // Check if node is already selected
     if (!selectedNodes.value.find((n: ArbolNode) => n.nodeId === nodeId)) {
       // Find node data from arbol.json
-      const nodo = arbolData.arbol.nodos.find(n => n.id === nodeId);
+      const nodo = arbolData.arbol.nodos.find((n) => n.id === nodeId);
       if (!nodo) return;
-      
+
       // Get skill name based on shape
-      const getDiminutivo = (atributoId: string | number, shape: string): string => {
-        const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-        
+      const getDiminutivo = (
+        atributoId: string | number,
+        shape: string,
+      ): string => {
+        const id =
+          typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
         if (shape === "circle") {
-          const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+          const atributo = atributosData.caracteristicasSecundarias.find(
+            (a) => a.id === id,
+          );
           return atributo?.diminutivo || "";
         } else {
-          const activa = activasData.activas.find(a => a.id === id);
+          const activa = activasData.activas.find((a) => a.id === id);
           return activa?.diminutivo || "";
         }
       };
-      
-      const getDescription = (atributoId: string | number, shape: string): string => {
-        const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-        
+
+      const getDescription = (
+        atributoId: string | number,
+        shape: string,
+      ): string => {
+        const id =
+          typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
         if (shape === "circle") {
-          const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+          const atributo = atributosData.caracteristicasSecundarias.find(
+            (a) => a.id === id,
+          );
           return atributo?.descripcion || "";
         } else {
-          const activa = activasData.activas.find(a => a.id === id);
+          const activa = activasData.activas.find((a) => a.id === id);
           return activa?.descripcion || "";
         }
       };
-      
+
       const skillName = getDiminutivo(nodo.atributo, nodo.shape);
       const description = getDescription(nodo.atributo, nodo.shape);
-      
+
       newNodes.push({
         nodeId: nodeId,
         skillName: skillName,
-        type: nodo.shape === 'circle' ? 'circle' : 'square',
+        type: nodo.shape === "circle" ? "circle" : "square",
         layer: nodo.layer,
         index: nodo.posicion,
         description: description,
-        isTrasfondo: true
+        isTrasfondo: true,
       });
     }
   });
-  
+
   // Add all new nodes at once to trigger setter
   if (newNodes.length > 0) {
     selectedNodes.value = [...selectedNodes.value, ...newNodes];
@@ -1028,10 +1109,14 @@ function addTrasfondoNodes() {
 function updateTrasfondoVisuals() {
   selectedNodes.value.forEach((savedNode: ArbolNode) => {
     if (savedNode.isTrasfondo) {
-      const mesh = circles.find(circle => circle.userData.nodeId === savedNode.nodeId);
+      const mesh = circles.find(
+        (circle) => circle.userData.nodeId === savedNode.nodeId,
+      );
       if (mesh) {
         mesh.userData.isSelected = true;
-        (mesh.material as THREE.MeshBasicMaterial).color.setHex(mesh.userData.selectedColor);
+        (mesh.material as THREE.MeshBasicMaterial).color.setHex(
+          mesh.userData.selectedColor,
+        );
       }
     }
   });
@@ -1040,17 +1125,20 @@ function updateTrasfondoVisuals() {
 onMounted(() => {
   if (box.value) {
     console.log("Mounted arbol.vue");
-    
+
     // Load character data
     loadCharacterData();
-    
+
     // If trasfondo exists, ensure nodes are added
     if (characterData.value.trasfondo) {
-      console.log('➕ Trasfondo detectado, verificando nodos:', characterData.value.trasfondo);
+      console.log(
+        "➕ Trasfondo detectado, verificando nodos:",
+        characterData.value.trasfondo,
+      );
       // Add trasfondo nodes if they don't exist
       addTrasfondoNodes();
     }
-    
+
     // Initialize the 3D scene (restoreSelectionState is called at the end of init)
     init();
     animate();
@@ -1060,7 +1148,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   dispose();
 });
- </script>
+</script>
 <style scoped>
 .arbol-responsive-container {
   width: 100%;

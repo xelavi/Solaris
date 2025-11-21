@@ -48,33 +48,42 @@
           <div class="text-2xl font-bold text-blue-600">
             {{ getNombreAtributo(atributoId) }}
           </div>
-          <div class="text-sm text-blue-500 font-medium">
-            Nodo del árbol
-          </div>
+          <div class="text-sm text-blue-500 font-medium">Nodo del árbol</div>
         </div>
       </div>
-      
+
       <!-- Mostrar atributos calculados del personaje -->
-      <div v-if="characterData.atributos" class="mt-4 p-4 bg-white border-2 border-blue-200 rounded-lg">
-        <h5 class="text-sm font-semibold text-blue-700 mb-2">Atributos actuales del personaje:</h5>
+      <div
+        v-if="characterData.atributos"
+        class="mt-4 p-4 bg-white border-2 border-blue-200 rounded-lg"
+      >
+        <h5 class="text-sm font-semibold text-blue-700 mb-2">
+          Atributos actuales del personaje:
+        </h5>
         <div class="grid grid-cols-3 gap-2 text-sm">
           <div class="text-blue-600">
-            <span class="font-semibold">Cuerpo:</span> {{ characterData.atributos.cuerpo }}
+            <span class="font-semibold">Cuerpo:</span>
+            {{ characterData.atributos.cuerpo }}
           </div>
           <div class="text-blue-600">
-            <span class="font-semibold">Agilidad:</span> {{ characterData.atributos.agilidad }}
+            <span class="font-semibold">Agilidad:</span>
+            {{ characterData.atributos.agilidad }}
           </div>
           <div class="text-blue-600">
-            <span class="font-semibold">Mente:</span> {{ characterData.atributos.mente }}
+            <span class="font-semibold">Mente:</span>
+            {{ characterData.atributos.mente }}
           </div>
           <div class="text-blue-600">
-            <span class="font-semibold">HP:</span> {{ characterData.atributos.hp }}
+            <span class="font-semibold">HP:</span>
+            {{ characterData.atributos.hp }}
           </div>
           <div class="text-blue-600">
-            <span class="font-semibold">Puntos Hab:</span> {{ characterData.atributos.puntosHabilidad }}
+            <span class="font-semibold">Puntos Hab:</span>
+            {{ characterData.atributos.puntosHabilidad }}
           </div>
           <div class="text-blue-600">
-            <span class="font-semibold">Límite Hab:</span> {{ characterData.atributos.limiteHabilidad }}
+            <span class="font-semibold">Límite Hab:</span>
+            {{ characterData.atributos.limiteHabilidad }}
           </div>
         </div>
       </div>
@@ -163,21 +172,27 @@ const habilidadesSeleccionadas = ref([]);
 
 const trasfondoActual = computed(() => {
   console.log("Trasfondo seleccionado:", selectedTrasfondo.value);
-  return trasfondosDetallados.value.find((t) => t.nombre === selectedTrasfondo.value);
+  return trasfondosDetallados.value.find(
+    (t) => t.nombre === selectedTrasfondo.value,
+  );
 });
 
 // Función para obtener el nombre del atributo a partir del ID del nodo
 function getNombreAtributo(nodeId) {
   // Buscar el nodo en arbol.json
-  const nodo = arbolData.arbol.nodos.find(n => n.id === nodeId);
+  const nodo = arbolData.arbol.nodos.find((n) => n.id === nodeId);
   if (!nodo) return "Desconocido";
-  
+
   // Dependiendo del shape, buscar en atributos o activas
   if (nodo.shape === "circle") {
-    const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === parseInt(nodo.atributo));
+    const atributo = atributosData.caracteristicasSecundarias.find(
+      (a) => a.id === parseInt(nodo.atributo),
+    );
     return atributo ? atributo.nombre : "Desconocido";
   } else {
-    const activa = activasData.activas.find(a => a.id === parseInt(nodo.atributo));
+    const activa = activasData.activas.find(
+      (a) => a.id === parseInt(nodo.atributo),
+    );
     return activa ? activa.nombre : "Desconocido";
   }
 }
@@ -188,7 +203,8 @@ const LIMITE = 3;
 onMounted(() => {
   loadCharacterData();
   selectedTrasfondo.value = characterData.value.trasfondo || "";
-  habilidadesSeleccionadas.value = characterData.value.trasfondo_habilidades || [];
+  habilidadesSeleccionadas.value =
+    characterData.value.trasfondo_habilidades || [];
 });
 
 // Watcher para guardar el trasfondo seleccionado
@@ -197,9 +213,13 @@ watch(selectedTrasfondo, (newValue) => {
 });
 
 // Guardar habilidades seleccionadas
-watch(habilidadesSeleccionadas, (newValue) => {
-  characterData.value.trasfondo_habilidades = [...newValue];
-}, { deep: true });
+watch(
+  habilidadesSeleccionadas,
+  (newValue) => {
+    characterData.value.trasfondo_habilidades = [...newValue];
+  },
+  { deep: true },
+);
 
 // Resetear habilidades cuando cambia el trasfondo
 watch(trasfondoActual, (newTrasfondo, oldTrasfondo) => {
@@ -229,10 +249,12 @@ function toggleHabilidad(habilidad) {
   .rounded-lg {
     border-radius: 0.75rem !important;
   }
-  .text-xl, .text-lg {
+  .text-xl,
+  .text-lg {
     font-size: 1.1rem !important;
   }
-  .flex, .gap-3 {
+  .flex,
+  .gap-3 {
     flex-direction: column !important;
     gap: 0.75rem !important;
   }

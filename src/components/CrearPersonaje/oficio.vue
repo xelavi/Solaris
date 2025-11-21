@@ -8,7 +8,11 @@
       class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg text-blue-900"
     >
       <option value="">Elige un oficio...</option>
-      <option v-for="oficio in oficiosDetallados" :key="oficio.id" :value="oficio.nombre">
+      <option
+        v-for="oficio in oficiosDetallados"
+        :key="oficio.id"
+        :value="oficio.nombre"
+      >
         {{ oficio.nombre }}
       </option>
     </select>
@@ -79,7 +83,8 @@
         Dotes de Clase (1 por nivel - Nivel {{ characterData.nivel }})
       </h4>
       <p class="text-sm text-blue-600 mb-6">
-        Seleccionadas: {{ dotesSeleccionadas.length }} / {{ oficioActual.numDotes }}
+        Seleccionadas: {{ dotesSeleccionadas.length }} /
+        {{ oficioActual.numDotes }}
       </p>
 
       <!-- Dotes Normales -->
@@ -119,8 +124,8 @@
                   estaDoteSeleccionada(dote.id)
                     ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
                     : puedeSeleccionarDote(dote)
-                    ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
-                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50',
+                      ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
+                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50',
                   dote.requiere ? 'ml-8' : '',
                 ]"
               >
@@ -168,7 +173,8 @@ import oficiosData from "../../assets/oficios/oficios.json";
 import habilidadesData from "../../assets/habilidades.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
-const { characterData, loadCharacterData, saveCharacterData } = useCharacterCreation();
+const { characterData, loadCharacterData, saveCharacterData } =
+  useCharacterCreation();
 
 const selectedOficio = ref("");
 const dotesSeleccionadas = ref([]);
@@ -189,33 +195,37 @@ const habilidadesMap = computed(() => {
 const oficiosDetallados = computed(() => {
   return oficiosData.oficios.map((oficio) => ({
     ...oficio,
-    habilidadesNombres: oficio.habilidades.map((id) => 
-      habilidadesMap.value[id] || `Habilidad ${id}`
+    habilidadesNombres: oficio.habilidades.map(
+      (id) => habilidadesMap.value[id] || `Habilidad ${id}`,
     ),
     numHabilidades: oficio.habilidades.length,
     numDotes: characterData.value.nivel || 1, // 1 dote por nivel de personaje
     // Organizar dotes por requisitos (árbol de dependencias)
-    gruposDotes: organizarDotesEnGrupos(oficio.dotes)
+    gruposDotes: organizarDotesEnGrupos(oficio.dotes),
   }));
 });
 
 // Función para organizar las dotes en grupos basándose en requisitos
 function organizarDotesEnGrupos(dotes) {
   const grupos = [];
-  const dotesBase = dotes.filter(d => !d.requisito_dote || d.requisito_dote === "");
-  const dotesConRequisito = dotes.filter(d => d.requisito_dote && d.requisito_dote !== "");
-  
+  const dotesBase = dotes.filter(
+    (d) => !d.requisito_dote || d.requisito_dote === "",
+  );
+  const dotesConRequisito = dotes.filter(
+    (d) => d.requisito_dote && d.requisito_dote !== "",
+  );
+
   // Crear un grupo principal con todas las dotes
   if (dotes.length > 0) {
     grupos.push({
       categoria: "Dotes de Clase",
-      dotes: dotes.map(dote => ({
+      dotes: dotes.map((dote) => ({
         ...dote,
-        requiere: dote.requisito_dote ? parseInt(dote.requisito_dote) : null
-      }))
+        requiere: dote.requisito_dote ? parseInt(dote.requisito_dote) : null,
+      })),
     });
   }
-  
+
   return grupos;
 }
 
@@ -238,7 +248,9 @@ onMounted(async () => {
   estaCargandoDatos.value = true;
   await loadCharacterData();
   selectedOficio.value = characterData.value.oficio || "";
-  habilidadesSeleccionadas.value = [...(characterData.value.oficio_habilidades || [])];
+  habilidadesSeleccionadas.value = [
+    ...(characterData.value.oficio_habilidades || []),
+  ];
   dotesSeleccionadas.value = [...(characterData.value.oficio_dotes || [])];
   datosCompletosCargados.value = true;
   console.log("Cargado oficio:", selectedOficio.value);
@@ -251,7 +263,7 @@ onMounted(async () => {
 // Guardar oficio seleccionado
 watch(selectedOficio, (newValue, oldValue) => {
   if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
-  
+
   characterData.value.oficio = newValue;
   // Resetear habilidades y dotes solo si cambió de un oficio a otro
   if (oldValue && oldValue !== newValue) {
@@ -265,22 +277,30 @@ watch(selectedOficio, (newValue, oldValue) => {
 });
 
 // Guardar habilidades seleccionadas
-watch(habilidadesSeleccionadas, (newValue) => {
-  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
-  
-  characterData.value.oficio_habilidades = [...newValue];
-  saveCharacterData();
-  console.log("Guardado habilidades:", newValue);
-}, { deep: true });
+watch(
+  habilidadesSeleccionadas,
+  (newValue) => {
+    if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+
+    characterData.value.oficio_habilidades = [...newValue];
+    saveCharacterData();
+    console.log("Guardado habilidades:", newValue);
+  },
+  { deep: true },
+);
 
 // Guardar dotes seleccionadas
-watch(dotesSeleccionadas, (newValue) => {
-  if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
-  
-  characterData.value.oficio_dotes = [...newValue];
-  saveCharacterData();
-  console.log("Guardado dotes:", newValue);
-}, { deep: true });
+watch(
+  dotesSeleccionadas,
+  (newValue) => {
+    if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
+
+    characterData.value.oficio_dotes = [...newValue];
+    saveCharacterData();
+    console.log("Guardado dotes:", newValue);
+  },
+  { deep: true },
+);
 
 function estaHabilidadSeleccionada(habilidad) {
   return habilidadesSeleccionadasSet.value.has(habilidad);
@@ -325,7 +345,7 @@ function puedeSeleccionarDote(dote) {
 
 function getNombreDote(doteId) {
   if (!oficioActual.value) return doteId;
-  
+
   for (const grupo of oficioActual.value.gruposDotes) {
     for (const dote of grupo.dotes) {
       if (dote.id === doteId) {
@@ -338,7 +358,7 @@ function getNombreDote(doteId) {
 
 function removerDotesDependientes(dote) {
   if (!oficioActual.value) return;
-  
+
   oficioActual.value.gruposDotes.forEach((grupo) => {
     grupo.dotes.forEach((d) => {
       if (d.requiere === dote.id) {

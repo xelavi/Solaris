@@ -4,33 +4,112 @@
       "id": 1,
       "nombre": "Místic-o",
       "descripcion": "Practicante de artes místicas y espirituales.",
-      "habilidades": [10, 13, 14,4,3,6],
+      "habilidades": [10, 13, 14, 4, 3, 6],
       "dotes": [
-        {"id": 1, "nombre": "Eco de Corazones I", "descripcion": "El mero hecho de rozar con tu tacto a una criatura u objeto te confiere información sobre su estado vital y su pureza: si son puros, neutrales o están corruptos. ", "requisito_dote": ""},
-        {"id": 2, "nombre": "Peregrinaje del Asceta", "descripcion": "Durante un día de viaje de una Exploración, puedes decidir gastar todo tu tiempo libre en meditar. Si meditas de esta forma, puedes ignorar los requisitos de comida y bebida para ese día.", "requisito_dote": ""},
-        {"id": 3, "nombre": "Percepción extrasensorial I", "descripcion": "Puedes percibir entornos cognitivos y te da la posibilidad de captarlos sabiendo si lo que hay es poderoso/peligroso/inofensivo. Anula todas las desventajas a tiradas de Percepción.", "requisito_dote": ""},
-        {"id": 4, "nombre": "Tarot", "descripcion": "Una vez por sesión de juego, puedes leer las cartas de un aliado. Entonces, ese aliado realiza dos tiradas en la siguiente tabla. Los efectos de las cartas resultantes se aplican durante el resto del día.", "requisito_dote": ""},
-        {"id": 5, "nombre": "Sueño premonitorio", "descripcion": "Una vez por día, a lo largo de una meditación o un sueño profundo, recibes imágenes crípticas de algo que puede suceder en un futuro próximo. El Maestro debe enunciar cómo de alejado en el tiempo parece este hecho, y si es un futuro incierto o si, por el contrario, se va a cumplir con casi toda seguridad.", "requisito_dote": ""},
-        {"id": 6, "nombre": "Incensario", "descripcion": "Además de las Formas típicas que pueden tomar tus preparados de Alquimia, como píldoras, bebidas o gases, se añade la Forma de Incienso. Los preparados en forma de Incienso aplican su efecto en un círculo de tres espacios alrededor de la fuente y duran el mismo tiempo que los efectos de la poción o un minuto para los efectos instantáneos. Las criaturas que se mantengan en el área de efecto del incienso se verán afectadas por él, y dejarán de ser afectadas en el momento en el que abandonen el área. Si el incienso aplica efectos instantáneos, cada criatura sólo podrá beneficiarse una vez de este efecto por cada instancia de incienso.", "requisito_dote": ""},
-        {"id": 7, "nombre": "Ritual: Sombra Sosegante", "descripcion": "Selecciona un objeto y realiza un ritual de diez minutos alrededor de él. Durante las próximas seis horas, la sombra que proyecte este objeto será una zona donde la temperatura no puede superar la Temperatura Ideal. Cada criatura que descanse durante al menos una hora debajo de esta sombra reducirá en 1 el Cansancio.", "requisito_dote": ""},
-        {"id": 8, "nombre": "Alma tenaz I", "descripcion": "Tu Pureza puede alcanzar su valor en negativo sin sufrir ninguno de los efectos de la Corrupción. Tu Pureza mínima se convierte en el doble del valor de tu Pureza en negativo.", "requisito_dote": ""}
-
+        {
+          "id": 1,
+          "nombre": "Eco de Corazones I",
+          "descripcion": "El mero hecho de rozar con tu tacto a una criatura u objeto te confiere información sobre su estado vital y su pureza: si son puros, neutrales o están corruptos. ",
+          "requisito_dote": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Peregrinaje del Asceta",
+          "descripcion": "Durante un día de viaje de una Exploración, puedes decidir gastar todo tu tiempo libre en meditar. Si meditas de esta forma, puedes ignorar los requisitos de comida y bebida para ese día.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Percepción extrasensorial I",
+          "descripcion": "Puedes percibir entornos cognitivos y te da la posibilidad de captarlos sabiendo si lo que hay es poderoso/peligroso/inofensivo. Anula todas las desventajas a tiradas de Percepción.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Tarot",
+          "descripcion": "Una vez por sesión de juego, puedes leer las cartas de un aliado. Entonces, ese aliado realiza dos tiradas en la siguiente tabla. Los efectos de las cartas resultantes se aplican durante el resto del día.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Sueño premonitorio",
+          "descripcion": "Una vez por día, a lo largo de una meditación o un sueño profundo, recibes imágenes crípticas de algo que puede suceder en un futuro próximo. El Maestro debe enunciar cómo de alejado en el tiempo parece este hecho, y si es un futuro incierto o si, por el contrario, se va a cumplir con casi toda seguridad.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Incensario",
+          "descripcion": "Además de las Formas típicas que pueden tomar tus preparados de Alquimia, como píldoras, bebidas o gases, se añade la Forma de Incienso. Los preparados en forma de Incienso aplican su efecto en un círculo de tres espacios alrededor de la fuente y duran el mismo tiempo que los efectos de la poción o un minuto para los efectos instantáneos. Las criaturas que se mantengan en el área de efecto del incienso se verán afectadas por él, y dejarán de ser afectadas en el momento en el que abandonen el área. Si el incienso aplica efectos instantáneos, cada criatura sólo podrá beneficiarse una vez de este efecto por cada instancia de incienso.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Ritual: Sombra Sosegante",
+          "descripcion": "Selecciona un objeto y realiza un ritual de diez minutos alrededor de él. Durante las próximas seis horas, la sombra que proyecte este objeto será una zona donde la temperatura no puede superar la Temperatura Ideal. Cada criatura que descanse durante al menos una hora debajo de esta sombra reducirá en 1 el Cansancio.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Alma tenaz I",
+          "descripcion": "Tu Pureza puede alcanzar su valor en negativo sin sufrir ninguno de los efectos de la Corrupción. Tu Pureza mínima se convierte en el doble del valor de tu Pureza en negativo.",
+          "requisito_dote": ""
+        }
       ]
     },
     {
       "id": 2,
       "nombre": "Agente",
       "descripcion": "La mayoría de gente caza animales. Tu cazas personas. Ya sea para capturar delincuentes, para matar a pobres desgraciados o para obtener información de personajes importantes, siempre sabes la forma mas eficaz de conseguirlo. Amigo de todo el mundo: Siempre sabes cómo conseguir información y como hablar con diferentes tipos de personas según te convengan para tus objetivos.",
-      "habilidades": [16, 8, 3,9,13,11],
+      "habilidades": [16, 8, 3, 9, 13, 11],
       "dotes": [
-        {"id": 1, "nombre": "Red I", "descripcion": "Tienes una red de contactos en varias ciudades que te pueden proporcionar información o servicios básicos. Puedes usar esta red para conseguir alojamiento, comida o información sobre sucesos recientes en la ciudad.", "requisito_dote": ""},
-        {"id": 2, "nombre": "Arte del disfraz I", "descripcion": "Puedes alterar tu acento, manerismos y atuendo a voluntad si dedicas quince minutos a caracterizarte. Si bien el disfraz no es lo más convincente del mundo, es suficiente para engañar a cualquier persona que no tenga motivos para sospechar. Cuando estás caracterizado, puedes hacer creer a la gente que eres una persona cualquiera, posiblemente procedente de otro lugar; la tapadera no se sostiene ante escrutinio: una tirada exitosa de Averiguar intenciones contra tu Persuasión revelará que tu disfraz es una farsa.", "requisito_dote": ""},
-        {"id": 3, "nombre": "Arte del disfraz II", "descripcion": "Puedes caracterizarte de otra persona en concreto, independientemente de su apariencia, estatura o género, siempre y cuando la conozcas a fondo. Sólo gente que sea íntima con la persona a la que estás tratando de suplantar se dará cuenta de que no está hablando con la persona original.", "requisito_dote": "2"},
-        {"id": 4, "nombre": "Sombra I", "descripcion": "Los bonificadores a tu Sigilo se doblan de cara a una persona que estés tratando de rastrear activamente.", "requisito_dote": ""},
-        {"id": 5, "nombre": "Ecos del pasado I", "descripcion": "A través de rastros y evidencias circunstanciales, puedes imaginar como si estuvieses allí los últimos momentos de un lugar antes de que la última persona abandonase la zona. Si dedicas 15 minutos a investigar la zona, puedes reproducir en tu mente los últimos cinco minutos anteriores a que la última persona viviente se fuese.", "requisito_dote": ""},
-        {"id": 6, "nombre": "Criptografía", "descripcion": "Sabes cómo escribir y descifrar mensajes cifrados. Para cifrar un mensaje, realiza una tirada de Información; el resultado de esta tirada determina la fortaleza del cifrado del mensaje. Si no conoces el cifrado utilizado por un mensaje que no es tuyo, puedes tratar de descifrarlo con ocho horas o el tiempo libre de un día de descanso o viaje: realiza una tirada a desventaja 1 contra la fortaleza del cifrado: en caso de éxito, logras descifrarlo, y si no, debes volver a gastar el mismo tiempo en tratar de descifrar el mensaje antes de repetir la tirada.", "requisito_dote": ""},
-        {"id": 7, "nombre": "Soy una caja", "descripcion": "Camuflaje avanzado en formato caja. Ventaja 3 en ocultarse dentro de una caja, tarro, barril o similares. ", "requisito_dote": ""},
-        {"id": 8, "nombre": "Análisis forense", "descripcion": "Tirada por medicina que te explica cuándo y cómo ha muerto alguien, y además, permite generar un perfil psicológico del asesino. 5 min o lo que tardes en expresar la deduccion a un público impresionable de tus cualidades intelectuales.", "requisito_dote": ""}
+        {
+          "id": 1,
+          "nombre": "Red I",
+          "descripcion": "Tienes una red de contactos en varias ciudades que te pueden proporcionar información o servicios básicos. Puedes usar esta red para conseguir alojamiento, comida o información sobre sucesos recientes en la ciudad.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Arte del disfraz I",
+          "descripcion": "Puedes alterar tu acento, manerismos y atuendo a voluntad si dedicas quince minutos a caracterizarte. Si bien el disfraz no es lo más convincente del mundo, es suficiente para engañar a cualquier persona que no tenga motivos para sospechar. Cuando estás caracterizado, puedes hacer creer a la gente que eres una persona cualquiera, posiblemente procedente de otro lugar; la tapadera no se sostiene ante escrutinio: una tirada exitosa de Averiguar intenciones contra tu Persuasión revelará que tu disfraz es una farsa.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Arte del disfraz II",
+          "descripcion": "Puedes caracterizarte de otra persona en concreto, independientemente de su apariencia, estatura o género, siempre y cuando la conozcas a fondo. Sólo gente que sea íntima con la persona a la que estás tratando de suplantar se dará cuenta de que no está hablando con la persona original.",
+          "requisito_dote": "2"
+        },
+        {
+          "id": 4,
+          "nombre": "Sombra I",
+          "descripcion": "Los bonificadores a tu Sigilo se doblan de cara a una persona que estés tratando de rastrear activamente.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Ecos del pasado I",
+          "descripcion": "A través de rastros y evidencias circunstanciales, puedes imaginar como si estuvieses allí los últimos momentos de un lugar antes de que la última persona abandonase la zona. Si dedicas 15 minutos a investigar la zona, puedes reproducir en tu mente los últimos cinco minutos anteriores a que la última persona viviente se fuese.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Criptografía",
+          "descripcion": "Sabes cómo escribir y descifrar mensajes cifrados. Para cifrar un mensaje, realiza una tirada de Información; el resultado de esta tirada determina la fortaleza del cifrado del mensaje. Si no conoces el cifrado utilizado por un mensaje que no es tuyo, puedes tratar de descifrarlo con ocho horas o el tiempo libre de un día de descanso o viaje: realiza una tirada a desventaja 1 contra la fortaleza del cifrado: en caso de éxito, logras descifrarlo, y si no, debes volver a gastar el mismo tiempo en tratar de descifrar el mensaje antes de repetir la tirada.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Soy una caja",
+          "descripcion": "Camuflaje avanzado en formato caja. Ventaja 3 en ocultarse dentro de una caja, tarro, barril o similares. ",
+          "requisito_dote": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Análisis forense",
+          "descripcion": "Tirada por medicina que te explica cuándo y cómo ha muerto alguien, y además, permite generar un perfil psicológico del asesino. 5 min o lo que tardes en expresar la deduccion a un público impresionable de tus cualidades intelectuales.",
+          "requisito_dote": ""
+        }
       ]
     },
     {
@@ -39,16 +118,66 @@
       "descripcion": "Dedicado a la preservación del conocimiento. Cada erudito tiene sus propios intereses pues la información es poder. Dependiendo de la orden u organización a la que dediques tus servicios estos, te van a dar búsquedas o misiones en las que tendrás que contribuir a su causa; tales como: buscar una reliquia perdida, llevar una pieza de suma importancia a un lugar seguro…",
       "habilidades": [7, 5, 9, 10, 13, 4],
       "dotes": [
-        {"id": 1, "nombre": "Cultura con fundamento", "descripcion": "Al entrar en algun lugar civilizado, sabes localizar los principales lugares de interés gracias a tus vastos conocimientos, incluidos lugares donde conseguir tinta, papiros y otros utensilios de escriba. Además, (casi) siempre conoces información superficial sobre la historia y situación geopolítica del lugar.", "requisito_dote": ""},
-        {"id": 2, "nombre": "Toque curativo", "descripcion": "Sabes cómo realizar primeros auxilios utilizando tan sólo el poder de tus manos. Poseer esta habilidad te permite realizar tiradas de Medicina como si siempre tuvieses un botiquín de Estrato 1 encima. Además, es imposible que falles las tiradas de Medicina realizadas durante un Descanso para curar a otras personas.", "requisito_dote": ""},
-        {"id": 3, "nombre": "Formación profusa", "descripcion": "Conoces los secretos de un lenguaje antiguo a tu elección.", "requisito_dote": ""},
-        {"id": 4, "nombre": "Mayéutica", "descripcion": "Cuando tratas de persuadir a alguien sobre un tema, puedes sustituir la tirada de Persuasión por el saber o habilidad relacionada con el tema en cuestión.", "requisito_dote": ""},
-        {"id": 5, "nombre": "Verdad absoluta", "descripcion": "Si posees una Verdad sobre un tema, puedes convencer a alguien sobre esa Verdad sin necesidad de realizar tiradas de Persuasión.", "requisito_dote": ""},
-        {"id": 6, "nombre": "Clase magistral", "descripcion": "Requisitos: tener el nodo de Instruir. Realizas una disertación sobre un tema en el que seas experto. Si tienes al menos un punto en una habilidad, puedes transmitir tus conocimientos a un número de personas igual o inferior a tu nivel de Erudito con una clase de una hora. La gente que haya prestado atención a tu clase puede sumar un punto de habilidad extra a esta habilidad, incluso si este punto fuese a pasar de su límite de habilidad. Cada persona sólo puede beneficiarse de una única instancia del efecto de Clase magistral a la vez.", "requisito_dote": ""},
-        {"id": 7, "nombre": "Aprendizaje apresurado", "descripcion": "Si estudias durante 15 minutos al día, puedes aprender una habilidad no clásea a tu elección de la que no seas competente. Cuenta como si tuvieras un punto en la habilidad. Este efecto dura hasta el final del día.", "requisito_dote": ""},
-        {"id": 8, "nombre": "Saber de mucho", "descripcion": "Sabes leer y escribir a la perfección, a parte sabes los lenguajes principales de Lenam y de Tharrashmir. Bonos en aprender habilidades si te dedicas a ello, aprendes el doble de rápido y puedes ponerte rangos en habilidades nuevas que hayas te dedicado a aprender durante 2 semanas y hayas conseguido los pertinentes libros u objetos que propicien dicha cosa.", "requisito_dote": ""},
-        {"id": 9, "nombre": "Conocimiento arqueológico avanzado", "descripcion": "Puedes localizar reliquias del pasado así como grandes hallazgos de la civilización. Requieres de diferentes categorías según lo distante i/o ignoto a encontrar.", "requisito_dote": ""},
-        {"id": 10, "nombre": "Verborrea", "descripcion": "Puedes distraer a un número de personas inferior o igual a tu nivel de Erudito durante un máximo de diez minutos. Sólo puedes distraer a una persona con el uso de Verborrea un máximo de una vez al día.", "requisito_dote": ""}
+        {
+          "id": 1,
+          "nombre": "Cultura con fundamento",
+          "descripcion": "Al entrar en algun lugar civilizado, sabes localizar los principales lugares de interés gracias a tus vastos conocimientos, incluidos lugares donde conseguir tinta, papiros y otros utensilios de escriba. Además, (casi) siempre conoces información superficial sobre la historia y situación geopolítica del lugar.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Toque curativo",
+          "descripcion": "Sabes cómo realizar primeros auxilios utilizando tan sólo el poder de tus manos. Poseer esta habilidad te permite realizar tiradas de Medicina como si siempre tuvieses un botiquín de Estrato 1 encima. Además, es imposible que falles las tiradas de Medicina realizadas durante un Descanso para curar a otras personas.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Formación profusa",
+          "descripcion": "Conoces los secretos de un lenguaje antiguo a tu elección.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Mayéutica",
+          "descripcion": "Cuando tratas de persuadir a alguien sobre un tema, puedes sustituir la tirada de Persuasión por el saber o habilidad relacionada con el tema en cuestión.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Verdad absoluta",
+          "descripcion": "Si posees una Verdad sobre un tema, puedes convencer a alguien sobre esa Verdad sin necesidad de realizar tiradas de Persuasión.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Clase magistral",
+          "descripcion": "Requisitos: tener el nodo de Instruir. Realizas una disertación sobre un tema en el que seas experto. Si tienes al menos un punto en una habilidad, puedes transmitir tus conocimientos a un número de personas igual o inferior a tu nivel de Erudito con una clase de una hora. La gente que haya prestado atención a tu clase puede sumar un punto de habilidad extra a esta habilidad, incluso si este punto fuese a pasar de su límite de habilidad. Cada persona sólo puede beneficiarse de una única instancia del efecto de Clase magistral a la vez.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Aprendizaje apresurado",
+          "descripcion": "Si estudias durante 15 minutos al día, puedes aprender una habilidad no clásea a tu elección de la que no seas competente. Cuenta como si tuvieras un punto en la habilidad. Este efecto dura hasta el final del día.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Saber de mucho",
+          "descripcion": "Sabes leer y escribir a la perfección, a parte sabes los lenguajes principales de Lenam y de Tharrashmir. Bonos en aprender habilidades si te dedicas a ello, aprendes el doble de rápido y puedes ponerte rangos en habilidades nuevas que hayas te dedicado a aprender durante 2 semanas y hayas conseguido los pertinentes libros u objetos que propicien dicha cosa.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Conocimiento arqueológico avanzado",
+          "descripcion": "Puedes localizar reliquias del pasado así como grandes hallazgos de la civilización. Requieres de diferentes categorías según lo distante i/o ignoto a encontrar.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 10,
+          "nombre": "Verborrea",
+          "descripcion": "Puedes distraer a un número de personas inferior o igual a tu nivel de Erudito durante un máximo de diez minutos. Sólo puedes distraer a una persona con el uso de Verborrea un máximo de una vez al día.",
+          "requisito_dote": ""
+        }
       ]
     },
     {
@@ -57,15 +186,60 @@
       "descripcion": "Acostumbrado a ser el depredador, has consagrado tu vida al noble arte de la caza ya sea por el romanticismo de perseguir a tu presa durante días para luego asestarle un único golpe certero, como para unirte a otros cazadores y atrapar una pieza mayor. Puedes formar parte de una Gran Cacería, grupos de cazadores a sueldo que se dedican a asegurar las tierras de una población o un noble. O bien puedes trabajar en solitario cogiendo encargos mas accesibles para un único depredador.",
       "habilidades": [3, 1, 9, 16, 31, 20],
       "dotes": [
-        {"id": 1, "nombre": "Domar bestia", "descripcion": "Puedes instruir durante 1 día un animal salvaje de tamaño pequeño y domesticarlo. Con 1 semana, el animal te tiene confianza plena y desbloqueas habilidades y ordenes que puedes usar con ella.", "requisito_dote": ""},
-        {"id": 2, "nombre": "Empatía animal", "descripcion": "Entiendes las intenciones de los animales y otras bestias. Sabes el estado anímico con sólo un vistazo, discierniendo si es agresivo o es manso. Si puede domesticarse o es un esfuerzo inútil.", "requisito_dote": ""},
-        {"id": 3, "nombre": "Despiezar", "descripcion": "Permite realizar una segunda tirada de recolección hacia una bestia o cadáver de bestia. Si aciertas, obtienes materiales otra vez, y en mejor estado.", "requisito_dote": ""},
-        {"id": 4, "nombre": "Furtivo", "descripcion": "Siempre conoces un Rumor de cada tipo de bestia conocida por el hombre. Además, en función de los Datos que tengas sobre un tipo de criatura o criatura específica, puedes saber con más o menos certeza la localización de su hábitat actual.", "requisito_dote": ""},
-        {"id": 5, "nombre": "Acechador sombrío", "descripcion": "Requisitos: kit de camuflaje o un entorno recargado. Usas elementos de tu alrededor para mimetizarte con éste. Tardas 10 segundos en camuflarte por completo. Mientras te concentres y no te mueves un ápice, eliminas tu presencia en el ambiente y obtienes camuflaje superior, que permite mimetizarte con el entorno y ser indetectable a menos que usen herramientas o habilidades en específico para ello. Puedes mantener el camuflaje durante máximo un minuto.", "requisito_dote": ""},
-        {"id": 6, "nombre": "Hora de la cacería", "descripcion": "Requisito: herir a una bestia, o ver cómo alguien ha herido a una bestia. Conoces la posición exacta de cualquier criatura que haya sido herida por ti o tus aliados, en un máximo de un radio a 500 metros. Si se aleja más de 500 metros, pierdes el rastro.", "requisito_dote": ""},
-        {"id": 7, "nombre": "Diario del cazador", "descripcion": "Almacenas información sobre los monstruos que aniquiles o estudies durante al menos una hora, adquiriendo ventajas tanto en conocimientos como en combate con estos. Además, puedes convertir tres Datos de la misma calidad sobre una criatura determinada en un Dato de la siguiente calidad. En función a la calidad de los Datos que poseas sobre una criatura en concreto, puedes obtener información específica.", "requisito_dote": ""},
-        {"id": 8, "nombre": "Tendón de piedra", "descripcion": "Resistencia a toxinas, recibes la mitad del daño de los venenos de la flora y la fauna. Al estar expuesto a los mismos venenos en un período de 1 semana, adquieres cada vez mas resistencias a estos y acabas siendo inmune a dichas toxinas específicas. Requiere que hayas estado expuesto a sus toxinas diariamente en el período de 1 semana. Funciona por Instancias traducidas en pulls de tiradas a superar.", "requisito_dote": ""},
-        {"id": 9, "nombre": "Nuez Emboscada", "descripcion": "Tienes Ventaja 1 en las tiradas de sigilo frente a una presa que hayas localizado, si superas, puedes deducir sus patrones de movimiento y saber donde estará a 1min vista.", "requisito_dote": ""}
+        {
+          "id": 1,
+          "nombre": "Domar bestia",
+          "descripcion": "Puedes instruir durante 1 día un animal salvaje de tamaño pequeño y domesticarlo. Con 1 semana, el animal te tiene confianza plena y desbloqueas habilidades y ordenes que puedes usar con ella.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Empatía animal",
+          "descripcion": "Entiendes las intenciones de los animales y otras bestias. Sabes el estado anímico con sólo un vistazo, discierniendo si es agresivo o es manso. Si puede domesticarse o es un esfuerzo inútil.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Despiezar",
+          "descripcion": "Permite realizar una segunda tirada de recolección hacia una bestia o cadáver de bestia. Si aciertas, obtienes materiales otra vez, y en mejor estado.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Furtivo",
+          "descripcion": "Siempre conoces un Rumor de cada tipo de bestia conocida por el hombre. Además, en función de los Datos que tengas sobre un tipo de criatura o criatura específica, puedes saber con más o menos certeza la localización de su hábitat actual.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Acechador sombrío",
+          "descripcion": "Requisitos: kit de camuflaje o un entorno recargado. Usas elementos de tu alrededor para mimetizarte con éste. Tardas 10 segundos en camuflarte por completo. Mientras te concentres y no te mueves un ápice, eliminas tu presencia en el ambiente y obtienes camuflaje superior, que permite mimetizarte con el entorno y ser indetectable a menos que usen herramientas o habilidades en específico para ello. Puedes mantener el camuflaje durante máximo un minuto.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 6,
+          "nombre": "Hora de la cacería",
+          "descripcion": "Requisito: herir a una bestia, o ver cómo alguien ha herido a una bestia. Conoces la posición exacta de cualquier criatura que haya sido herida por ti o tus aliados, en un máximo de un radio a 500 metros. Si se aleja más de 500 metros, pierdes el rastro.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 7,
+          "nombre": "Diario del cazador",
+          "descripcion": "Almacenas información sobre los monstruos que aniquiles o estudies durante al menos una hora, adquiriendo ventajas tanto en conocimientos como en combate con estos. Además, puedes convertir tres Datos de la misma calidad sobre una criatura determinada en un Dato de la siguiente calidad. En función a la calidad de los Datos que poseas sobre una criatura en concreto, puedes obtener información específica.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 8,
+          "nombre": "Tendón de piedra",
+          "descripcion": "Resistencia a toxinas, recibes la mitad del daño de los venenos de la flora y la fauna. Al estar expuesto a los mismos venenos en un período de 1 semana, adquieres cada vez mas resistencias a estos y acabas siendo inmune a dichas toxinas específicas. Requiere que hayas estado expuesto a sus toxinas diariamente en el período de 1 semana. Funciona por Instancias traducidas en pulls de tiradas a superar.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 9,
+          "nombre": "Nuez Emboscada",
+          "descripcion": "Tienes Ventaja 1 en las tiradas de sigilo frente a una presa que hayas localizado, si superas, puedes deducir sus patrones de movimiento y saber donde estará a 1min vista.",
+          "requisito_dote": ""
+        }
       ]
     },
     {
@@ -74,14 +248,37 @@
       "descripcion": "Explorador experto en recorrer tierras inexploradas y sobrevivir en los entornos más hostiles. Conocedor de los secretos de la naturaleza y capaz de guiar a otros a través de los peligros del mundo salvaje.",
       "habilidades": [32, 31, 15, 5, 4, 30],
       "dotes": [
-        {"id": 1, "nombre": "Viaje rápido", "descripcion": "Reduce en 1 dia el tiempo que se tarda en atravesar casillas que no sean de camino.", "requisito_dote": ""},
-        {"id": 2, "nombre": "Hallar el camino", "descripcion": "Sabes orientarte por los vientos, la vegetación, y los astros. Siempre que no tengas un elemento que perturbe gravementre los sentidos, sabes dónde está el norte.", "requisito_dote": ""},
-        {"id": 3, "nombre": "Bienvenido, Mr. Marshal", "descripcion": "Al encontrar un Refugio en el que pasar el mal tiempo, aumentas su calidad en 1. Además, puedes encontrar recursos naturales cercanos como agua o comida. Puedes utilizar esa comida y bebida en lugar de las raciones de tu exploración. Si tomas un Descanso en este refugio: el refugio tiene un nivel de Comfort de Estrato 2, y obtienes un nivel de comida de Estrato 1.", "requisito_dote": ""},
-        {"id": 4, "nombre": "Señor del Tiempo", "descripcion": "Al observar el entorno durante 1 min, puedes recabar Información que determina los accidentes meteorológicos principales que pueden darse con más antelación. Tu distancia de visión de temporales aumenta en una elevación. Puedes identificar posibles refugios naturales a 1 hexagono de distancia y determinar de antemano la calidad de refugio que van a ser.", "requisito_dote": ""},
-        {"id": 5, "nombre": "Capear el Temporal", "descripcion": "Hay eventos climatológicos muy intempestivos y espontáneos. El explorador sabe como protegerse de dichas catástrofes. Puedes construir un refugio improvisado en 15 min para dichas situaciones. Cuenta como refugio de calidad 1 y dependiendo del material usado puede contrarrestar distintos efectos activos.", "requisito_dote": ""}
+        {
+          "id": 1,
+          "nombre": "Viaje rápido",
+          "descripcion": "Reduce en 1 dia el tiempo que se tarda en atravesar casillas que no sean de camino.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 2,
+          "nombre": "Hallar el camino",
+          "descripcion": "Sabes orientarte por los vientos, la vegetación, y los astros. Siempre que no tengas un elemento que perturbe gravementre los sentidos, sabes dónde está el norte.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 3,
+          "nombre": "Bienvenido, Mr. Marshal",
+          "descripcion": "Al encontrar un Refugio en el que pasar el mal tiempo, aumentas su calidad en 1. Además, puedes encontrar recursos naturales cercanos como agua o comida. Puedes utilizar esa comida y bebida en lugar de las raciones de tu exploración. Si tomas un Descanso en este refugio: el refugio tiene un nivel de Comfort de Estrato 2, y obtienes un nivel de comida de Estrato 1.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 4,
+          "nombre": "Señor del Tiempo",
+          "descripcion": "Al observar el entorno durante 1 min, puedes recabar Información que determina los accidentes meteorológicos principales que pueden darse con más antelación. Tu distancia de visión de temporales aumenta en una elevación. Puedes identificar posibles refugios naturales a 1 hexagono de distancia y determinar de antemano la calidad de refugio que van a ser.",
+          "requisito_dote": ""
+        },
+        {
+          "id": 5,
+          "nombre": "Capear el Temporal",
+          "descripcion": "Hay eventos climatológicos muy intempestivos y espontáneos. El explorador sabe como protegerse de dichas catástrofes. Puedes construir un refugio improvisado en 15 min para dichas situaciones. Cuenta como refugio de calidad 1 y dependiendo del material usado puede contrarrestar distintos efectos activos.",
+          "requisito_dote": ""
+        }
       ]
     }
-    
   ]
-
 }

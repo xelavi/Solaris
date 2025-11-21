@@ -1,284 +1,284 @@
 {
-    "armaduras": [
+  "armaduras": [
+    {
+      "id": 1,
+      "nombre": "Armadura de pieles",
+      "penetrante": 0,
+      "lacerante": 0,
+      "contundente": 1,
+      "categoria": "Ligera",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Armadura básica hecha de pieles animales, ligera y flexible."
+    },
+    {
+      "id": 2,
+      "nombre": "Armadura de cuero",
+      "penetrante": 0,
+      "lacerante": 1,
+      "contundente": 1,
+      "categoria": "Ligera",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Armadura de cuero curtido, ofrece protección básica sin limitar movimiento."
+    },
+    {
+      "id": 3,
+      "nombre": "Armadura de cuero tachonado",
+      "penetrante": 1,
+      "lacerante": 1,
+      "contundente": 1,
+      "categoria": "Ligera",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Cuero reforzado con tachuelas metálicas para mayor resistencia."
+    },
+    {
+      "id": 4,
+      "nombre": "Armadura de anillas",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 1,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
         {
-            "id": 1,
-            "nombre": "Armadura de pieles",
-            "penetrante": 0,
-            "lacerante": 0,
-            "contundente": 1,
-            "categoria": "Ligera",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Armadura básica hecha de pieles animales, ligera y flexible."
-        },
-        {
-            "id": 2,
-            "nombre": "Armadura de cuero",
-            "penetrante": 0,
-            "lacerante": 1,
-            "contundente": 1,
-            "categoria": "Ligera",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Armadura de cuero curtido, ofrece protección básica sin limitar movimiento."
-        },
-        {
-            "id": 3,
-            "nombre": "Armadura de cuero tachonado",
-            "penetrante": 1,
-            "lacerante": 1,
-            "contundente": 1,
-            "categoria": "Ligera",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Cuero reforzado con tachuelas metálicas para mayor resistencia."
-        },
-        {
-            "id": 4,
-            "nombre": "Armadura de anillas",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 1,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Armadura de anillas metálicas entrelazadas sobre cuero."
-        },
-        {
-            "id": 5,
-            "nombre": "Cota brigantina",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 2,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Armadura con placas de metal remachadas entre capas de tela o cuero."
-        },
-        {
-            "id": 6,
-            "nombre": "Lorica musculata",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 2,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Coraza moldeada que imita la musculatura del torso humano."
-        },
-        {
-            "id": 7,
-            "nombre": "Lorica segmentata",
-            "penetrante": 2,
-            "lacerante": 3,
-            "contundente": 4,
-            "categoria": "Pesada",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 2
-                }
-            ],
-            "descripcion": "Armadura romana de placas segmentadas articuladas, protección superior."
-        },
-        {
-            "id": 8,
-            "nombre": "Armadura laminar",
-            "penetrante": 2,
-            "lacerante": 3,
-            "contundente": 4,
-            "categoria": "Pesada",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 2
-                }
-            ],
-            "descripcion": "Armadura de placas metálicas horizontales superpuestas."
-        },
-        {
-            "id": 9,
-            "nombre": "Cota de malla",
-            "penetrante": 2,
-            "lacerante": 4,
-            "contundente": 3,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Armadura de anillos metálicos entrelazados, excelente contra cortes."
-        },
-        {
-            "id": 10,
-            "nombre": "Cota de escamas",
-            "penetrante": 2,
-            "lacerante": 4,
-            "contundente": 3,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Armadura de pequeñas placas metálicas superpuestas como escamas."
-        },
-        {
-            "id": 11,
-            "nombre": "Baluarte del silencio",
-            "penetrante": 5,
-            "lacerante": 5,
-            "contundente": 6,
-            "categoria": "Pesada",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 3
-                }
-            ],
-            "descripcion": "Armadura pesada mágica que protege excepcionalmente pero dificulta el sigilo."
-        },
-        {
-            "id": 12,
-            "nombre": "Custodio del silencio",
-            "penetrante": 5,
-            "lacerante": 6,
-            "contundente": 5,
-            "categoria": "Pesada",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 3
-                }
-            ],
-            "descripcion": "Armadura pesada mágica con protección sobresaliente contra cortes."
-        },
-        {
-            "id": 13,
-            "nombre": "Túnica del tejesombras",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 2,
-            "categoria": "Ligera",
-            "ventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "desventajas": [],
-            "descripcion": "Túnica encantada que facilita el movimiento sigiloso y la evasión."
-        },
-        {
-            "id": 14,
-            "nombre": "Armadura de espinas de ébano",
-            "penetrante": 3,
-            "lacerante": 4,
-            "contundente": 5,
-            "categoria": "Media",
-            "ventajas": [],
-            "desventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "descripcion": "Armadura oscura con púas de ébano, intimida y protege efectivamente."
-        },
-        {
-            "id": 15,
-            "nombre": "Armadura espinal",
-            "penetrante": 5,
-            "lacerante": 7,
-            "contundente": 6,
-            "categoria": "Pesada",
-            "ventajas": [
-                {
-                    "habilidad_id": 16,
-                    "nivel": 1
-                }
-            ],
-            "desventajas": [],
-            "descripcion": "Armadura pesada con diseño espinal que sorprendentemente facilita el sigilo."
-        },
-        {
-            "id": 16,
-            "nombre": "Escudo/Rodela",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 2,
-            "categoria": "Escudo",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Escudo redondo y ligero, ideal para defensa activa."
-        },
-        {
-            "id": 17,
-            "nombre": "Escudo de torre",
-            "penetrante": 4,
-            "lacerante": 4,
-            "contundente": 4,
-            "categoria": "Escudo",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Escudo grande y pesado que proporciona cobertura corporal completa."
-        },
-        {
-            "id": 18,
-            "nombre": "Escudo Afilado",
-            "penetrante": 2,
-            "lacerante": 2,
-            "contundente": 2,
-            "categoria": "Escudo",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Escudo con bordes cortantes que puede usarse ofensivamente."
-        },
-        {
-            "id": 19,
-            "nombre": "Cestus",
-            "penetrante": 1,
-            "lacerante": 1,
-            "contundente": 2,
-            "categoria": "Guante",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Guantelete reforzado para combate cuerpo a cuerpo desarmado."
-        },
-        {
-            "id": 20,
-            "nombre": "Baluarte",
-            "penetrante": 5,
-            "lacerante": 5,
-            "contundente": 5,
-            "categoria": "Escudo",
-            "ventajas": [],
-            "desventajas": [],
-            "descripcion": "Escudo legendario de protección suprema contra todo tipo de daño."
+          "habilidad_id": 16,
+          "nivel": 1
         }
-    ]
+      ],
+      "descripcion": "Armadura de anillas metálicas entrelazadas sobre cuero."
+    },
+    {
+      "id": 5,
+      "nombre": "Cota brigantina",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 2,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "descripcion": "Armadura con placas de metal remachadas entre capas de tela o cuero."
+    },
+    {
+      "id": 6,
+      "nombre": "Lorica musculata",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 2,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "descripcion": "Coraza moldeada que imita la musculatura del torso humano."
+    },
+    {
+      "id": 7,
+      "nombre": "Lorica segmentata",
+      "penetrante": 2,
+      "lacerante": 3,
+      "contundente": 4,
+      "categoria": "Pesada",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 2
+        }
+      ],
+      "descripcion": "Armadura romana de placas segmentadas articuladas, protección superior."
+    },
+    {
+      "id": 8,
+      "nombre": "Armadura laminar",
+      "penetrante": 2,
+      "lacerante": 3,
+      "contundente": 4,
+      "categoria": "Pesada",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 2
+        }
+      ],
+      "descripcion": "Armadura de placas metálicas horizontales superpuestas."
+    },
+    {
+      "id": 9,
+      "nombre": "Cota de malla",
+      "penetrante": 2,
+      "lacerante": 4,
+      "contundente": 3,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "descripcion": "Armadura de anillos metálicos entrelazados, excelente contra cortes."
+    },
+    {
+      "id": 10,
+      "nombre": "Cota de escamas",
+      "penetrante": 2,
+      "lacerante": 4,
+      "contundente": 3,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "descripcion": "Armadura de pequeñas placas metálicas superpuestas como escamas."
+    },
+    {
+      "id": 11,
+      "nombre": "Baluarte del silencio",
+      "penetrante": 5,
+      "lacerante": 5,
+      "contundente": 6,
+      "categoria": "Pesada",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 3
+        }
+      ],
+      "descripcion": "Armadura pesada mágica que protege excepcionalmente pero dificulta el sigilo."
+    },
+    {
+      "id": 12,
+      "nombre": "Custodio del silencio",
+      "penetrante": 5,
+      "lacerante": 6,
+      "contundente": 5,
+      "categoria": "Pesada",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 3
+        }
+      ],
+      "descripcion": "Armadura pesada mágica con protección sobresaliente contra cortes."
+    },
+    {
+      "id": 13,
+      "nombre": "Túnica del tejesombras",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 2,
+      "categoria": "Ligera",
+      "ventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "desventajas": [],
+      "descripcion": "Túnica encantada que facilita el movimiento sigiloso y la evasión."
+    },
+    {
+      "id": 14,
+      "nombre": "Armadura de espinas de ébano",
+      "penetrante": 3,
+      "lacerante": 4,
+      "contundente": 5,
+      "categoria": "Media",
+      "ventajas": [],
+      "desventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "descripcion": "Armadura oscura con púas de ébano, intimida y protege efectivamente."
+    },
+    {
+      "id": 15,
+      "nombre": "Armadura espinal",
+      "penetrante": 5,
+      "lacerante": 7,
+      "contundente": 6,
+      "categoria": "Pesada",
+      "ventajas": [
+        {
+          "habilidad_id": 16,
+          "nivel": 1
+        }
+      ],
+      "desventajas": [],
+      "descripcion": "Armadura pesada con diseño espinal que sorprendentemente facilita el sigilo."
+    },
+    {
+      "id": 16,
+      "nombre": "Escudo/Rodela",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 2,
+      "categoria": "Escudo",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Escudo redondo y ligero, ideal para defensa activa."
+    },
+    {
+      "id": 17,
+      "nombre": "Escudo de torre",
+      "penetrante": 4,
+      "lacerante": 4,
+      "contundente": 4,
+      "categoria": "Escudo",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Escudo grande y pesado que proporciona cobertura corporal completa."
+    },
+    {
+      "id": 18,
+      "nombre": "Escudo Afilado",
+      "penetrante": 2,
+      "lacerante": 2,
+      "contundente": 2,
+      "categoria": "Escudo",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Escudo con bordes cortantes que puede usarse ofensivamente."
+    },
+    {
+      "id": 19,
+      "nombre": "Cestus",
+      "penetrante": 1,
+      "lacerante": 1,
+      "contundente": 2,
+      "categoria": "Guante",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Guantelete reforzado para combate cuerpo a cuerpo desarmado."
+    },
+    {
+      "id": 20,
+      "nombre": "Baluarte",
+      "penetrante": 5,
+      "lacerante": 5,
+      "contundente": 5,
+      "categoria": "Escudo",
+      "ventajas": [],
+      "desventajas": [],
+      "descripcion": "Escudo legendario de protección suprema contra todo tipo de daño."
+    }
+  ]
 }

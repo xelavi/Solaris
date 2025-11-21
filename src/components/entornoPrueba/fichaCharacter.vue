@@ -1,13 +1,13 @@
 <template>
-  <div class="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 w-80 max-h-[85vh] overflow-y-auto">
+  <div
+    class="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 w-80 max-h-[85vh] overflow-y-auto"
+  >
     <!-- Header con nombre -->
     <div class="mb-3 pb-3 border-b-2 border-gray-200">
       <h3 class="text-2xl font-bold text-gray-800">
         {{ personaje.nombre }}
       </h3>
-      <p class="text-sm text-gray-600">
-        Nivel {{ personaje.nivel }}
-      </p>
+      <p class="text-sm text-gray-600">Nivel {{ personaje.nivel }}</p>
     </div>
 
     <!-- Vida -->
@@ -23,18 +23,11 @@
         <div
           class="bg-gradient-to-r from-red-500 to-red-600 h-full transition-all duration-300"
           :style="{
-            width: `${
-              (personaje.vidaActual /
-                personaje.atributos.hp) *
-              100
-            }%`,
+            width: `${(personaje.vidaActual / personaje.atributos.hp) * 100}%`,
           }"
         ></div>
       </div>
-      <div
-        v-if="personaje.vidaTemporal > 0"
-        class="mt-1 text-xs text-blue-600"
-      >
+      <div v-if="personaje.vidaTemporal > 0" class="mt-1 text-xs text-blue-600">
         +{{ personaje.vidaTemporal }} vida temporal
       </div>
     </div>
@@ -98,39 +91,27 @@
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">⚔️ Poderío:</span>
-          <span class="font-bold">{{
-            personaje.atributos.poderio
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.poderio }}</span>
         </div>
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">🎯 Puntería:</span>
-          <span class="font-bold">{{
-            personaje.atributos.punteria
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.punteria }}</span>
         </div>
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">🛡️ Evasión:</span>
-          <span class="font-bold">{{
-            personaje.atributos.evasion
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.evasion }}</span>
         </div>
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">🏃 Movimiento:</span>
-          <span class="font-bold">{{
-            personaje.atributos.movimiento
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.movimiento }}</span>
         </div>
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">⚡ Iniciativa:</span>
-          <span class="font-bold">{{
-            personaje.atributos.iniciativa
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.iniciativa }}</span>
         </div>
         <div class="flex justify-between bg-gray-50 rounded p-2">
           <span class="text-gray-600">🔄 Acciones:</span>
-          <span class="font-bold">{{
-            personaje.atributos.acciones
-          }}</span>
+          <span class="font-bold">{{ personaje.atributos.acciones }}</span>
         </div>
       </div>
     </div>
@@ -169,8 +150,7 @@
           :key="arma.id"
           class="text-xs bg-amber-50 rounded p-2"
           :class="{
-            'ring-2 ring-amber-500':
-              arma.id === personaje.armaEquipada,
+            'ring-2 ring-amber-500': arma.id === personaje.armaEquipada,
           }"
         >
           <p class="font-semibold text-gray-800">
@@ -216,7 +196,7 @@ function calcularArmadura(personaje: PersonajeInstancia) {
   if (personaje.armaduras && personaje.armaduras.length > 0) {
     personaje.armaduras.forEach((armaduraId) => {
       const armadura = armadurasData.armaduras.find(
-        (a: any) => a.id === armaduraId
+        (a: any) => a.id === armaduraId,
       );
       if (armadura) {
         armaduraTotal.penetrante += armadura.penetrante || 0;

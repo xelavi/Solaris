@@ -1,5 +1,5 @@
-import { ref } from 'vue';
-import { astar } from './composables/pathfinder';
+import { ref } from "vue";
+import { astar } from "./composables/pathfinder";
 
 export interface Casilla {
   x: number;
@@ -19,7 +19,6 @@ const minGX = ref(0);
 const minGZ = ref(0);
 
 export function useMapa() {
-  
   function generarMapa() {
     const newMapa: Casilla[][] = [];
     const offsetX = -(GRID_WIDTH * CUBE_SIZE) / 2 + CUBE_SIZE / 2;
@@ -38,7 +37,7 @@ export function useMapa() {
         // Coordenadas de mundo aproximadas (para lógica interna)
         const gx = Math.round((offsetX + x * CUBE_SIZE) / CUBE_SIZE);
         const gz = Math.round((offsetZ + z * CUBE_SIZE) / CUBE_SIZE);
-        
+
         if (gx < minX) minX = gx;
         if (gz < minZ) minZ = gz;
 
@@ -47,7 +46,7 @@ export function useMapa() {
           z: gz,
           y: 0, // Nivel del suelo
           walkable: true,
-          blocked: false
+          blocked: false,
         };
       }
     }
@@ -61,8 +60,13 @@ export function useMapa() {
     for (let i = 0; i < 5; i++) {
       const gridX = i + 5;
       const gridZ = 5;
-      
-      if (gridX < GRID_WIDTH && gridZ < GRID_HEIGHT && newMapa[gridX] && newMapa[gridX][gridZ]) {
+
+      if (
+        gridX < GRID_WIDTH &&
+        gridZ < GRID_HEIGHT &&
+        newMapa[gridX] &&
+        newMapa[gridX][gridZ]
+      ) {
         newMapa[gridX][gridZ].blocked = true;
         newMapa[gridX][gridZ].walkable = false;
         newMapa[gridX][gridZ].y = 1; // Altura de pared
@@ -72,10 +76,13 @@ export function useMapa() {
     mapa.value = newMapa;
   }
 
-  function obtenerCamino(start: { x: number, z: number }, end: { x: number, z: number }) {
+  function obtenerCamino(
+    start: { x: number; z: number },
+    end: { x: number; z: number },
+  ) {
     // Convertir coordenadas de mundo a índices de array
     // Asumimos que start y end vienen en coordenadas de mundo (gx, gz)
-    
+
     // Indices array
     const startIx = start.x - minGX.value;
     const startIz = start.z - minGZ.value;
@@ -84,17 +91,21 @@ export function useMapa() {
 
     // Validar límites
     if (
-      startIx < 0 || startIx >= GRID_WIDTH ||
-      startIz < 0 || startIz >= GRID_HEIGHT ||
-      endIx < 0 || endIx >= GRID_WIDTH ||
-      endIz < 0 || endIz >= GRID_HEIGHT
+      startIx < 0 ||
+      startIx >= GRID_WIDTH ||
+      startIz < 0 ||
+      startIz >= GRID_HEIGHT ||
+      endIx < 0 ||
+      endIx >= GRID_WIDTH ||
+      endIz < 0 ||
+      endIz >= GRID_HEIGHT
     ) {
       return null;
     }
 
     // Preparar arrays para astar (que espera boolean[][])
-    const walkableGrid = mapa.value.map(row => row.map(c => c.walkable));
-    
+    const walkableGrid = mapa.value.map((row) => row.map((c) => c.walkable));
+
     // Función canWalk para astar
     const canWalk = (x: number, z: number): boolean => {
       return !!(walkableGrid[x] && walkableGrid[x][z]);
@@ -104,15 +115,15 @@ export function useMapa() {
       { x: startIx, z: startIz },
       { x: endIx, z: endIz },
       walkableGrid,
-      canWalk
+      canWalk,
     );
 
     if (!path) return null;
 
     // Convertir de vuelta a coordenadas de mundo
-    return path.map(p => ({
+    return path.map((p) => ({
       x: p.x + minGX.value,
-      z: p.z + minGZ.value
+      z: p.z + minGZ.value,
     }));
   }
 
@@ -127,24 +138,29 @@ export function useMapa() {
     return cell.walkable && !cell.blocked;
   }
 
-  function obtenerAlcance(origen: { x: number, z: number }, rango: number): { x: number, z: number }[] {
-    const alcanzables: { x: number, z: number }[] = [];
+  function obtenerAlcance(
+    origen: { x: number; z: number },
+    rango: number,
+  ): { x: number; z: number }[] {
+    const alcanzables: { x: number; z: number }[] = [];
     const startIx = origen.x - minGX.value;
     const startIz = origen.z - minGZ.value;
 
     // BFS simple para encontrar celdas alcanzables dentro del rango
-    const queue: { x: number, z: number, dist: number }[] = [{ x: startIx, z: startIz, dist: 0 }];
+    const queue: { x: number; z: number; dist: number }[] = [
+      { x: startIx, z: startIz, dist: 0 },
+    ];
     const visited = new Set<string>();
     visited.add(`${startIx},${startIz}`);
 
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       // Si no es el origen, lo añadimos a alcanzables
       if (current.dist > 0) {
         alcanzables.push({
           x: current.x + minGX.value,
-          z: current.z + minGZ.value
+          z: current.z + minGZ.value,
         });
       }
 
@@ -153,14 +169,16 @@ export function useMapa() {
           { x: current.x + 1, z: current.z },
           { x: current.x - 1, z: current.z },
           { x: current.x, z: current.z + 1 },
-          { x: current.x, z: current.z - 1 }
+          { x: current.x, z: current.z - 1 },
         ];
 
         for (const n of neighbors) {
           const key = `${n.x},${n.z}`;
           if (
-            n.x >= 0 && n.x < GRID_WIDTH &&
-            n.z >= 0 && n.z < GRID_HEIGHT &&
+            n.x >= 0 &&
+            n.x < GRID_WIDTH &&
+            n.z >= 0 &&
+            n.z < GRID_HEIGHT &&
             !visited.has(key)
           ) {
             // Verificar si es caminable usando la lógica interna
@@ -189,6 +207,6 @@ export function useMapa() {
     GRID_HEIGHT,
     CUBE_SIZE,
     minGX,
-    minGZ
+    minGZ,
   };
 }

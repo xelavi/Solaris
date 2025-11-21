@@ -1,8 +1,8 @@
-import { ref, computed } from 'vue';
-import type { PartidaData, PersonajeInstancia } from './Partida';
-import { Character } from './Character';
-import { calcularIniciativas, type ResultadoIniciativa } from './Activas';
-import { useMapa } from './useMapa';
+import { ref, computed } from "vue";
+import type { PartidaData, PersonajeInstancia } from "./Partida";
+import { Character } from "./Character";
+import { calcularIniciativas, type ResultadoIniciativa } from "./Activas";
+import { useMapa } from "./useMapa";
 
 // Estado global de la partida (Singleton pattern para este composable)
 const partidaActual = ref<PartidaData | null>(null);
@@ -33,7 +33,7 @@ export function usePartida() {
       }
 
       partidaActual.value = JSON.parse(partidaString);
-      
+
       // Generar mapa lógico
       generarMapa();
 
@@ -46,10 +46,9 @@ export function usePartida() {
         ordenTurnos.value = calcularIniciativas(todosPersonajes);
         turnoActual.value = 0;
         accionesRestantes.value = 3;
-        
+
         agregarLog("Partida iniciada. Iniciativas calculadas.");
       }
-
     } catch (error) {
       console.error("❌ Error al cargar la partida:", error);
     }
@@ -57,16 +56,16 @@ export function usePartida() {
 
   function pasarTurno() {
     if (ordenTurnos.value.length === 0) return;
-    
+
     turnoActual.value = (turnoActual.value + 1) % ordenTurnos.value.length;
     accionesRestantes.value = 3;
     agregarLog(`Turno de ${personajeActivo.value?.nombre}`);
   }
 
-  async function moverPersonajeActivo(destino: { x: number, z: number }) {
+  async function moverPersonajeActivo(destino: { x: number; z: number }) {
     const personaje = personajeActivo.value;
     if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
-    
+
     if (accionesRestantes.value <= 0) {
       return { exito: false, mensaje: "No quedan acciones" };
     }
@@ -79,7 +78,7 @@ export function usePartida() {
     // Calcular camino
     const camino = obtenerCamino(
       { x: personaje.posicion.x, z: personaje.posicion.z },
-      destino
+      destino,
     );
 
     if (!camino) {
@@ -92,16 +91,21 @@ export function usePartida() {
     const movimientoMax = personaje.atributos.movimiento;
 
     if (distancia > movimientoMax) {
-      return { exito: false, mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distancia})` };
+      return {
+        exito: false,
+        mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distancia})`,
+      };
     }
 
     // Ejecutar movimiento (actualizar estado)
     personaje.posicion.x = destino.x;
     personaje.posicion.z = destino.z;
-    
+
     // Consumir acción
     accionesRestantes.value--;
-    agregarLog(`${personaje.nombre} se movió a (${destino.x}, ${destino.z}). Acciones restantes: ${accionesRestantes.value}`);
+    agregarLog(
+      `${personaje.nombre} se movió a (${destino.x}, ${destino.z}). Acciones restantes: ${accionesRestantes.value}`,
+    );
 
     return { exito: true, camino }; // Devolvemos el camino para que el frontend pueda animarlo
   }
@@ -126,6 +130,6 @@ export function usePartida() {
     pasarTurno,
     moverPersonajeActivo,
     addCharacter,
-    getCharacter
+    getCharacter,
   };
 }

@@ -420,16 +420,16 @@
               adrenalinaActiva
                 ? 'bg-yellow-600 text-white ring-2 ring-yellow-300'
                 : procesarActivo
-                ? 'bg-yellow-600 text-white hover:bg-yellow-700 ring-2 ring-cyan-300 disabled:bg-gray-400 disabled:cursor-not-allowed'
-                : 'bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed',
+                  ? 'bg-yellow-600 text-white hover:bg-yellow-700 ring-2 ring-cyan-300 disabled:bg-gray-400 disabled:cursor-not-allowed'
+                  : 'bg-yellow-500 text-white hover:bg-yellow-600 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed',
             ]"
           >
             {{
               adrenalinaActiva
                 ? "⚡ Adrenalina Activa"
                 : procesarActivo
-                ? "⚡ Adrenalina (GRATIS)"
-                : "⚡ Adrenalina (1 acción)"
+                  ? "⚡ Adrenalina (GRATIS)"
+                  : "⚡ Adrenalina (1 acción)"
             }}
           </button>
 
@@ -754,11 +754,11 @@ function aplicarVentajaInstruir(aliadoId: string) {
   if (aliado) {
     setVentaja(aliado, 1, "Instruir");
     console.log(
-      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`
+      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`,
     );
     agregarLog(
       "sistema",
-      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`
+      `📢 ${aliado.nombre} ha sido instruido y tendrá ventaja en su próxima tirada.`,
     );
   }
 }
@@ -779,7 +779,7 @@ function consumirVentajaSiCorresponde(personaje: any) {
     ventajaInstruir.delete(personaje.instanciaId);
     agregarLog(
       "sistema",
-      `🎲 ${personaje.nombre} ha usado la ventaja de Instruir.`
+      `🎲 ${personaje.nombre} ha usado la ventaja de Instruir.`,
     );
   }
 }
@@ -1086,7 +1086,7 @@ function createHexGrid() {
   }
 
   console.log(
-    `✅ Cuadrícula creada: ${hexagons.length} hexágonos (${GRID_WIDTH}x${GRID_HEIGHT})`
+    `✅ Cuadrícula creada: ${hexagons.length} hexágonos (${GRID_WIDTH}x${GRID_HEIGHT})`,
   );
 }
 
@@ -1101,7 +1101,7 @@ function centerCamera() {
   const gridCenter = new THREE.Vector3(
     totalGridWidth / 2,
     0,
-    totalGridHeight / 2
+    totalGridHeight / 2,
   );
 
   controls.target.copy(gridCenter);
@@ -1127,11 +1127,11 @@ function cargarPartida() {
 
     agregarLog(
       "sistema",
-      `✅ Partida "${partidaActual.value?.nombre}" cargada`
+      `✅ Partida "${partidaActual.value?.nombre}" cargada`,
     );
     agregarLog(
       "sistema",
-      `📊 ${contarTotalPersonajes()} personajes en combate`
+      `📊 ${contarTotalPersonajes()} personajes en combate`,
     );
   } catch (error) {
     console.error("❌ Error al cargar la partida:", error);
@@ -1143,7 +1143,7 @@ function contarTotalPersonajes(): number {
   if (!partidaActual.value) return 0;
   return partidaActual.value.equipos.reduce(
     (total, equipo) => total + equipo.personajes.length,
-    0
+    0,
   );
 }
 
@@ -1192,7 +1192,7 @@ function crearPersonajes() {
       cilindro.position.set(
         hexagono.position.x,
         hexagono.position.y + 1.5, // Altura del cilindro
-        hexagono.position.z
+        hexagono.position.z,
       );
 
       // Guardar datos del personaje en el mesh
@@ -1207,7 +1207,7 @@ function crearPersonajes() {
 
       const colorHex = (color || 0xffffff).toString(16).padStart(6, "0");
       console.log(
-        `👤 ${personaje.nombre} creado en (${posicion.col}, ${posicion.row}) - Color: #${colorHex}`
+        `👤 ${personaje.nombre} creado en (${posicion.col}, ${posicion.row}) - Color: #${colorHex}`,
       );
 
       colorIndex++;
@@ -1217,7 +1217,7 @@ function crearPersonajes() {
   console.log(`✅ ${personajesMeshes.size} personajes creados en el mapa`);
   agregarLog(
     "sistema",
-    `⚔️ ${personajesMeshes.size} combatientes preparados para la batalla`
+    `⚔️ ${personajesMeshes.size} combatientes preparados para la batalla`,
   );
 
   // Tirar iniciativas después de crear personajes
@@ -1252,14 +1252,14 @@ function inicializarTurnos() {
       "sistema",
       `${index + 1}. ${personaje.nombre}: ${dado1} + ${dado2} + ${
         personaje.nivel
-      } = ${tirada}`
+      } = ${tirada}`,
     );
   });
   agregarLog("sistema", "═══════════════════");
   if (ordenTurnos.value[0]) {
     agregarLog(
       "sistema",
-      `🎯 Turno de ${ordenTurnos.value[0].personaje.nombre}`
+      `🎯 Turno de ${ordenTurnos.value[0].personaje.nombre}`,
     );
   }
 }
@@ -1471,7 +1471,6 @@ function onPointerMove(event: PointerEvent) {
 function onPointerDown(event: PointerEvent) {
   const mesh = pick(event);
 
-
   // Si estamos en modo instruir
   if (modoInstruir.value) {
     if (mesh && mesh.name.startsWith("personaje_")) {
@@ -1575,7 +1574,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
   }
 
   const meshPersonaje = personajesMeshes.get(
-    personajeSeleccionado.value.instanciaId
+    personajeSeleccionado.value.instanciaId,
   );
   if (!meshPersonaje) return;
 
@@ -1595,8 +1594,8 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
     // Encontrar el equipo del personaje que se mueve
     const equipoActual = partidaActual.value.equipos.find((equipo) =>
       equipo.personajes.some(
-        (p) => p.instanciaId === personajeSeleccionado.value!.instanciaId
-      )
+        (p) => p.instanciaId === personajeSeleccionado.value!.instanciaId,
+      ),
     );
 
     if (equipoActual) {
@@ -1629,7 +1628,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
           const casillasEnRango = getNeighbors(
             coordsEnemigo.col,
             coordsEnemigo.row,
-            rangoAtaque
+            rangoAtaque,
           );
           console.log("adfdfadf");
           // Verificar si la casilla de ORIGEN está en rango
@@ -1662,7 +1661,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
             console.log(
               `� ${personaje.nombre} detecta ENTRADA: ${
                 personajeSeleccionado.value!.nombre
-              } entra a rango ${rangoAtaque}`
+              } entra a rango ${rangoAtaque}`,
             );
             personajesConOportunidad.value.push({ personaje, tipo: "entrada" });
           } else if (origenEnRango && !destinoEnRango) {
@@ -1670,7 +1669,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
             console.log(
               `� ${personaje.nombre} detecta SALIDA: ${
                 personajeSeleccionado.value!.nombre
-              } sale de rango ${rangoAtaque}`
+              } sale de rango ${rangoAtaque}`,
             );
             personajesConOportunidad.value.push({ personaje, tipo: "salida" });
           } else if (origenEnRango && destinoEnRango) {
@@ -1678,7 +1677,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
             console.log(
               `⚪ ${personaje.nombre}: ${
                 personajeSeleccionado.value!.nombre
-              } se mueve DENTRO del rango ${rangoAtaque} - sin oportunidad`
+              } se mueve DENTRO del rango ${rangoAtaque} - sin oportunidad`,
             );
           }
         });
@@ -1699,7 +1698,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
         "sistema",
         `⚡ ${index + 1}. ${opp.personaje.nombre} puede atacar (${
           personajeSeleccionado.value?.nombre
-        } ${tipoTexto} su rango)`
+        } ${tipoTexto} su rango)`,
       );
     });
 
@@ -1710,7 +1709,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
     if (enemigoMoviendose.value.vidaActual <= 0) {
       agregarLog(
         "activa",
-        `💀 ${enemigoMoviendose.value.nombre} murió antes de completar el movimiento`
+        `💀 ${enemigoMoviendose.value.nombre} murió antes de completar el movimiento`,
       );
       desactivarModoMovimiento();
 
@@ -1733,7 +1732,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
   meshPersonaje.position.set(
     hexDestino.position.x,
     hexDestino.position.y + 1.5,
-    hexDestino.position.z
+    hexDestino.position.z,
   );
 
   // Actualizar coordenadas guardadas
@@ -1751,7 +1750,7 @@ async function moverPersonaje(hexDestino: THREE.Mesh) {
 
   agregarLog(
     "movimiento",
-    `🏃 ${personajeSeleccionado.value.nombre} se movió a (${coordsOrigen.col}, ${coordsOrigen.row}) → (${coordsDestino.x}, ${coordsDestino.y}) [${accionesRestantes.value} acciones restantes]`
+    `🏃 ${personajeSeleccionado.value.nombre} se movió a (${coordsOrigen.col}, ${coordsOrigen.row}) → (${coordsDestino.x}, ${coordsDestino.y}) [${accionesRestantes.value} acciones restantes]`,
   );
 
   // Resetear variables de oportunidad
@@ -1775,11 +1774,11 @@ function desactivarModoInstruir() {
     partidaActual.value.equipos.forEach((eq) => {
       if (
         eq.personajes.some(
-          (p) => p.instanciaId === personajeSeleccionado.value!.instanciaId
+          (p) => p.instanciaId === personajeSeleccionado.value!.instanciaId,
         )
       ) {
         aliados = eq.personajes.filter(
-          (p) => p.instanciaId !== personajeSeleccionado.value!.instanciaId
+          (p) => p.instanciaId !== personajeSeleccionado.value!.instanciaId,
         );
       }
     });
@@ -1806,7 +1805,7 @@ function pasarTurno() {
     personajeSeleccionado.value.atributos.cuerpo -= 1;
     agregarLog(
       "sistema",
-      `⚡ Adrenalina de ${personajeSeleccionado.value.nombre} se desvanece (-1 Cuerpo)`
+      `⚡ Adrenalina de ${personajeSeleccionado.value.nombre} se desvanece (-1 Cuerpo)`,
     );
     adrenalinaActiva.value = false;
   }
@@ -1858,7 +1857,7 @@ function activarModoMovimiento() {
   if (movimiento === 0) {
     agregarLog(
       "sistema",
-      `⚠️ ${personaje.nombre} no tiene movimiento disponible`
+      `⚠️ ${personaje.nombre} no tiene movimiento disponible`,
     );
     return;
   }
@@ -1892,7 +1891,7 @@ function activarModoMovimiento() {
 
   agregarLog(
     "movimiento",
-    `🏃 Modo movimiento activado: ${vecinosLibres.length} casillas disponibles (Rango: ${movimiento})`
+    `🏃 Modo movimiento activado: ${vecinosLibres.length} casillas disponibles (Rango: ${movimiento})`,
   );
 }
 
@@ -1982,7 +1981,7 @@ function activarModoAtaque() {
       : "sin objetivos en rango";
   agregarLog(
     "ataque",
-    `⚔️ Modo ataque activado: ${mensajeObjetivos} (Alcance: ${alcance})`
+    `⚔️ Modo ataque activado: ${mensajeObjetivos} (Alcance: ${alcance})`,
   );
 }
 
@@ -2020,7 +2019,7 @@ function realizarAtaque(objetivoMesh: THREE.Mesh) {
   aliadosAdyacentes.value = [];
   if (partidaActual.value) {
     const equipoDefensor = partidaActual.value.equipos.find((eq) =>
-      eq.personajes.some((p) => p.instanciaId === defensor.instanciaId)
+      eq.personajes.some((p) => p.instanciaId === defensor.instanciaId),
     );
 
     if (equipoDefensor) {
@@ -2092,7 +2091,7 @@ async function procesarAtaqueConReaccion() {
   // Calcular defensa del defensor
   const calcularDefensa = (
     personaje: PersonajeInstancia,
-    tipo: "penetrante" | "lacerante" | "contundente"
+    tipo: "penetrante" | "lacerante" | "contundente",
   ): number => {
     const resistencia = personaje.atributos.resistencia || 0;
     let armaduraTotal = resistencia;
@@ -2100,7 +2099,7 @@ async function procesarAtaqueConReaccion() {
     if (personaje.armaduras && personaje.armaduras.length > 0) {
       personaje.armaduras.forEach((armaduraId) => {
         const armadura = armadurasData.armaduras.find(
-          (a: any) => a.id === armaduraId
+          (a: any) => a.id === armaduraId,
         );
         if (armadura) {
           armaduraTotal += armadura[tipo] || 0;
@@ -2132,7 +2131,7 @@ async function procesarAtaqueConReaccion() {
       defensorFinal,
       atacante,
       armaDefensor,
-      defensaAtacante
+      defensaAtacante,
     );
     agregarLog("activa", resultadoContra.mensaje);
 
@@ -2140,14 +2139,14 @@ async function procesarAtaqueConReaccion() {
     if (resultadoContra.exito && resultadoContra.ataqueContra) {
       atacante.vidaActual = Math.max(
         0,
-        atacante.vidaActual - resultadoContra.ataqueContra.danio
+        atacante.vidaActual - resultadoContra.ataqueContra.danio,
       );
 
       // Actualizar en la partida
       if (partidaActual.value) {
         partidaActual.value.equipos.forEach((equipo) => {
           const personajeEnEquipo = equipo.personajes.find(
-            (p) => p.instanciaId === atacante.instanciaId
+            (p) => p.instanciaId === atacante.instanciaId,
           );
           if (personajeEnEquipo) {
             personajeEnEquipo.vidaActual = atacante.vidaActual;
@@ -2155,13 +2154,13 @@ async function procesarAtaqueConReaccion() {
         });
         localStorage.setItem(
           props.partidaId,
-          JSON.stringify(partidaActual.value)
+          JSON.stringify(partidaActual.value),
         );
       }
 
       agregarLog(
         "sistema",
-        `❤️ ${atacante.nombre}: ${atacante.vidaActual}/${atacante.atributos.hp} HP`
+        `❤️ ${atacante.nombre}: ${atacante.vidaActual}/${atacante.atributos.hp} HP`,
       );
     }
   } else if (reaccionSeleccionada.value === TipoReaccion.TENSION) {
@@ -2176,7 +2175,7 @@ async function procesarAtaqueConReaccion() {
       const interceptor = aliadosAdyacentes.value[0]!;
       const resultadoInterceptar = realizarInterceptar(
         interceptor,
-        defensorFinal
+        defensorFinal,
       );
       agregarLog("activa", resultadoInterceptar.mensaje);
 
@@ -2227,7 +2226,7 @@ async function procesarAtaqueConReaccion() {
     const numDice = 2 + Math.max(0, extraDice);
     const rolls = Array.from(
       { length: numDice },
-      () => Math.floor(Math.random() * 12) + 1
+      () => Math.floor(Math.random() * 12) + 1,
     );
     let used: number[];
     let type: "normal" | "adv" | "dis" = "normal";
@@ -2278,7 +2277,7 @@ async function procesarAtaqueConReaccion() {
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
         `🎲 Tirada: ${dado1} + ${dado2}\n` +
         `💀 ¡FALLO CRÍTICO! (sacó un 1)\n` +
-        `El ataque falla estrepitosamente.`
+        `El ataque falla estrepitosamente.`,
     );
 
     // Consumir acción
@@ -2309,7 +2308,7 @@ async function procesarAtaqueConReaccion() {
       `⚔️ ${atacante.nombre} ataca a ${defensorFinal.nombre}!\n` +
         `🎲 Tirada: ${dado1} + ${dado2} + ${atacante.nivel} = ${tirada}\n` +
         `🛡️ ¡FALLO! (Evasión: ${evasionDefensor}${mensajeParry})\n` +
-        `El ataque no logra conectar.`
+        `El ataque no logra conectar.`,
     );
 
     // Consumir acción
@@ -2383,15 +2382,15 @@ async function procesarAtaqueConReaccion() {
   // Aplicar puntería: reduce la armadura del defensor (ya incluye modificador de Tensión)
   const defensaPenetrante = Math.max(
     0,
-    defensaDefensorFinal.penetrante - punteria
+    defensaDefensorFinal.penetrante - punteria,
   );
   const defensaLacerante = Math.max(
     0,
-    defensaDefensorFinal.lacerante - punteria
+    defensaDefensorFinal.lacerante - punteria,
   );
   const defensaContundente = Math.max(
     0,
-    defensaDefensorFinal.contundente - punteria
+    defensaDefensorFinal.contundente - punteria,
   );
 
   // Calcular daño final
@@ -2399,27 +2398,27 @@ async function procesarAtaqueConReaccion() {
   const danioFinalLacerante = Math.max(0, danioLacerante - defensaLacerante);
   const danioFinalContundente = Math.max(
     0,
-    danioContundente - defensaContundente
+    danioContundente - defensaContundente,
   );
 
   // Sumar el daño total (se toma el mayor)
   const danioTotalFinal = Math.max(
     danioFinalPenetrante,
     danioFinalLacerante,
-    danioFinalContundente
+    danioFinalContundente,
   );
 
   // Actualizar vida del defensor final
   defensorFinal.vidaActual = Math.max(
     0,
-    defensorFinal.vidaActual - danioTotalFinal
+    defensorFinal.vidaActual - danioTotalFinal,
   );
 
   // Actualizar en la partida
   if (partidaActual.value) {
     partidaActual.value.equipos.forEach((equipo) => {
       const personajeEnEquipo = equipo.personajes.find(
-        (p) => p.instanciaId === defensorFinal.instanciaId
+        (p) => p.instanciaId === defensorFinal.instanciaId,
       );
       if (personajeEnEquipo) {
         personajeEnEquipo.vidaActual = defensorFinal.vidaActual;
@@ -2478,7 +2477,7 @@ async function procesarAtaquesDeOportunidad() {
     if (enemigoMoviendose.value.vidaActual <= 0) {
       agregarLog(
         "activa",
-        `⚡ El movimiento se interrumpe - ${enemigoMoviendose.value.nombre} ha sido derrotado`
+        `⚡ El movimiento se interrumpe - ${enemigoMoviendose.value.nombre} ha sido derrotado`,
       );
       break;
     }
@@ -2497,7 +2496,7 @@ async function procesarAtaquesDeOportunidad() {
       // Calcular defensa del objetivo
       const calcularDefensa = (
         personaje: PersonajeInstancia,
-        tipo: "penetrante" | "lacerante" | "contundente"
+        tipo: "penetrante" | "lacerante" | "contundente",
       ): number => {
         const resistencia = personaje.atributos.resistencia || 0;
         let armaduraTotal = resistencia;
@@ -2505,7 +2504,7 @@ async function procesarAtaquesDeOportunidad() {
         if (personaje.armaduras && personaje.armaduras.length > 0) {
           personaje.armaduras.forEach((armaduraId) => {
             const armadura = armadurasData.armaduras.find(
-              (a: any) => a.id === armaduraId
+              (a: any) => a.id === armaduraId,
             );
             if (armadura) {
               armaduraTotal += armadura[tipo] || 0;
@@ -2527,7 +2526,7 @@ async function procesarAtaquesDeOportunidad() {
         atacante,
         objetivo,
         armaAtacante,
-        defensaObjetivo
+        defensaObjetivo,
       );
 
       // Mostrar mensaje
@@ -2537,14 +2536,14 @@ async function procesarAtaquesDeOportunidad() {
       if (resultado.exito && resultado.ataqueContra) {
         objetivo.vidaActual = Math.max(
           0,
-          objetivo.vidaActual - resultado.ataqueContra.danio
+          objetivo.vidaActual - resultado.ataqueContra.danio,
         );
 
         // Actualizar en la partida
         if (partidaActual.value) {
           partidaActual.value.equipos.forEach((equipo) => {
             const personajeEnEquipo = equipo.personajes.find(
-              (p) => p.instanciaId === objetivo.instanciaId
+              (p) => p.instanciaId === objetivo.instanciaId,
             );
             if (personajeEnEquipo) {
               personajeEnEquipo.vidaActual = objetivo.vidaActual;
@@ -2552,19 +2551,19 @@ async function procesarAtaquesDeOportunidad() {
           });
           localStorage.setItem(
             props.partidaId,
-            JSON.stringify(partidaActual.value)
+            JSON.stringify(partidaActual.value),
           );
         }
 
         agregarLog(
           "sistema",
-          `❤️ ${objetivo.nombre}: ${objetivo.vidaActual}/${objetivo.atributos.hp} HP`
+          `❤️ ${objetivo.nombre}: ${objetivo.vidaActual}/${objetivo.atributos.hp} HP`,
         );
       }
     } else {
       agregarLog(
         "activa",
-        `⚡ ${atacante.nombre} deja pasar a ${enemigoMoviendose.value.nombre}`
+        `⚡ ${atacante.nombre} deja pasar a ${enemigoMoviendose.value.nombre}`,
       );
     }
   }
@@ -2573,7 +2572,7 @@ async function procesarAtaquesDeOportunidad() {
 // Mostrar popup de decisión para ataque de oportunidad
 async function mostrarDecisionOportunidad(
   atacante: PersonajeInstancia,
-  tipo: "salida" | "entrada"
+  tipo: "salida" | "entrada",
 ): Promise<"atacar" | "pasar"> {
   return new Promise((resolve) => {
     // Configurar popup
@@ -2631,7 +2630,7 @@ function activarModoCarga() {
   if (movimiento === 0) {
     agregarLog(
       "sistema",
-      `⚠️ ${personaje.nombre} no tiene movimiento disponible`
+      `⚠️ ${personaje.nombre} no tiene movimiento disponible`,
     );
     return;
   }
@@ -2670,7 +2669,7 @@ function activarModoCarga() {
       : "sin objetivos";
   agregarLog(
     "activa",
-    `🏇 Modo carga activado: ${mensajeObjetivos} (Movimiento: ${movimiento})`
+    `🏇 Modo carga activado: ${mensajeObjetivos} (Movimiento: ${movimiento})`,
   );
 }
 
@@ -2757,7 +2756,7 @@ function realizarCargaHacia(objetivoMesh: THREE.Mesh) {
     hexagonosCarga.value.some((hex: THREE.Mesh) => {
       const coords = getHexCoordinates(hex);
       return coords && coords.x === vecino.x && coords.y === vecino.y;
-    })
+    }),
   );
 
   if (vecinosEnRango.length === 0) {
@@ -2801,7 +2800,7 @@ function realizarCargaHacia(objetivoMesh: THREE.Mesh) {
   meshAtacante.position.set(
     hexDestino.position.x,
     hexDestino.position.y + 1.5,
-    hexDestino.position.z
+    hexDestino.position.z,
   );
 
   // Actualizar coordenadas guardadas
@@ -2868,7 +2867,7 @@ function activarModoInstruir() {
     partidaActual.value.equipos.forEach((eq) => {
       if (eq.personajes.some((p) => p.instanciaId === personaje.instanciaId)) {
         aliados = eq.personajes.filter(
-          (p) => p.instanciaId !== personaje.instanciaId
+          (p) => p.instanciaId !== personaje.instanciaId,
         );
       }
     });
@@ -2971,7 +2970,7 @@ function desactivarModoEmpujar() {
   // Resetear hexágonos resaltados (los adyacentes)
   if (personajeSeleccionado.value) {
     const meshPersonaje = personajesMeshes.get(
-      personajeSeleccionado.value.instanciaId
+      personajeSeleccionado.value.instanciaId,
     );
     if (meshPersonaje) {
       const col = (meshPersonaje as any).hexCol;
@@ -3047,7 +3046,7 @@ function realizarEmpujarHacia(objetivoMesh: THREE.Mesh) {
     defensor,
     posicionAtacante,
     posicionDefensor,
-    hexagonosDisponibles
+    hexagonosDisponibles,
   );
 
   // Mostrar resultado en log
@@ -3061,7 +3060,7 @@ function realizarEmpujarHacia(objetivoMesh: THREE.Mesh) {
     if (hexDestino) {
       // Liberar hexágono anterior del defensor
       hexagonosOcupados.delete(
-        `${posicionDefensor.col},${posicionDefensor.row}`
+        `${posicionDefensor.col},${posicionDefensor.row}`,
       );
 
       // Ocupar nuevo hexágono
@@ -3071,7 +3070,7 @@ function realizarEmpujarHacia(objetivoMesh: THREE.Mesh) {
       meshDefensor.position.set(
         hexDestino.position.x,
         hexDestino.position.y + 1.5,
-        hexDestino.position.z
+        hexDestino.position.z,
       );
 
       // Actualizar coordenadas guardadas
@@ -3082,7 +3081,7 @@ function realizarEmpujarHacia(objetivoMesh: THREE.Mesh) {
       if (partidaActual.value) {
         partidaActual.value.equipos.forEach((equipo) => {
           const personajeEnEquipo = equipo.personajes.find(
-            (p) => p.instanciaId === defensor.instanciaId
+            (p) => p.instanciaId === defensor.instanciaId,
           );
           if (personajeEnEquipo) {
             personajeEnEquipo.posicion = {
@@ -3096,7 +3095,7 @@ function realizarEmpujarHacia(objetivoMesh: THREE.Mesh) {
         // Guardar en localStorage
         localStorage.setItem(
           props.partidaId,
-          JSON.stringify(partidaActual.value)
+          JSON.stringify(partidaActual.value),
         );
       }
     }
@@ -3139,7 +3138,7 @@ function usarCuracion() {
   if (partidaActual.value) {
     partidaActual.value.equipos.forEach((equipo) => {
       const personajeEnEquipo = equipo.personajes.find(
-        (p) => p.instanciaId === personaje.instanciaId
+        (p) => p.instanciaId === personaje.instanciaId,
       );
       if (personajeEnEquipo) {
         personajeEnEquipo.vidaActual = personaje.vidaActual;
@@ -3150,11 +3149,11 @@ function usarCuracion() {
 
   agregarLog(
     "activa",
-    `💚 ${personaje.nombre} usa Curación y recupera ${hpCurado} HP`
+    `💚 ${personaje.nombre} usa Curación y recupera ${hpCurado} HP`,
   );
   agregarLog(
     "sistema",
-    `❤️ ${personaje.nombre}: ${personaje.vidaActual}/${hpMax} HP`
+    `❤️ ${personaje.nombre}: ${personaje.vidaActual}/${hpMax} HP`,
   );
 
   // Verificar si Procesar está activo (Curación es mental de 1 acción)
@@ -3164,7 +3163,7 @@ function usarCuracion() {
     procesarActivo.value = false; // Consumir Procesar
     agregarLog(
       "sistema",
-      `🧠 Procesar consumido - Curación no consume acciones`
+      `🧠 Procesar consumido - Curación no consume acciones`,
     );
   }
 
@@ -3201,7 +3200,7 @@ function usarAdrenalina() {
 
   agregarLog(
     "activa",
-    `⚡ ${personaje.nombre} usa Adrenalina! +1 Cuerpo hasta el próximo turno`
+    `⚡ ${personaje.nombre} usa Adrenalina! +1 Cuerpo hasta el próximo turno`,
   );
   agregarLog("sistema", `💪 Cuerpo: ${personaje.atributos.cuerpo}`);
 
@@ -3212,7 +3211,7 @@ function usarAdrenalina() {
     procesarActivo.value = false; // Consumir Procesar
     agregarLog(
       "sistema",
-      `🧠 Procesar consumido - Adrenalina no consume acciones`
+      `🧠 Procesar consumido - Adrenalina no consume acciones`,
     );
   }
 
@@ -3241,11 +3240,11 @@ function usarAtaquePesado() {
 
   agregarLog(
     "activa",
-    `🔥 ${personajeSeleccionado.value.nombre} prepara un Ataque Pesado! (x2 daño)`
+    `🔥 ${personajeSeleccionado.value.nombre} prepara un Ataque Pesado! (x2 daño)`,
   );
   agregarLog(
     "sistema",
-    "⚔️ Selecciona un objetivo para atacar con el doble de daño"
+    "⚔️ Selecciona un objetivo para atacar con el doble de daño",
   );
 
   // Activar modo ataque normal (la lógica de x2 se maneja en realizarAtaque)
@@ -3274,7 +3273,7 @@ function usarApuntar() {
 
   agregarLog(
     "activa",
-    `🎯 ${personaje.nombre} usa Apuntar! El próximo ataque añade +${punteria} de daño`
+    `🎯 ${personaje.nombre} usa Apuntar! El próximo ataque añade +${punteria} de daño`,
   );
   agregarLog("sistema", "⚠️ Se cancela si te mueves");
 
@@ -3304,11 +3303,11 @@ function usarProcesar() {
 
   agregarLog(
     "activa",
-    `🧠 ${personaje.nombre} usa Procesar! La próxima acción mental de 1 acción es gratis`
+    `🧠 ${personaje.nombre} usa Procesar! La próxima acción mental de 1 acción es gratis`,
   );
   agregarLog(
     "sistema",
-    "💡 Se aplica solo a acciones mentales que costarían 1 acción"
+    "💡 Se aplica solo a acciones mentales que costarían 1 acción",
   );
 
   // No consume acciones
@@ -3328,7 +3327,7 @@ function calcularArmadura(personaje: PersonajeInstancia) {
   if (personaje.armaduras && personaje.armaduras.length > 0) {
     personaje.armaduras.forEach((armaduraId) => {
       const armadura = armadurasData.armaduras.find(
-        (a: any) => a.id === armaduraId
+        (a: any) => a.id === armaduraId,
       );
       if (armadura) {
         armaduraTotal.penetrante += armadura.penetrante || 0;

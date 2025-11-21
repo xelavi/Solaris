@@ -33,17 +33,21 @@ let tooltip: HTMLElement | null = null;
 // Parse selected nodes from prop
 const selectedNodeIds = ref<number[]>([]);
 
-watch(() => props.arbolData, (newData) => {
-  if (newData) {
-    try {
-      const parsed = JSON.parse(newData);
-      selectedNodeIds.value = parsed.map((node: any) => node.nodeId);
-      updateNodeVisuals();
-    } catch (error) {
-      console.error("Error parsing arbol data:", error);
+watch(
+  () => props.arbolData,
+  (newData) => {
+    if (newData) {
+      try {
+        const parsed = JSON.parse(newData);
+        selectedNodeIds.value = parsed.map((node: any) => node.nodeId);
+        updateNodeVisuals();
+      } catch (error) {
+        console.error("Error parsing arbol data:", error);
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true },
+);
 
 function init() {
   const el = box.value!;
@@ -58,7 +62,7 @@ function init() {
   el.appendChild(renderer.domElement);
 
   // Add mouse event listener only for tooltip
-  renderer.domElement.addEventListener('mousemove', onMouseMove);
+  renderer.domElement.addEventListener("mousemove", onMouseMove);
 
   // Scene
   scene = new THREE.Scene();
@@ -108,12 +112,12 @@ function init() {
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
-    
-    const spriteMaterial = new THREE.SpriteMaterial({ 
+
+    const spriteMaterial = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
       alphaTest: 0.05,
-      depthTest: false
+      depthTest: false,
     });
     const sprite = new THREE.Sprite(spriteMaterial);
     sprite.scale.set(16, 16, 1);
@@ -123,25 +127,31 @@ function init() {
 
   // Helper functions
   function getDiminutivo(atributoId: string | number, shape: string): string {
-    const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-    
+    const id =
+      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
     if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+      const atributo = atributosData.caracteristicasSecundarias.find(
+        (a) => a.id === id,
+      );
       return atributo?.diminutivo || "";
     } else {
-      const activa = activasData.activas.find(a => a.id === id);
-      return activa?.diminutivo || "";  
+      const activa = activasData.activas.find((a) => a.id === id);
+      return activa?.diminutivo || "";
     }
   }
 
   function getDescription(atributoId: string | number, shape: string): string {
-    const id = typeof atributoId === 'string' ? parseInt(atributoId) : atributoId;
-    
+    const id =
+      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
     if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(a => a.id === id);
+      const atributo = atributosData.caracteristicasSecundarias.find(
+        (a) => a.id === id,
+      );
       return atributo?.descripcion || "";
     } else {
-      const activa = activasData.activas.find(a => a.id === id);
+      const activa = activasData.activas.find((a) => a.id === id);
       return activa?.descripcion || "";
     }
   }
@@ -150,7 +160,7 @@ function init() {
   const rSmall = 8;
   const layerSizes = [3, 12, 24, 24];
   const layerRadii = [15, 45, 90, 135];
-  
+
   const layers: Array<{
     count: number;
     radius: number;
@@ -180,7 +190,7 @@ function init() {
   function createCurvedLine(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    isRadial = false
+    isRadial = false,
   ) {
     const points = [];
     const segments = 50;
@@ -209,7 +219,7 @@ function init() {
         const point = new THREE.Vector3(
           Math.cos(angle) * radius,
           -0.1,
-          Math.sin(angle) * radius
+          Math.sin(angle) * radius,
         );
         points.push(point);
       }
@@ -235,7 +245,7 @@ function init() {
 
     for (let i = 0; i < layer.count; i++) {
       const nodeData = layer.nodeData[i];
-      
+
       if (!nodeData) {
         layerPositions.push(new THREE.Vector3(0, 0, 0));
         continue;
@@ -245,16 +255,16 @@ function init() {
       const position = new THREE.Vector3(
         Math.cos(theta + Math.PI / 6) * layer.radius,
         0.1,
-        Math.sin(theta + Math.PI / 6) * layer.radius
+        Math.sin(theta + Math.PI / 6) * layer.radius,
       );
 
-      if(layer.shape && layer.shape[i] === "square") {
+      if (layer.shape && layer.shape[i] === "square") {
         const square = new THREE.Mesh(
           new THREE.BoxGeometry(rSmall * 2, 1, rSmall * 2),
           new THREE.MeshBasicMaterial({
-            color: 0x4A90E2,
+            color: 0x4a90e2,
             side: THREE.DoubleSide,
-          })
+          }),
         );
 
         square.position.copy(position);
@@ -267,18 +277,18 @@ function init() {
           nodeId: nodeData.id,
           skillName: skillName,
           description: description,
-          originalColor: 0x4A90E2,
+          originalColor: 0x4a90e2,
           selectedColor: 0x00ff00,
-          type: 'square',
+          type: "square",
           layer: layerIndex,
-          index: i
+          index: i,
         };
 
         scene.add(square);
         circles.push(square);
         clickables.push(square);
 
-        if(skillName) {
+        if (skillName) {
           const textSprite = createTextSprite(skillName, "#ffffff", 350);
           textSprite.position.copy(square.position);
           scene.add(textSprite);
@@ -287,9 +297,9 @@ function init() {
         const circle = new THREE.Mesh(
           new THREE.CircleGeometry(rSmall, 64),
           new THREE.MeshBasicMaterial({
-            color: 0x4A90E2,
+            color: 0x4a90e2,
             side: THREE.DoubleSide,
-          })
+          }),
         );
 
         circle.rotation.x = -Math.PI / 2;
@@ -303,18 +313,18 @@ function init() {
           nodeId: nodeData.id,
           skillName: skillName,
           description: description,
-          originalColor: 0x4A90E2,
+          originalColor: 0x4a90e2,
           selectedColor: 0x00ff00,
-          type: 'circle',
+          type: "circle",
           layer: layerIndex,
-          index: i
+          index: i,
         };
 
         scene.add(circle);
         circles.push(circle);
         clickables.push(circle);
 
-        if(skillName) {
+        if (skillName) {
           const textSprite = createTextSprite(skillName, "#ffffff", 350);
           textSprite.position.copy(circle.position);
           scene.add(textSprite);
@@ -326,12 +336,21 @@ function init() {
   });
 
   // Create connections
-  const nodeIdToPosition = new Map<number, { layer: number; position: number }>();
+  const nodeIdToPosition = new Map<
+    number,
+    { layer: number; position: number }
+  >();
   arbolData.arbol.nodos.forEach((nodo) => {
-    nodeIdToPosition.set(nodo.id, { layer: nodo.layer, position: nodo.posicion });
+    nodeIdToPosition.set(nodo.id, {
+      layer: nodo.layer,
+      position: nodo.posicion,
+    });
   });
 
-  function getCirclePosition(layerIndex: number, circleIndex: number): THREE.Vector3 | null {
+  function getCirclePosition(
+    layerIndex: number,
+    circleIndex: number,
+  ): THREE.Vector3 | null {
     if (layerIndex < 0 || layerIndex >= circlePositions.length) return null;
     const layer = circlePositions[layerIndex];
     if (!layer || circleIndex < 0 || circleIndex >= layer.length) return null;
@@ -345,7 +364,7 @@ function init() {
     if (origen && destino) {
       const startPos = getCirclePosition(origen.layer, origen.position);
       const endPos = getCirclePosition(destino.layer, destino.position);
-      
+
       if (startPos && endPos) {
         const isRadial = origen.layer !== destino.layer;
         const connection = createCurvedLine(startPos, endPos, isRadial);
@@ -360,10 +379,10 @@ function init() {
 }
 
 function updateNodeVisuals() {
-  circles.forEach(mesh => {
+  circles.forEach((mesh) => {
     const isSelected = selectedNodeIds.value.includes(mesh.userData.nodeId);
     (mesh.material as THREE.MeshBasicMaterial).color.setHex(
-      isSelected ? mesh.userData.selectedColor : mesh.userData.originalColor
+      isSelected ? mesh.userData.selectedColor : mesh.userData.originalColor,
     );
   });
 }
@@ -372,23 +391,23 @@ function onMouseMove(event: MouseEvent) {
   const rect = renderer!.domElement.getBoundingClientRect();
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  
+
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(clickables);
-  
+
   if (intersects.length > 0) {
     const object = intersects[0].object as THREE.Mesh;
     showTooltip(event, object);
-    renderer!.domElement.style.cursor = 'pointer';
+    renderer!.domElement.style.cursor = "pointer";
   } else {
     hideTooltip();
-    renderer!.domElement.style.cursor = 'default';
+    renderer!.domElement.style.cursor = "default";
   }
 }
 
 function showTooltip(event: MouseEvent, object: THREE.Mesh) {
   if (!tooltip) {
-    tooltip = document.createElement('div');
+    tooltip = document.createElement("div");
     tooltip.style.cssText = `
       position: fixed;
       background: rgba(0, 0, 0, 0.8);
@@ -403,21 +422,21 @@ function showTooltip(event: MouseEvent, object: THREE.Mesh) {
     `;
     document.body.appendChild(tooltip);
   }
-  
+
   tooltip.innerHTML = `
     <strong>${object.userData.skillName}</strong><br>
     <small>${object.userData.description}</small><br>
-    <em>Tipo: ${object.userData.type === 'circle' ? 'Pasiva' : 'Activa'}</em>
+    <em>Tipo: ${object.userData.type === "circle" ? "Pasiva" : "Activa"}</em>
   `;
-  
-  tooltip.style.left = event.clientX + 10 + 'px';
-  tooltip.style.top = event.clientY - 10 + 'px';
-  tooltip.style.display = 'block';
+
+  tooltip.style.left = event.clientX + 10 + "px";
+  tooltip.style.top = event.clientY - 10 + "px";
+  tooltip.style.display = "block";
 }
 
 function hideTooltip() {
   if (tooltip) {
-    tooltip.style.display = 'none';
+    tooltip.style.display = "none";
   }
 }
 
@@ -454,7 +473,7 @@ function dispose() {
   }
 
   if (renderer?.domElement) {
-    renderer.domElement.removeEventListener('mousemove', onMouseMove);
+    renderer.domElement.removeEventListener("mousemove", onMouseMove);
   }
 
   if (renderer) {
@@ -476,5 +495,4 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

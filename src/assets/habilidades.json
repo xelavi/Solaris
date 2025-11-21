@@ -66,13 +66,13 @@
       "descripcion": "Habilidad para provocar miedo a otros.",
       "atributo": "Mente"
     },
-       {
+    {
       "id": 12,
       "nombre": "Embaucar",
       "descripcion": "Conocimiento y habilidades para engañar o manipular a otros.",
       "atributo": "Mente"
     },
-    
+
     {
       "id": 13,
       "nombre": "Averiguar intenciones",
@@ -169,7 +169,7 @@
       "descripcion": "Habilidad para recolectar y procesar cualquier tipo de recursos obtenidos de animales.",
       "atributo": "Recoleccion"
     },
-     {
+    {
       "id": 29,
       "nombre": "Información",
       "descripcion": "Habilidad para recolectar y procesar información de diversas fuentes.",
@@ -181,18 +181,17 @@
       "descripcion": "Habilidad para resistir el esfuerzo físico y recuperarse rápidamente.",
       "atributo": "Cuerpo"
     },
-     {
+    {
       "id": 31,
       "nombre": "Naturaleza",
       "descripcion": "Habilidad para comprender y relacionarse con el entorno natural.",
       "atributo": "Mente"
-    },  
+    },
     {
       "id": 32,
       "nombre": "Orientación",
       "descripcion": "Conocimiento y habilidades para encontrar el camino y ubicarse en diferentes entornos.",
       "atributo": "Mente"
     }
-    
   ]
 }
