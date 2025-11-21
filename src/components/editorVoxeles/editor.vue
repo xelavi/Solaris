@@ -130,6 +130,59 @@
       </div>
     </div>
 
+    <!-- SCAFFOLDING CONTROLS - Bottom Center -->
+    <div
+      class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-3"
+    >
+      <div
+        class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border-2"
+        :class="
+          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'
+        "
+      >
+        <button
+          @click="adjustLevel(-1)"
+          class="w-10 h-10 rounded-lg font-bold text-xl transition-all"
+          :class="
+            darkMode
+              ? 'text-white hover:bg-gray-700'
+              : 'text-gray-700 hover:bg-gray-100'
+          "
+          title="Move Plane Down (PageDown)"
+        >
+          ⬇
+        </button>
+
+        <div class="px-4 text-center min-w-[100px]">
+          <div
+            class="text-xs font-bold opacity-50 uppercase tracking-wider"
+            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
+          >
+            Scaffold
+          </div>
+          <div
+            class="text-lg font-bold"
+            :class="darkMode ? 'text-white' : 'text-gray-900'"
+          >
+            Level {{ currentLevel }}
+          </div>
+        </div>
+
+        <button
+          @click="adjustLevel(1)"
+          class="w-10 h-10 rounded-lg font-bold text-xl transition-all"
+          :class="
+            darkMode
+              ? 'text-white hover:bg-gray-700'
+              : 'text-gray-700 hover:bg-gray-100'
+          "
+          title="Move Plane Up (PageUp)"
+        >
+          ⬆
+        </button>
+      </div>
+    </div>
+
     <!-- Material Properties Panel - Right Overlay -->
     <div
       class="absolute top-4 right-4 bottom-4 w-80 rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col"
@@ -417,7 +470,9 @@ export default {
   data() {
     return {
       darkMode: true,
-      showClearModal: false, // New Modal State
+      showClearModal: false,
+      // LEVEL STATE
+      currentLevel: 0,
       sectionsOpen: { currentMaterial: true, presets: false, palette: true },
       currentMaterial: {
         color: "#feb74c",
@@ -490,7 +545,6 @@ export default {
       this.scene.background = new THREE.Color(
         this.darkMode ? 0x1a1a1a : 0xf0f0f0
       );
-      // Low intensity env to keep non-emissive blocks below threshold
       this.scene.environmentIntensity = 0.3;
 
       this.sharedGeometry = new THREE.BoxGeometry(
@@ -547,7 +601,6 @@ export default {
         0.04
       ).texture;
 
-      // Directional Light: 0.5 (Moderate Sun)
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
       directionalLight.position.set(200, 400, 100);
       directionalLight.castShadow = true;
@@ -651,6 +704,23 @@ export default {
 
       if (this.composer) this.composer.render();
     },
+    // --- SCAFFOLDING / LEVEL LOGIC ---
+    adjustLevel(delta) {
+      this.currentLevel += delta;
+      const newY = this.currentLevel * this.voxelSize;
+
+      // Move the raycast plane
+      if (this.plane) {
+        this.plane.position.y = newY;
+        this.plane.updateMatrixWorld();
+      }
+
+      // Move the visual grid (with small offset)
+      if (this.infiniteGrid) {
+        this.infiniteGrid.position.y = newY + 0.1;
+      }
+    },
+    // --- HISTORY ---
     recordAction(action) {
       if (this.historyIndex < this.history.length - 1) {
         this.history = this.history.slice(0, this.historyIndex + 1);
@@ -767,6 +837,7 @@ export default {
     },
     onDocumentKeyDown(event) {
       if (event.keyCode === 16) this.isShiftDown = true;
+      // Undo/Redo
       if (
         (event.ctrlKey || event.metaKey) &&
         event.key.toLowerCase() === "z" &&
@@ -783,6 +854,10 @@ export default {
         event.preventDefault();
         this.redo();
       }
+
+      // Scaffold Shortcuts (PageUp/PageDown)
+      if (event.key === "PageUp") this.adjustLevel(1);
+      if (event.key === "PageDown") this.adjustLevel(-1);
     },
     onDocumentKeyUp(event) {
       if (event.keyCode === 16) this.isShiftDown = false;
@@ -876,6 +951,10 @@ export default {
       this.history = [];
       this.historyIndex = -1;
       this.usedMaterials = [];
+
+      // Reset Scaffolding level to 0
+      this.currentLevel = 0;
+      this.adjustLevel(0);
     },
     clearAll() {
       this.requestClear(); // Redirect old calls
