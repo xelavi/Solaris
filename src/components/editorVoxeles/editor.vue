@@ -3,10 +3,14 @@
     class="relative w-screen h-screen overflow-hidden"
     :class="darkMode ? 'bg-gray-900' : 'bg-gray-100'"
   >
-    <!-- Canvas (Full Viewport) -->
-    <div ref="canvasContainer" class="absolute inset-0"></div>
+    <!-- Canvas -->
+    <div
+      ref="canvasContainer"
+      class="absolute inset-0"
+      :class="{ 'cursor-crosshair': isAltDown }"
+    ></div>
 
-    <!-- Hidden Input for Import -->
+    <!-- Input Oculto para Importar -->
     <input
       type="file"
       ref="fileInput"
@@ -15,22 +19,23 @@
       @change="handleFileImport"
     />
 
-    <!-- CONFIRMATION MODAL -->
+    <!-- MODAL DE CONFIRMACIÓN -->
     <div
       v-if="showClearModal"
       class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
     >
       <div
-        class="p-6 rounded-xl shadow-2xl transform transition-all scale-100 max-w-sm w-full mx-4"
+        class="p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4"
         :class="
           darkMode
             ? 'bg-gray-800 border border-gray-700 text-white'
             : 'bg-white text-gray-900'
         "
       >
-        <h3 class="text-xl font-bold mb-2">Clear Scene?</h3>
+        <h3 class="text-xl font-bold mb-2">¿Borrar Escena?</h3>
         <p class="mb-6 opacity-80 text-sm">
-          This will remove all voxels. This action cannot be undone via history.
+          Esto eliminará todos los vóxeles. Esta acción no se puede deshacer
+          mediante el historial.
         </p>
         <div class="flex justify-end gap-3">
           <button
@@ -42,103 +47,215 @@
                 : 'bg-gray-200 hover:bg-gray-300'
             "
           >
-            Cancel
+            Cancelar
           </button>
           <button
             @click="confirmClear"
             class="px-4 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-500 shadow-lg transition-transform active:scale-95"
           >
-            Yes, Clear All
+            Sí, Borrar Todo
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Overlay Controls - Top Left -->
+    <!-- MODAL DE AYUDA -->
+    <div
+      v-if="showHelpModal"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+      @click.self="showHelpModal = false"
+    >
+      <div
+        class="p-6 rounded-xl shadow-2xl max-w-md w-full mx-4"
+        :class="
+          darkMode
+            ? 'bg-gray-800 border border-gray-700 text-white'
+            : 'bg-white text-gray-900'
+        "
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Atajos y Controles</h3>
+          <button
+            @click="showHelpModal = false"
+            class="text-2xl leading-none hover:text-red-500"
+          >
+            &times;
+          </button>
+        </div>
+        <ul class="space-y-2 text-sm opacity-80 font-mono">
+          <li class="flex justify-between">
+            <span>Pintar</span> <span>Clic Izquierdo</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Borrar</span> <span>Shift + Clic</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Rotar Cámara</span> <span>Clic Derecho / Arrastrar</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Mover Cámara</span> <span>Clic Central / Arrastrar</span>
+          </li>
+          <li class="flex justify-between text-blue-400 font-bold">
+            <span>Cuentagotas</span> <span>Alt + Clic</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Subir/Bajar Nivel</span> <span>RePág / AvPág</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Deshacer</span> <span>Ctrl + Z</span>
+          </li>
+          <li class="flex justify-between">
+            <span>Rehacer</span> <span>Ctrl + Y</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CONTROLES - ARRIBA IZQUIERDA -->
     <div class="absolute top-4 left-4 flex flex-col gap-2 z-10">
+      <!-- Acciones Principales -->
       <div class="flex gap-2">
         <button
           @click="darkMode = !darkMode"
-          class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg"
+          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
           :class="
             darkMode
               ? 'bg-gray-700 text-white hover:bg-gray-600'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           "
+          title="Cambiar Tema"
         >
           {{ darkMode ? "☀️" : "🌙" }}
         </button>
+
+        <button
+          @click="toggleCamera"
+          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
+          :class="
+            darkMode
+              ? 'bg-gray-700 text-white hover:bg-gray-600'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          "
+          title="Cámara (Perspectiva/Ortográfica)"
+        >
+          {{ isOrthographic ? "🎲" : "👁️" }}
+        </button>
+
+        <button
+          @click="toggleSymmetry"
+          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl border-2"
+          :class="[
+            darkMode
+              ? 'bg-gray-700 text-white hover:bg-gray-600'
+              : 'bg-white text-gray-700 hover:bg-gray-100',
+            symmetryMode
+              ? 'border-blue-500 text-blue-400'
+              : 'border-transparent',
+          ]"
+          title="Simetría en X"
+        >
+          🦋
+        </button>
+
+        <button
+          @click="takeScreenshot"
+          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
+          :class="
+            darkMode
+              ? 'bg-gray-700 text-white hover:bg-gray-600'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          "
+          title="Captura de Pantalla"
+        >
+          📷
+        </button>
+
+        <button
+          @click="showHelpModal = true"
+          class="w-10 h-10 flex items-center justify-center rounded-lg font-semibold shadow-lg text-xl"
+          :class="
+            darkMode
+              ? 'bg-gray-700 text-white hover:bg-gray-600'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          "
+          title="Ayuda"
+        >
+          ?
+        </button>
+      </div>
+
+      <!-- Archivo -->
+      <div class="flex gap-2">
         <button
           @click="triggerImport"
-          class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg"
+          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
           :class="
             darkMode
               ? 'bg-purple-600 text-white hover:bg-purple-500'
               : 'bg-purple-500 text-white hover:bg-purple-600'
           "
         >
-          📂 Load
+          📂 Abrir
         </button>
         <button
           @click="exportVoxels"
-          class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg"
+          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
           :class="
             darkMode
               ? 'bg-blue-600 text-white hover:bg-blue-500'
               : 'bg-blue-500 text-white hover:bg-blue-600'
           "
         >
-          💾 Save
+          💾 Guardar
         </button>
         <button
           @click="requestClear"
-          class="px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg"
+          class="px-4 py-2 rounded-lg font-semibold shadow-lg text-sm"
           :class="
             darkMode
               ? 'bg-red-600 text-white hover:bg-red-500'
               : 'bg-red-500 text-white hover:bg-red-600'
           "
         >
-          🗑️ Clear
+          🗑️ Borrar
         </button>
       </div>
+
+      <!-- Historial -->
       <div class="flex gap-2">
         <button
           @click="undo"
           :disabled="historyIndex < 0"
-          class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg disabled:opacity-50"
+          class="flex-1 px-4 py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 text-sm"
           :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+            darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-700'
           "
         >
-          ↩️ Undo
+          ↩️ Deshacer
         </button>
         <button
           @click="redo"
-          :disabled="historyIndex >= history.length - 1"
-          class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg disabled:opacity-50"
+          :disabled="historyIndex >= historyLength - 1"
+          class="flex-1 px-4 py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 text-sm"
           :class="
-            darkMode
-              ? 'bg-gray-700 text-white hover:bg-gray-600'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+            darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-700'
           "
         >
-          ↪️ Redo
+          ↪️ Rehacer
         </button>
       </div>
     </div>
 
-    <!-- SCAFFOLDING CONTROLS - Bottom Center -->
+    <!-- ANDAMIO / NIVELES -->
     <div
       class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-3"
     >
       <div
-        class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border-2"
-        :class="
-          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'
-        "
+        class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border-2 transition-opacity duration-200"
+        :class="[
+          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300',
+          screenshotMode ? 'opacity-0' : 'opacity-100',
+        ]"
       >
         <button
           @click="adjustLevel(-1)"
@@ -148,26 +265,24 @@
               ? 'text-white hover:bg-gray-700'
               : 'text-gray-700 hover:bg-gray-100'
           "
-          title="Move Plane Down (PageDown)"
+          title="Bajar Nivel"
         >
           ⬇
         </button>
-
         <div class="px-4 text-center min-w-[100px]">
           <div
             class="text-xs font-bold opacity-50 uppercase tracking-wider"
             :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
           >
-            Scaffold
+            Andamio
           </div>
           <div
             class="text-lg font-bold"
             :class="darkMode ? 'text-white' : 'text-gray-900'"
           >
-            Level {{ currentLevel }}
+            Nivel {{ currentLevel }}
           </div>
         </div>
-
         <button
           @click="adjustLevel(1)"
           class="w-10 h-10 rounded-lg font-bold text-xl transition-all"
@@ -176,33 +291,41 @@
               ? 'text-white hover:bg-gray-700'
               : 'text-gray-700 hover:bg-gray-100'
           "
-          title="Move Plane Up (PageUp)"
+          title="Subir Nivel"
         >
           ⬆
         </button>
       </div>
     </div>
 
-    <!-- Material Properties Panel - Right Overlay -->
+    <!-- PANEL DE PROPIEDADES (DERECHA) -->
     <div
-      class="absolute top-4 right-4 bottom-4 w-80 rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col"
-      :class="
+      class="absolute top-4 right-4 bottom-4 w-80 rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col transition-opacity duration-200"
+      :class="[
         darkMode
           ? 'bg-gray-800 border-2 border-gray-700'
-          : 'bg-white border-2 border-gray-300'
-      "
+          : 'bg-white border-2 border-gray-300',
+        screenshotMode ? 'opacity-0' : 'opacity-100',
+      ]"
     >
       <div
         class="px-4 py-3 flex-shrink-0"
         :class="darkMode ? 'bg-gray-700' : 'bg-blue-500'"
       >
-        <h3 class="font-bold text-lg text-white">🎨 Voxel Painter</h3>
+        <h3 class="font-bold text-lg text-white">🎨 Editor Vóxel</h3>
         <p class="text-xs text-white opacity-75 mt-1">
-          <strong>Click</strong>: add • <strong>Shift</strong>: remove
+          <span v-if="isAltDown" class="text-yellow-300 font-bold animate-pulse"
+            >CUENTAGOTAS ACTIVO</span
+          >
+          <span v-else
+            ><strong>Clic</strong>: pintar • <strong>Shift</strong>:
+            borrar</span
+          >
         </p>
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        <!-- MATERIAL ACTUAL -->
         <div
           class="rounded-lg border"
           :class="
@@ -218,124 +341,144 @@
             class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
             :class="darkMode ? 'text-white' : 'text-gray-700'"
           >
-            <span>Current Material</span>
+            <span>Material Actual</span>
             <span>{{ sectionsOpen.currentMaterial ? "▼" : "▶" }}</span>
           </button>
           <div v-if="sectionsOpen.currentMaterial" class="px-3 pb-3 space-y-2">
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Color</label
-              >
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  v-model="currentMaterial.color"
-                  class="w-10 h-10 rounded border-2 cursor-pointer"
-                  :class="darkMode ? 'border-gray-600' : 'border-gray-300'"
+            <!-- Previsualización 3D -->
+            <div class="flex gap-3 mb-3">
+              <!-- Icono sin borde -->
+              <div class="w-16 h-16 relative">
+                <img
+                  v-if="currentMaterialPreview"
+                  :src="currentMaterialPreview"
+                  class="w-full h-full object-contain drop-shadow-xl"
                 />
+              </div>
+              <div class="flex-1 flex flex-col justify-center gap-2">
+                <!-- Color Picker + HEX Input Restaurado -->
+                <div class="flex items-center gap-2">
+                  <label
+                    class="text-[10px] font-bold uppercase w-14 opacity-70"
+                    :class="darkMode ? 'text-white' : 'text-black'"
+                    >Color</label
+                  >
+                  <input
+                    type="color"
+                    v-model="currentMaterial.color"
+                    class="w-6 h-6 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    v-model="currentMaterial.color"
+                    class="w-16 px-1 text-[10px] rounded border font-mono h-6 uppercase"
+                    :class="
+                      darkMode
+                        ? 'bg-gray-800 text-white border-gray-600'
+                        : 'bg-white text-black border-gray-300'
+                    "
+                  />
+                </div>
+                <!-- Emissive Picker -->
+                <div class="flex items-center gap-2">
+                  <label
+                    class="text-[10px] font-bold uppercase w-14 opacity-70"
+                    :class="darkMode ? 'text-white' : 'text-black'"
+                    >Luz</label
+                  >
+                  <input
+                    type="color"
+                    v-model="currentMaterial.emissive"
+                    class="w-6 h-6 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    v-model="currentMaterial.emissive"
+                    class="w-16 px-1 text-[10px] rounded border font-mono h-6 uppercase"
+                    :class="
+                      darkMode
+                        ? 'bg-gray-800 text-white border-gray-600'
+                        : 'bg-white text-black border-gray-300'
+                    "
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+              <div>
+                <label
+                  class="text-[10px] font-bold uppercase opacity-70"
+                  :class="darkMode ? 'text-white' : 'text-black'"
+                  >Opacidad</label
+                >
                 <input
-                  type="text"
-                  v-model="currentMaterial.color"
-                  class="flex-1 px-2 py-1 text-xs rounded border focus:outline-none font-mono"
-                  :class="
-                    darkMode
-                      ? 'bg-gray-800 border-gray-600 text-white focus:border-blue-500'
-                      : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
-                  "
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  v-model.number="currentMaterial.opacity"
+                  class="w-full"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-[10px] font-bold uppercase opacity-70"
+                  :class="darkMode ? 'text-white' : 'text-black'"
+                  >Emisión</label
+                >
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  v-model.number="currentMaterial.emissiveIntensity"
+                  class="w-full"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-[10px] font-bold uppercase opacity-70"
+                  :class="darkMode ? 'text-white' : 'text-black'"
+                  >Metal</label
+                >
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  v-model.number="currentMaterial.metalness"
+                  class="w-full"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-[10px] font-bold uppercase opacity-70"
+                  :class="darkMode ? 'text-white' : 'text-black'"
+                  >Rugosidad</label
+                >
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  v-model.number="currentMaterial.roughness"
+                  class="w-full"
                 />
               </div>
             </div>
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Opacity: {{ currentMaterial.opacity.toFixed(2) }}</label
-              >
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                v-model.number="currentMaterial.opacity"
-                class="w-full"
-              />
-            </div>
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Emissive</label
-              >
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  v-model="currentMaterial.emissive"
-                  class="w-10 h-10 rounded border-2 cursor-pointer"
-                  :class="darkMode ? 'border-gray-600' : 'border-gray-300'"
-                />
-                <input
-                  type="text"
-                  v-model="currentMaterial.emissive"
-                  class="flex-1 px-2 py-1 text-xs rounded border focus:outline-none font-mono"
-                  :class="
-                    darkMode
-                      ? 'bg-gray-800 border-gray-600 text-white focus:border-blue-500'
-                      : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
-                  "
-                />
-              </div>
-            </div>
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Intensity:
-                {{ currentMaterial.emissiveIntensity.toFixed(2) }}</label
-              >
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.1"
-                v-model.number="currentMaterial.emissiveIntensity"
-                class="w-full"
-              />
-            </div>
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Metalness: {{ currentMaterial.metalness.toFixed(2) }}</label
-              >
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                v-model.number="currentMaterial.metalness"
-                class="w-full"
-              />
-            </div>
-            <div>
-              <label
-                class="text-xs font-semibold block mb-1"
-                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
-                >Roughness: {{ currentMaterial.roughness.toFixed(2) }}</label
-              >
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                v-model.number="currentMaterial.roughness"
-                class="w-full"
-              />
-            </div>
+
+            <button
+              @click="addToBrushPalette"
+              class="w-full mt-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded transition-colors"
+            >
+              + Añadir al Pincel
+            </button>
           </div>
         </div>
 
+        <!-- AJUSTES DE PINCEL -->
         <div
           class="rounded-lg border"
           :class="
@@ -345,55 +488,210 @@
           "
         >
           <button
-            @click="sectionsOpen.presets = !sectionsOpen.presets"
+            @click="sectionsOpen.brush = !sectionsOpen.brush"
             class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
             :class="darkMode ? 'text-white' : 'text-gray-700'"
           >
-            <span>Quick Presets</span>
-            <span>{{ sectionsOpen.presets ? "▼" : "▶" }}</span>
+            <span>Pincel</span>
+            <span>{{ sectionsOpen.brush ? "▼" : "▶" }}</span>
           </button>
-          <div v-if="sectionsOpen.presets" class="px-3 pb-3">
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                @click="setPreset('default')"
-                class="px-2 py-2 bg-orange-400 text-white rounded-lg text-xs font-semibold hover:bg-orange-500"
+          <div v-if="sectionsOpen.brush" class="px-3 pb-3 space-y-3">
+            <!-- Selector de Forma -->
+            <div>
+              <label
+                class="text-xs font-bold block mb-1"
+                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
+                >Forma</label
               >
-                Default
-              </button>
-              <button
-                @click="setPreset('metal')"
-                class="px-2 py-2 bg-gray-400 text-white rounded-lg text-xs font-semibold hover:bg-gray-500"
+              <div class="grid grid-cols-2 gap-1">
+                <button
+                  v-for="(label, s) in {
+                    cube: 'Cubo',
+                    sphere: 'Esfera',
+                    square: 'Cuadrado',
+                    circle: 'Círculo',
+                  }"
+                  :key="s"
+                  @click="brush.shape = s"
+                  class="px-2 py-1 text-xs rounded capitalize border"
+                  :class="
+                    brush.shape === s
+                      ? 'bg-blue-500 text-white border-blue-600'
+                      : darkMode
+                        ? 'bg-gray-800 border-gray-600 text-gray-300'
+                        : 'bg-white border-gray-300 text-gray-700'
+                  "
+                >
+                  {{ label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Tamaño -->
+            <div>
+              <label
+                class="text-xs font-bold block mb-1"
+                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
               >
-                Metal
-              </button>
-              <button
-                @click="setPreset('glow')"
-                class="px-2 py-2 bg-green-400 text-white rounded-lg text-xs font-semibold hover:bg-green-500"
+                Radio: {{ brush.size }}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                step="1"
+                v-model.number="brush.size"
+                class="w-full"
+              />
+            </div>
+
+            <!-- Orientación (Solo pinceles 2D) -->
+            <div v-if="brush.shape === 'square' || brush.shape === 'circle'">
+              <label
+                class="text-xs font-bold block mb-1"
+                :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
+                >Eje / Orientación</label
               >
-                Glow
-              </button>
-              <button
-                @click="setPreset('wood')"
-                class="px-2 py-2 bg-amber-700 text-white rounded-lg text-xs font-semibold hover:bg-amber-800"
+              <div class="flex gap-1">
+                <button
+                  v-for="axis in ['x', 'y', 'z']"
+                  :key="axis"
+                  @click="brush.axis = axis"
+                  class="flex-1 px-2 py-1 text-xs rounded uppercase border"
+                  :class="
+                    brush.axis === axis
+                      ? 'bg-green-500 text-white border-green-600'
+                      : darkMode
+                        ? 'bg-gray-800 border-gray-600 text-gray-300'
+                        : 'bg-white border-gray-300 text-gray-700'
+                  "
+                >
+                  {{ axis }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Paleta de Mezcla -->
+            <div>
+              <div class="flex justify-between items-end mb-1">
+                <label
+                  class="text-xs font-bold"
+                  :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
+                  >Mezclar Materiales</label
+                >
+                <button
+                  @click="brushPalette = []"
+                  v-if="brushPalette.length > 0"
+                  class="text-[10px] text-red-400 hover:text-red-300"
+                >
+                  Limpiar
+                </button>
+              </div>
+
+              <div
+                v-if="brushPalette.length === 0"
+                class="text-[10px] italic opacity-60 mb-2"
+                :class="darkMode ? 'text-white' : 'text-black'"
               >
-                Wood
-              </button>
+                Vacío: Usando solo Material Actual.
+              </div>
+
+              <div class="space-y-2 max-h-32 overflow-y-auto pr-1">
+                <div
+                  v-for="(item, idx) in brushPalette"
+                  :key="idx"
+                  class="flex items-center gap-2 bg-black bg-opacity-10 p-1 rounded"
+                >
+                  <!-- Icono Flotante -->
+                  <div class="w-6 h-6 relative">
+                    <img
+                      v-if="item.preview"
+                      :src="item.preview"
+                      class="w-full h-full object-contain drop-shadow-sm"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full rounded"
+                      :style="{ backgroundColor: item.mat.color }"
+                    ></div>
+                  </div>
+                  <!-- Slider Peso -->
+                  <div class="flex-1">
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      v-model.number="item.weight"
+                      class="w-full h-1 bg-gray-500 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  <div
+                    class="text-[10px] font-mono w-6 text-right"
+                    :class="darkMode ? 'text-gray-300' : 'text-gray-700'"
+                  >
+                    {{ item.weight }}
+                  </div>
+                  <button
+                    @click="brushPalette.splice(idx, 1)"
+                    class="text-red-500 font-bold px-1"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORIAL DE MATERIALES -->
+        <div
+          class="rounded-lg border"
+          :class="
+            darkMode
+              ? 'bg-gray-700 border-gray-600'
+              : 'bg-gray-50 border-gray-300'
+          "
+        >
+          <button
+            @click="sectionsOpen.palette = !sectionsOpen.palette"
+            class="w-full px-3 py-2 flex items-center justify-between font-semibold text-sm"
+            :class="darkMode ? 'text-white' : 'text-gray-700'"
+          >
+            <span>Historial ({{ usedMaterials.length }})</span>
+            <span>{{ sectionsOpen.palette ? "▼" : "▶" }}</span>
+          </button>
+          <div v-if="sectionsOpen.palette" class="px-3 pb-3">
+            <div
+              v-if="usedMaterials.length === 0"
+              class="text-xs text-center py-3 opacity-50"
+            >
+              Sin materiales aún
+            </div>
+            <div v-else class="grid grid-cols-5 gap-1">
+              <!-- Botón Historial -->
               <button
-                @click="setPreset('glass')"
-                class="px-2 py-2 bg-cyan-400 text-white rounded-lg text-xs font-semibold hover:bg-cyan-500"
+                v-for="(mat, index) in usedMaterials"
+                :key="index"
+                @click="loadMaterial(mat)"
+                class="w-10 h-10 transition-transform hover:scale-110 relative group"
+                :title="`Color: ${mat.color}`"
               >
-                Glass
-              </button>
-              <button
-                @click="setPreset('plastic')"
-                class="px-2 py-2 bg-pink-400 text-white rounded-lg text-xs font-semibold hover:bg-pink-500"
-              >
-                Plastic
+                <img
+                  v-if="mat.preview"
+                  :src="mat.preview"
+                  class="w-full h-full object-contain drop-shadow-md"
+                />
+                <div
+                  v-else
+                  class="w-full h-full rounded"
+                  :style="{ backgroundColor: mat.color }"
+                ></div>
               </button>
             </div>
           </div>
         </div>
 
+        <!-- CONTADOR -->
         <div
           class="rounded-lg border px-3 py-2 text-center"
           :class="
@@ -402,8 +700,8 @@
               : 'bg-gray-50 border-gray-300 text-gray-700'
           "
         >
-          <div class="text-xs font-semibold">Total Voxels</div>
-          <div class="text-2xl font-bold">{{ voxelData.length }}</div>
+          <div class="text-xs font-semibold">Bloques Totales</div>
+          <div class="text-2xl font-bold">{{ voxelCount }}</div>
         </div>
       </div>
     </div>
@@ -411,69 +709,35 @@
 </template>
 
 <script>
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
-import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { PMREMGenerator } from "three";
+// Asegúrate de que VoxelEngine.ts está en la misma carpeta
+import { VoxelEngine } from "./voxelEngine";
 import { toRaw } from "vue";
-
-// CUSTOM SHADER FOR INFINITE GRID
-const GridShader = {
-  vertexShader: `
-    varying vec3 vWorldPosition;
-    void main() {
-      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-      vWorldPosition = worldPosition.xyz;
-      gl_Position = projectionMatrix * viewMatrix * worldPosition;
-    }
-  `,
-  fragmentShader: `
-    varying vec3 vWorldPosition;
-    uniform vec3 uColor;
-    uniform float uSize;
-    uniform vec3 uCursorPos;
-
-    float getGrid(float size) {
-        vec2 r = vWorldPosition.xz / size;
-        vec2 grid = abs(fract(r - 0.5) - 0.5) / fwidth(r);
-        float line = min(grid.x, grid.y);
-        return 1.0 - min(line, 1.0);
-    }
-
-    void main() {
-        float grid = getGrid(uSize);
-        
-        float distOrigin = distance(vWorldPosition.xz, vec2(0.0));
-        float alphaOrigin = 1.0 - smoothstep(400.0, 1000.0, distOrigin);
-
-        float distCursor = distance(vWorldPosition.xz, uCursorPos.xz);
-        float alphaCursor = 1.0 - smoothstep(200.0, 400.0, distCursor);
-
-        float combinedAlpha = max(alphaOrigin * 0.5, alphaCursor); 
-        combinedAlpha *= grid;
-
-        if (combinedAlpha <= 0.0) discard;
-
-        gl_FragColor = vec4(uColor, combinedAlpha);
-    }
-  `,
-};
 
 export default {
   name: "VoxelPainter",
   data() {
     return {
+      // Estado UI
       darkMode: true,
       showClearModal: false,
-      // LEVEL STATE
+      showHelpModal: false,
+      screenshotMode: false,
+
+      // Flags de Teclado/Estado
+      isAltDown: false,
+      isOrthographic: false,
+      symmetryMode: false,
+
+      // Sincronización con Motor
       currentLevel: 0,
-      sectionsOpen: { currentMaterial: true, presets: false, palette: true },
+      voxelCount: 0,
+      historyIndex: -1,
+      historyLength: 0,
+
+      // Datos
+      sectionsOpen: { currentMaterial: true, brush: true, palette: true },
+      brush: { shape: "cube", size: 0, axis: "y" },
+      brushPalette: [],
       currentMaterial: {
         color: "#feb74c",
         emissive: "#000000",
@@ -483,430 +747,192 @@ export default {
         opacity: 1,
         transparent: false,
       },
+      currentMaterialPreview: null,
       usedMaterials: [],
-      voxelData: [],
-      historyIndex: -1,
     };
   },
-  created() {
-    this.history = [];
-    this.camera = null;
-    this.scene = null;
-    this.renderer = null;
-    this.composer = null;
-    this.controls = null;
-    this.plane = null;
-    this.infiniteGrid = null;
-    this.pointer = null;
-    this.raycaster = null;
-    this.rollOverMesh = null;
-    this.rollOverMaterial = null;
-    this.sharedGeometry = null;
-    this.objects = [];
-    this.isShiftDown = false;
-    this.voxelSize = 25;
-  },
-  watch: {
-    darkMode(newVal) {
-      if (this.scene) {
-        this.scene.background = new THREE.Color(newVal ? 0x1a1a1a : 0xf0f0f0);
-      }
-    },
-  },
   mounted() {
-    this.$nextTick(() => {
-      this.init();
-      this.animate();
+    // Inicializar Motor
+    // Usamos $refs para pasar el contenedor del DOM
+    this.engine = new VoxelEngine(this.$refs.canvasContainer, {
+      onVoxelCountChange: (count) => {
+        this.voxelCount = count;
+      },
+      onHistoryChange: (idx, len) => {
+        this.historyIndex = idx;
+        this.historyLength = len; // Actualizamos la variable Vue
+      },
+      onMaterialPick: (mat) => {
+        this.loadMaterial(mat);
+      },
+      onActionRecord: () => {
+        this.addToMaterialPalette(this.currentMaterial);
+      },
     });
+
+    // Sincronizar estado inicial
+    this.updateEngineSettings();
+    this.updatePreview();
+
+    // Listeners globales
+    window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keyup", this.onKeyUp);
   },
   beforeUnmount() {
-    if (this.controls) this.controls.dispose();
-    if (this.renderer && this.$refs.canvasContainer) {
-      this.$refs.canvasContainer.removeChild(this.renderer.domElement);
-      this.renderer.dispose();
-    }
-    if (this.sharedGeometry) this.sharedGeometry.dispose();
-    window.removeEventListener("resize", this.onWindowResize);
-    document.removeEventListener("keydown", this.onDocumentKeyDown);
-    document.removeEventListener("keyup", this.onDocumentKeyUp);
+    if (this.engine) this.engine.dispose(); // Limpieza memoria
+    window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("keyup", this.onKeyUp);
+  },
+  watch: {
+    darkMode(val) {
+      if (this.engine) this.engine.setDarkMode(val);
+    },
+    currentMaterial: {
+      handler() {
+        this.updateEngineSettings();
+        this.updatePreview();
+      },
+      deep: true,
+    },
+    brush: {
+      handler() {
+        this.updateEngineSettings();
+      },
+      deep: true,
+    },
+    brushPalette: {
+      handler() {
+        this.updateEngineSettings();
+      },
+      deep: true,
+    },
   },
   methods: {
-    init() {
-      this.camera = new THREE.PerspectiveCamera(
-        45,
-        window.innerWidth / window.innerHeight,
-        1,
-        10000
-      );
-      this.camera.position.set(500, 800, 1300);
-      this.camera.lookAt(0, 0, 0);
-
-      this.scene = new THREE.Scene();
-      this.scene.background = new THREE.Color(
-        this.darkMode ? 0x1a1a1a : 0xf0f0f0
-      );
-      this.scene.environmentIntensity = 0.3;
-
-      this.sharedGeometry = new THREE.BoxGeometry(
-        this.voxelSize,
-        this.voxelSize,
-        this.voxelSize
-      );
-
-      this.rollOverMaterial = new THREE.MeshBasicMaterial({
-        color: 0xff0000,
-        opacity: 0.5,
-        transparent: true,
-      });
-      this.rollOverMesh = new THREE.Mesh(
-        this.sharedGeometry,
-        this.rollOverMaterial
-      );
-      this.scene.add(this.rollOverMesh);
-
-      this.createInfiniteGrid();
-
-      this.raycaster = new THREE.Raycaster();
-      this.pointer = new THREE.Vector2();
-
-      const geometry = new THREE.PlaneGeometry(50000, 50000);
-      geometry.rotateX(-Math.PI / 2);
-      this.plane = new THREE.Mesh(
-        geometry,
-        new THREE.MeshBasicMaterial({ visible: false })
-      );
-      this.plane.receiveShadow = true;
-      this.scene.add(this.plane);
-      this.objects.push(this.plane);
-
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.toneMapping = THREE.NoToneMapping;
-      this.renderer.toneMappingExposure = 0.8;
-
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-      if (this.$refs.canvasContainer.firstChild) {
-        this.$refs.canvasContainer.removeChild(
-          this.$refs.canvasContainer.firstChild
+    updateEngineSettings() {
+      if (this.engine)
+        this.engine.updateSettings(
+          toRaw(this.currentMaterial),
+          toRaw(this.brush),
+          toRaw(this.brushPalette)
         );
-      }
-      this.$refs.canvasContainer.appendChild(this.renderer.domElement);
-
-      const pmremGenerator = new PMREMGenerator(this.renderer);
-      this.scene.environment = pmremGenerator.fromScene(
-        new RoomEnvironment(),
-        0.04
-      ).texture;
-
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-      directionalLight.position.set(200, 400, 100);
-      directionalLight.castShadow = true;
-      directionalLight.shadow.mapSize.width = 2048;
-      directionalLight.shadow.mapSize.height = 2048;
-      const d = 1000;
-      directionalLight.shadow.camera.left = -d;
-      directionalLight.shadow.camera.right = d;
-      directionalLight.shadow.camera.top = d;
-      directionalLight.shadow.camera.bottom = -d;
-      directionalLight.shadow.bias = -0.0005;
-      this.scene.add(directionalLight);
-
-      const renderTarget = new THREE.WebGLRenderTarget(
-        window.innerWidth,
-        window.innerHeight,
-        {
-          type: THREE.HalfFloatType,
-          format: THREE.RGBAFormat,
-          encoding: THREE.sRGBEncoding,
-        }
-      );
-
-      this.composer = new EffectComposer(this.renderer, renderTarget);
-      this.composer.addPass(new RenderPass(this.scene, this.camera));
-
-      this.composer.addPass(
-        new UnrealBloomPass(
-          new THREE.Vector2(window.innerWidth, window.innerHeight),
-          0.2,
-          0.75,
-          0.4
-        )
-      );
-
-      this.composer.addPass(new OutputPass());
-
-      const fxaaPass = new ShaderPass(FXAAShader);
-      const pixelRatio = this.renderer.getPixelRatio();
-      fxaaPass.material.uniforms["resolution"].value.x =
-        1 / (window.innerWidth * pixelRatio);
-      fxaaPass.material.uniforms["resolution"].value.y =
-        1 / (window.innerHeight * pixelRatio);
-      this.composer.addPass(fxaaPass);
-
-      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-      this.controls.enableDamping = true;
-      this.controls.dampingFactor = 0.05;
-      this.controls.mouseButtons = {
-        LEFT: null,
-        MIDDLE: THREE.MOUSE.PAN,
-        RIGHT: THREE.MOUSE.ROTATE,
-      };
-
-      this.renderer.domElement.addEventListener(
-        "pointermove",
-        this.onPointerMove
-      );
-      this.renderer.domElement.addEventListener(
-        "pointerdown",
-        this.onPointerDown
-      );
-      this.renderer.domElement.addEventListener("contextmenu", (e) =>
-        e.preventDefault()
-      );
-      document.addEventListener("keydown", this.onDocumentKeyDown);
-      document.addEventListener("keyup", this.onDocumentKeyUp);
-      window.addEventListener("resize", this.onWindowResize);
     },
-    createInfiniteGrid() {
-      const geometry = new THREE.PlaneGeometry(50000, 50000);
-
-      const material = new THREE.ShaderMaterial({
-        uniforms: {
-          uSize: { value: 25.0 },
-          uColor: { value: new THREE.Color(0x888888) },
-          uCursorPos: { value: new THREE.Vector3(0, 0, 0) },
-        },
-        vertexShader: GridShader.vertexShader,
-        fragmentShader: GridShader.fragmentShader,
-        transparent: true,
-        depthWrite: false,
-        extensions: { derivatives: true },
-      });
-
-      this.infiniteGrid = new THREE.Mesh(geometry, material);
-      this.infiniteGrid.rotation.x = -Math.PI / 2;
-      this.infiniteGrid.position.y = 0.1;
-      this.scene.add(this.infiniteGrid);
-    },
-    animate() {
-      if (!this.renderer) return;
-      requestAnimationFrame(this.animate);
-      if (this.controls) this.controls.update();
-
-      if (this.infiniteGrid && this.rollOverMesh) {
-        this.infiniteGrid.material.uniforms.uCursorPos.value.copy(
-          this.rollOverMesh.position
+    updatePreview() {
+      if (this.engine)
+        this.currentMaterialPreview = this.engine.generateMaterialThumbnail(
+          toRaw(this.currentMaterial)
         );
+    },
+    onKeyDown(e) {
+      if (e.key === "Shift") this.engine.setModifiers(true, this.isAltDown);
+      if (e.key === "Alt") {
+        this.isAltDown = true;
+        this.engine.setModifiers(this.engine.isShiftDown, true);
       }
 
-      if (this.composer) this.composer.render();
-    },
-    // --- SCAFFOLDING / LEVEL LOGIC ---
-    adjustLevel(delta) {
-      this.currentLevel += delta;
-      const newY = this.currentLevel * this.voxelSize;
-
-      // Move the raycast plane
-      if (this.plane) {
-        this.plane.position.y = newY;
-        this.plane.updateMatrixWorld();
-      }
-
-      // Move the visual grid (with small offset)
-      if (this.infiniteGrid) {
-        this.infiniteGrid.position.y = newY + 0.1;
-      }
-    },
-    // --- HISTORY ---
-    recordAction(action) {
-      if (this.historyIndex < this.history.length - 1) {
-        this.history = this.history.slice(0, this.historyIndex + 1);
-      }
-      this.history.push(action);
-      this.historyIndex++;
-      if (this.history.length > 500) {
-        this.history.shift();
-        this.historyIndex--;
-      }
-    },
-    undo() {
-      if (this.historyIndex < 0) return;
-      const action = this.history[this.historyIndex];
-      if (action.type === "add") {
-        this.removeVoxel(action.mesh, action.data, false);
-      } else if (action.type === "remove") {
-        this.addVoxel(action.data, false);
-        action.mesh = this.objects[this.objects.length - 1];
-      }
-      this.historyIndex--;
-    },
-    redo() {
-      if (this.historyIndex >= this.history.length - 1) return;
-      this.historyIndex++;
-      const action = this.history[this.historyIndex];
-      if (action.type === "add") {
-        this.addVoxel(action.data, false);
-        action.mesh = this.objects[this.objects.length - 1];
-      } else if (action.type === "remove") {
-        this.removeVoxel(action.mesh, action.data, false);
-      }
-    },
-    addVoxel(data, record = true) {
-      const transparent = data.opacity < 1;
-      const cubeMaterial = new THREE.MeshStandardMaterial({
-        color: data.color,
-        emissive: data.emissive,
-        metalness: data.metalness,
-        roughness: data.roughness,
-        emissiveIntensity: data.emissiveIntensity,
-        opacity: data.opacity,
-        transparent: transparent,
-      });
-      const voxel = new THREE.Mesh(this.sharedGeometry, cubeMaterial);
-      voxel.position.set(data.x, data.y, data.z);
-      voxel.castShadow = true;
-      voxel.receiveShadow = true;
-      this.scene.add(voxel);
-      this.objects.push(voxel);
-      this.voxelData.push(data);
-      if (record) this.recordAction({ type: "add", data: data, mesh: voxel });
-    },
-    removeVoxel(mesh, data, record = true) {
-      if (!mesh) {
-        mesh = this.objects.find(
-          (obj) =>
-            obj.position.x === data.x &&
-            obj.position.y === data.y &&
-            obj.position.z === data.z &&
-            obj !== this.plane
-        );
-        if (!mesh) return;
-      }
-      this.scene.remove(mesh);
-      const objIndex = this.objects.indexOf(mesh);
-      if (objIndex > -1) this.objects.splice(objIndex, 1);
-      const dataIndex = this.voxelData.findIndex(
-        (v) => v.x === data.x && v.y === data.y && v.z === data.z
-      );
-      if (dataIndex !== -1) this.voxelData.splice(dataIndex, 1);
-      if (mesh.material) mesh.material.dispose();
-      if (record) this.recordAction({ type: "remove", data: data, mesh: mesh });
-    },
-    onPointerDown(event) {
-      if (event.button !== 0) return;
-      this.pointer.set(
-        (event.clientX / window.innerWidth) * 2 - 1,
-        -(event.clientY / window.innerHeight) * 2 + 1
-      );
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.objects, false);
-      if (intersects.length > 0) {
-        const intersect = intersects[0];
-        if (this.isShiftDown) {
-          if (intersect.object !== this.plane) {
-            const pos = intersect.object.position;
-            const data = { x: pos.x, y: pos.y, z: pos.z };
-            this.removeVoxel(intersect.object, data, true);
-          }
-        } else {
-          const pos = new THREE.Vector3()
-            .copy(intersect.point)
-            .add(intersect.face.normal);
-          pos
-            .divideScalar(this.voxelSize)
-            .floor()
-            .multiplyScalar(this.voxelSize)
-            .addScalar(this.voxelSize / 2);
-          const existing = this.voxelData.find(
-            (v) => v.x === pos.x && v.y === pos.y && v.z === pos.z
-          );
-          if (existing) return;
-          const data = {
-            x: pos.x,
-            y: pos.y,
-            z: pos.z,
-            ...toRaw(this.currentMaterial),
-          };
-          this.addVoxel(data, true);
-          this.addToMaterialPalette(this.currentMaterial);
-        }
-      }
-    },
-    onDocumentKeyDown(event) {
-      if (event.keyCode === 16) this.isShiftDown = true;
-      // Undo/Redo
+      // Deshacer/Rehacer
       if (
-        (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === "z" &&
-        !event.shiftKey
+        (e.ctrlKey || e.metaKey) &&
+        e.key.toLowerCase() === "z" &&
+        !e.shiftKey
       ) {
-        event.preventDefault();
+        e.preventDefault();
         this.undo();
       }
       if (
-        (event.ctrlKey || event.metaKey) &&
-        (event.key.toLowerCase() === "y" ||
-          (event.shiftKey && event.key.toLowerCase() === "z"))
+        (e.ctrlKey || e.metaKey) &&
+        (e.key.toLowerCase() === "y" ||
+          (e.shiftKey && e.key.toLowerCase() === "z"))
       ) {
-        event.preventDefault();
+        e.preventDefault();
         this.redo();
       }
 
-      // Scaffold Shortcuts (PageUp/PageDown)
-      if (event.key === "PageUp") this.adjustLevel(1);
-      if (event.key === "PageDown") this.adjustLevel(-1);
+      // Andamio
+      if (e.key === "PageUp") this.adjustLevel(1);
+      if (e.key === "PageDown") this.adjustLevel(-1);
     },
-    onDocumentKeyUp(event) {
-      if (event.keyCode === 16) this.isShiftDown = false;
-    },
-    onWindowResize() {
-      if (!this.camera || !this.renderer) return;
-      const w = window.innerWidth,
-        h = window.innerHeight;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
-      this.composer.setSize(w, h);
-    },
-    onPointerMove(event) {
-      if (!this.pointer || !this.raycaster) return;
-      this.pointer.set(
-        (event.clientX / window.innerWidth) * 2 - 1,
-        -(event.clientY / window.innerHeight) * 2 + 1
-      );
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.objects, false);
-      if (intersects.length > 0) {
-        const intersect = intersects[0];
-        this.rollOverMesh.position
-          .copy(intersect.point)
-          .add(intersect.face.normal);
-        this.rollOverMesh.position
-          .divideScalar(this.voxelSize)
-          .floor()
-          .multiplyScalar(this.voxelSize)
-          .addScalar(this.voxelSize / 2);
+    onKeyUp(e) {
+      if (e.key === "Shift") this.engine.setModifiers(false, this.isAltDown);
+      if (e.key === "Alt") {
+        this.isAltDown = false;
+        this.engine.setModifiers(this.engine.isShiftDown, false);
       }
     },
-    exportVoxels() {
-      const exportData = {
-        version: 1,
-        voxels: this.voxelData,
-        gridSize: this.voxelSize,
-        timestamp: new Date().toISOString(),
-      };
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const url = URL.createObjectURL(
-        new Blob([dataStr], { type: "application/json" })
+
+    // Delegación de acciones al motor
+    adjustLevel(d) {
+      this.engine.adjustLevel(d);
+      this.currentLevel = this.engine.currentLevel;
+    },
+    undo() {
+      this.engine.undo();
+    },
+    redo() {
+      this.engine.redo();
+    },
+    toggleCamera() {
+      this.isOrthographic = !this.isOrthographic;
+      this.engine.toggleCamera(this.isOrthographic);
+    },
+    toggleSymmetry() {
+      this.symmetryMode = !this.symmetryMode;
+      this.engine.toggleSymmetry();
+    },
+    takeScreenshot() {
+      this.screenshotMode = true;
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.engine.takeScreenshot((url) => {
+            const link = document.createElement("a");
+            link.download = `voxel-art-${Date.now()}.png`;
+            link.href = url;
+            link.click();
+            this.screenshotMode = false;
+          });
+        });
+      });
+    },
+    clearAll() {
+      this.requestClear();
+    },
+    requestClear() {
+      this.showClearModal = true;
+    },
+    confirmClear() {
+      this.engine.clearAll();
+      this.showClearModal = false;
+    },
+
+    // Lógica de Paleta
+    addToBrushPalette() {
+      const mat = toRaw(this.currentMaterial);
+      const thumb = this.engine.generateMaterialThumbnail(mat);
+      this.brushPalette.push({ mat, weight: 50, preview: thumb });
+    },
+    addToMaterialPalette(mat) {
+      // Comprobación simple de duplicados
+      const raw = toRaw(mat);
+      const exists = this.usedMaterials.some(
+        (m) =>
+          m.color === raw.color &&
+          m.emissive === raw.emissive &&
+          m.metalness === raw.metalness &&
+          m.roughness === raw.roughness &&
+          m.opacity === raw.opacity
       );
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `voxel-model-${Date.now()}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
+      if (!exists) {
+        const thumb = this.engine.generateMaterialThumbnail(raw);
+        this.usedMaterials.push({ ...raw, preview: thumb });
+      }
+    },
+    loadMaterial(mat) {
+      this.currentMaterial = { ...mat };
+      delete this.currentMaterial.preview; // No queremos la imagen en los datos del material
+    },
+
+    // Importar/Exportar
+    exportVoxels() {
+      this.engine.exportVoxels();
     },
     triggerImport() {
       this.$refs.fileInput.click();
@@ -919,118 +945,26 @@ export default {
         try {
           const json = JSON.parse(e.target.result);
           if (json.voxels && Array.isArray(json.voxels)) {
-            this.clearAllScene(); // Internal clear
+            this.engine.clearAll();
             json.voxels.forEach((v) => {
-              this.addVoxel(v, false);
+              this.engine.addVoxelMesh(v);
               this.addToMaterialPalette(v);
             });
             event.target.value = "";
           }
         } catch (err) {
-          console.error(err);
-          alert("Invalid JSON");
+          console.error("Error al analizar JSON", err);
+          alert("Archivo JSON inválido");
         }
       };
       reader.readAsText(file);
-    },
-    requestClear() {
-      this.showClearModal = true;
-    },
-    confirmClear() {
-      this.clearAllScene();
-      this.showClearModal = false;
-    },
-    clearAllScene() {
-      const toRemove = this.objects.filter((obj) => obj !== this.plane);
-      toRemove.forEach((obj) => {
-        this.scene.remove(obj);
-        if (obj.material) obj.material.dispose();
-      });
-      this.objects = [this.plane];
-      this.voxelData = [];
-      this.history = [];
-      this.historyIndex = -1;
-      this.usedMaterials = [];
-
-      // Reset Scaffolding level to 0
-      this.currentLevel = 0;
-      this.adjustLevel(0);
-    },
-    clearAll() {
-      this.requestClear(); // Redirect old calls
-    },
-    setPreset(type) {
-      const presets = {
-        default: {
-          color: "#feb74c",
-          emissive: "#000000",
-          metalness: 0,
-          roughness: 1.0,
-          emissiveIntensity: 0,
-          opacity: 1,
-        },
-        metal: {
-          color: "#c0c0c0",
-          emissive: "#000000",
-          metalness: 1,
-          roughness: 0.2,
-          emissiveIntensity: 0,
-          opacity: 1,
-        },
-        glow: {
-          color: "#ffffff",
-          emissive: "#00ff00",
-          metalness: 0,
-          roughness: 0.8,
-          emissiveIntensity: 5.0,
-          opacity: 1,
-        },
-        wood: {
-          color: "#8b4513",
-          emissive: "#000000",
-          metalness: 0,
-          roughness: 0.9,
-          emissiveIntensity: 0,
-          opacity: 1,
-        },
-        glass: {
-          color: "#88ccff",
-          emissive: "#000000",
-          metalness: 0.1,
-          roughness: 0.1,
-          emissiveIntensity: 0,
-          opacity: 0.3,
-        },
-        plastic: {
-          color: "#ff69b4",
-          emissive: "#000000",
-          metalness: 0,
-          roughness: 0.3,
-          emissiveIntensity: 0,
-          opacity: 1,
-        },
-      };
-      this.currentMaterial = { ...presets[type] };
-    },
-    addToMaterialPalette(material) {
-      const exists = this.usedMaterials.some(
-        (m) =>
-          m.color === material.color &&
-          m.emissive === material.emissive &&
-          m.metalness === material.metalness &&
-          m.roughness === material.roughness &&
-          m.opacity === material.opacity
-      );
-      if (!exists) this.usedMaterials.push({ ...material });
-    },
-    loadMaterial(material) {
-      this.currentMaterial = { ...material };
     },
   },
 };
 </script>
 
 <style scoped>
+/* Scrollbar personalizado para el modo oscuro */
 .overflow-y-auto::-webkit-scrollbar {
   width: 8px;
 }
