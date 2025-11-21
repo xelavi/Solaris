@@ -1,6 +1,6 @@
 export const CHUNK_SIZE = 8;
 
-export type ToolMode = 'brush' | 'box' | 'select' | 'picker';
+export type ToolMode = "brush" | "box" | "select" | "picker";
 
 export interface Symmetries {
   x: boolean;
@@ -24,9 +24,9 @@ export interface VoxelData extends VoxelMaterial {
 }
 
 export interface BrushSettings {
-  shape: 'cube' | 'sphere' | 'square' | 'circle';
+  shape: "cube" | "sphere" | "square" | "circle";
   size: number;
-  axis: 'x' | 'y' | 'z';
+  axis: "x" | "y" | "z";
 }
 
 export interface PaletteItem {
@@ -35,11 +35,15 @@ export interface PaletteItem {
   preview?: string;
 }
 
-export interface HistoryChangeAdd { data: VoxelData; }
-export interface HistoryChangeRemove { data: VoxelData; }
+export interface HistoryChangeAdd {
+  data: VoxelData;
+}
+export interface HistoryChangeRemove {
+  data: VoxelData;
+}
 
 export interface HistoryAction {
-  type: 'batch';
+  type: "batch";
   changes: {
     added: HistoryChangeAdd[];
     removed: HistoryChangeRemove[];

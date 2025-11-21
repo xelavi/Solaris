@@ -1,4 +1,3 @@
-
 export const baseGridShader = {
   vertexShader: `
     varying vec3 vWorldPosition; 
@@ -35,7 +34,7 @@ export const baseGridShader = {
       if (alpha <= 0.01) discard; 
       gl_FragColor = vec4(uColor, alpha); 
     }
-  `
+  `,
 };
 
 export const cursorGridShader = {
@@ -81,5 +80,5 @@ export const cursorGridShader = {
       if (finalAlpha <= 0.0) discard; 
       gl_FragColor = vec4(uColor, finalAlpha * intensity); 
     }
-  `
+  `,
 };
