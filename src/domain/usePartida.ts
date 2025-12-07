@@ -11,6 +11,7 @@ const ordenTurnos = ref<ResultadoIniciativa[]>([]);
 const turnoActual = ref(0);
 const accionesRestantes = ref(3); // 3 acciones por turno según reglas
 const logs = ref<string[]>([]);
+const accionPreparada = ref<any | null>(null);
 
 export function usePartida() {
   const { generarMapa, obtenerCamino, esCaminable } = useMapa();
@@ -109,6 +110,25 @@ export function usePartida() {
     return personajesCreados.value.get(id);
   }
 
+  function setAccionPreparada(accion: any | null) {
+    accionPreparada.value = accion;
+  }
+
+  function usarActiva(instanciaId: string, nombreActiva: string) {
+    const personaje = personajeActivo.value;
+    if (!personaje || personaje.instanciaId !== instanciaId) {
+      return { exito: false, mensaje: "No es tu turno" };
+    }
+
+    if (accionesRestantes.value <= 0) {
+      return { exito: false, mensaje: "No quedan acciones" };
+    }
+
+    accionesRestantes.value--;
+    agregarLog(`${personaje.nombre} usa ${nombreActiva}.`);
+    return { exito: true };
+  }
+
   return {
     partidaActual,
     ordenTurnos,
@@ -116,6 +136,9 @@ export function usePartida() {
     accionesRestantes,
     personajeActivo,
     logs,
+    accionPreparada,
+    setAccionPreparada,
+    usarActiva,
     iniciarPartida,
     pasarTurno,
     moverPersonajeActivo,
