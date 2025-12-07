@@ -26,7 +26,7 @@
         <!-- Nombre de la Partida -->
         <div class="mb-8">
           <label class="block text-lg font-bold text-gray-700 mb-2">
-            Nombre de la Partida
+            Nombre de la Partida 
           </label>
           <input
             v-model="nombrePartida"
