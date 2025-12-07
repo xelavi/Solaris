@@ -45,6 +45,8 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import { Pathfinding } from "three-pathfinding";
 import PanelCharacter from "./panelCharacter.vue";
 import FichaCharacter from "./fichaCharacter.vue";
 import BarraHabilidades from "./barraHabilidades.vue";
@@ -86,11 +88,16 @@ let camera: THREE.PerspectiveCamera;
 let controls: MapControls;
 let rafId = 0;
 
+// Pathfinding
+const pathfinding = new Pathfinding();
+const ZONE = 'level1';
+let navMesh: THREE.Mesh | null = null;
+
 // Raycasting
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const clickables: THREE.Object3D[] = [];
-let cubes: THREE.Mesh[] = [];
+let cubes: THREE.Mesh[] = []; // Only for walls now
 
 // Character Meshes Map (ID -> Mesh)
 const characterMeshes = new Map<string, THREE.Mesh>();
@@ -163,31 +170,64 @@ function renderMap(grid: any[][]) {
   // Clear existing cubes
   cubes.forEach((c) => scene.remove(c));
   cubes = [];
+  if (navMesh) {
+    scene.remove(navMesh);
+    navMesh = null;
+  }
 
-  const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
-  const geometry = new THREE.BoxGeometry(CUBE_SIZE, 1, CUBE_SIZE);
+  const geometries: THREE.BufferGeometry[] = [];
+  const wallGeometries: THREE.BufferGeometry[] = [];
 
   grid.forEach((row) => {
     row.forEach((cell) => {
       if (!cell) return;
-      const cube = new THREE.Mesh(geometry, material.clone());
 
-      cube.position.set(cell.x * CUBE_SIZE, 0, cell.z * CUBE_SIZE);
+      const x = cell.x * CUBE_SIZE;
+      const z = cell.z * CUBE_SIZE;
 
-      // Visual differentiation for blocked/walls
       if (cell.blocked) {
-        cube.position.y = 1; // Raise walls
-        cube.material.color.set(0x555555);
-      } else if (highlightedCubes.value.has(`${cell.x},${cell.z}`)) {
-        cube.material.color.set(0x4ade80); // Green for reachable
+        // Wall
+        const geom = new THREE.BoxGeometry(CUBE_SIZE, 1, CUBE_SIZE);
+        geom.translate(x, 1, z);
+        wallGeometries.push(geom);
+      } else {
+        // Floor / NavMesh part
+        const geom = new THREE.PlaneGeometry(CUBE_SIZE, CUBE_SIZE);
+        geom.rotateX(-Math.PI / 2);
+        geom.translate(x, 0, z);
+        geometries.push(geom);
       }
-
-      cube.userData.grid = { x: cell.x, z: cell.z, blocked: cell.blocked };
-
-      scene.add(cube);
-      cubes.push(cube);
     });
   });
+
+  // Create Floor / NavMesh
+  if (geometries.length > 0) {
+    const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries);
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x3b82f6,
+        side: THREE.DoubleSide,
+        roughness: 0.8
+    });
+    navMesh = new THREE.Mesh(mergedGeometry, material);
+    navMesh.name = "NavMesh";
+    scene.add(navMesh);
+
+    // Initialize Pathfinding
+    // three-pathfinding expects a Mesh
+    const zone = Pathfinding.createZone(mergedGeometry);
+    pathfinding.setZoneData(ZONE, zone);
+  }
+
+  // Create Walls
+  if (wallGeometries.length > 0) {
+    const mergedWalls = BufferGeometryUtils.mergeGeometries(wallGeometries);
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+    const wallMesh = new THREE.Mesh(mergedWalls, wallMaterial);
+    wallMesh.name = "Walls";
+    scene.add(wallMesh);
+    cubes.push(wallMesh); // Keep in cubes for tracking, though not individual anymore
+  }
+
   updateClickables();
 }
 
@@ -214,18 +254,12 @@ watch(
 );
 
 // Watch for Selection to highlight range
+// Note: With NavMesh, highlighting cubes is less relevant visually on the floor,
+// but we might want to show range in a different way.
+// For now, disabling cube highlighting or we could create an overlay mesh.
 watch(personajeSeleccionado, (pj) => {
-  highlightedCubes.value.clear();
-  if (
-    pj &&
-    personajeActivo.value &&
-    pj.nombre === personajeActivo.value.nombre
-  ) {
-    const range = obtenerAlcance(pj.posicion, pj.atributos.movimiento);
-    range.forEach((c) => highlightedCubes.value.add(`${c.x},${c.z}`));
-  }
-  // Re-render map to show highlights
-  if (mapa.value.length > 0) renderMap(mapa.value);
+  // If we want to highlight range, we would need to generate a mesh for the range area.
+  // For now, keeping it simple without grid highlights, relying on movement feedback.
 });
 
 function updateCharacterMeshes(partida: any) {
@@ -233,7 +267,6 @@ function updateCharacterMeshes(partida: any) {
 
   partida.equipos.forEach((equipo: any) => {
     equipo.personajes.forEach((pj: PersonajeInstancia) => {
-      // Use name as ID for now
       const id = pj.nombre;
       activeIds.add(id);
 
@@ -259,10 +292,17 @@ function updateCharacterMeshes(partida: any) {
       // Only update targetPos if we are NOT currently animating a path for this character
       // AND not waiting for a path calculation (to avoid teleport glitches)
       if (!mesh.userData.isMoving && !mesh.userData.isWaitingForPath) {
-        mesh.userData.targetPos = targetPos;
-        // Initial snap if far away (first load)
+        // Snap if far away (initial load)
         if (mesh.position.distanceTo(targetPos) > 10) {
           mesh.position.copy(targetPos);
+        } else {
+            // If slightly off, maybe snap or interpolate?
+            // With navmesh we want the frontend to drive position during movement,
+            // but sync with backend when idle.
+            if (!mesh.userData.justFinishedMove) {
+                 mesh.position.copy(targetPos);
+            }
+            mesh.userData.justFinishedMove = false;
         }
       }
     });
@@ -280,7 +320,7 @@ function updateCharacterMeshes(partida: any) {
 
 function updateClickables() {
   clickables.length = 0;
-  clickables.push(...cubes);
+  if (navMesh) clickables.push(navMesh);
   characterMeshes.forEach((m) => clickables.push(m));
 }
 
@@ -334,6 +374,8 @@ function animate() {
   rafId = requestAnimationFrame(animate);
   controls.update();
 
+  const dt = 0.016; // Approx delta time
+
   // Interpolate Character Positions
   characterMeshes.forEach((mesh) => {
     if (
@@ -342,23 +384,35 @@ function animate() {
       mesh.userData.pathQueue.length > 0
     ) {
       const target = mesh.userData.pathQueue[0];
-      const dir = new THREE.Vector3().subVectors(target, mesh.position);
+      const currentPos = mesh.position.clone();
+      // Keep height constant for now (or follow navmesh height if 3D)
+      target.y = currentPos.y;
+
+      const dir = new THREE.Vector3().subVectors(target, currentPos);
       const dist = dir.length();
-      const speed = 0.1; // Reduced speed for smoother animation
+      const speed = 10 * dt; // Faster fluid movement
 
       if (dist < speed) {
         mesh.position.copy(target);
         mesh.userData.pathQueue.shift();
+
         if (mesh.userData.pathQueue.length === 0) {
           mesh.userData.isMoving = false;
-          // Sync final position just in case
-          if (mesh.userData.targetPos)
-            mesh.position.copy(mesh.userData.targetPos);
+          mesh.userData.justFinishedMove = true;
+          // Final sync with backend logic happens in onCanvasClick await
         }
       } else {
         dir.normalize();
         mesh.position.add(dir.multiplyScalar(speed));
+
+        // Rotate towards direction
+        const targetRotation = Math.atan2(dir.x, dir.z);
+        // Simple lerp rotation
+        const currentRotation = mesh.rotation.y;
+        // Handle wrap around PI/-PI if needed, but for now simple
+        mesh.rotation.y = targetRotation;
       }
+
       // Update circle if this is the active character
       if (
         personajeActivo.value &&
@@ -366,26 +420,6 @@ function animate() {
         circleMesh
       ) {
         circleMesh.position.set(mesh.position.x, 0.1, mesh.position.z);
-      }
-    } else if (mesh.userData.targetPos) {
-      const target = mesh.userData.targetPos;
-      if (mesh.position.distanceTo(target) > 0.05) {
-        const dir = new THREE.Vector3()
-          .subVectors(target, mesh.position)
-          .normalize();
-        const speed = 0.2; // Adjust speed
-        mesh.position.add(dir.multiplyScalar(speed));
-
-        // Update circle if this is the active character
-        if (
-          personajeActivo.value &&
-          mesh.userData.characterData.nombre === personajeActivo.value.nombre &&
-          circleMesh
-        ) {
-          circleMesh.position.set(mesh.position.x, 0.1, mesh.position.z);
-        }
-      } else {
-        mesh.position.copy(target);
       }
     }
   });
@@ -409,56 +443,75 @@ async function onCanvasClick(event: MouseEvent) {
 
   if (intersects.length > 0) {
     const obj = intersects[0].object;
+    const point = intersects[0].point;
 
     if (obj.userData.isCharacter) {
-      // Select character for inspection
-      personajeSeleccionado.value = obj.userData
-        .characterData as PersonajeInstancia;
-    } else if (obj.userData.grid) {
+      // Select character
+      const target = obj.userData.characterData as PersonajeInstancia;
+      personajeSeleccionado.value = target;
+
+      // Dispatch event for targeting system
+      window.dispatchEvent(
+        new CustomEvent("character-clicked", { detail: target }),
+      );
+    } else if (obj === navMesh) {
       // Move active character
-      // Only if selected character is the active one
       if (
         personajeActivo.value &&
         personajeSeleccionado.value &&
         personajeSeleccionado.value.nombre === personajeActivo.value.nombre
       ) {
-        const target = { x: obj.userData.grid.x, z: obj.userData.grid.z };
-
-        // Optional: Check if target is in highlighted range
-        if (!highlightedCubes.value.has(`${target.x},${target.z}`)) {
-          console.log("Fuera de rango o no caminable");
-          return;
-        }
-
-        // Set flag to prevent 'watch' from snapping position while we wait for path
         const mesh = characterMeshes.get(personajeActivo.value.nombre);
-        if (mesh) mesh.userData.isWaitingForPath = true;
+        if (!mesh) return;
 
-        const result = await moverPersonajeActivo(target);
+        const startPos = mesh.position.clone();
+        // Adjust y to navmesh level (0 usually)
+        startPos.y = 0;
 
-        if (mesh) mesh.userData.isWaitingForPath = false;
+        // Find group ID (closest node)
+        const groupId = pathfinding.getGroup(ZONE, startPos);
 
-        if (result.exito && result.camino) {
-          // Start animation
-          if (mesh) {
-            mesh.userData.isMoving = true;
-            // Convert path to Vector3s
-            mesh.userData.pathQueue = result.camino.map(
-              (c: any) => new THREE.Vector3(c.x, 1, c.z),
-            );
-            // Remove first point if it's current position
-            if (
-              mesh.userData.pathQueue.length > 0 &&
-              mesh.userData.pathQueue[0].distanceTo(mesh.position) < 0.1
-            ) {
-              mesh.userData.pathQueue.shift();
+        // Find path
+        const path = pathfinding.findPath(startPos, point, ZONE, groupId);
+
+        if (path && path.length > 0) {
+            // Validate distance via backend check or simple check
+            // For now, let's assume we can move anywhere on navmesh if it is connected
+            // But we should check action points/distance limits.
+
+            // Calculate total path length
+            let totalDist = 0;
+            let current = startPos;
+            for(const p of path) {
+                totalDist += current.distanceTo(p);
+                current = p;
             }
-          }
-          // Clear highlights after move
-          highlightedCubes.value.clear();
-          renderMap(mapa.value);
+
+            const movimientoMax = personajeActivo.value.atributos.movimiento;
+            if (totalDist > movimientoMax * 1.5) { // Allow some slack for fluidity
+                 // Or warn user
+                 console.log("Too far!", totalDist);
+                 // We could truncate path? For now just allow it or fail.
+                 // Let's truncate path to max distance
+            }
+
+            // Start animation locally
+            mesh.userData.isMoving = true;
+            mesh.userData.pathQueue = path.map(p => new THREE.Vector3(p.x, 1, p.z)); // Raise y to character height
+
+            // Update backend
+            // We update to the final position
+            const finalPos = path[path.length - 1];
+
+            // Call usePartida to update state (consume action, update pos)
+            // We pass coordinates. Backend currently expects integers for grid logic?
+            // If backend logic is strict about grid, we might have issues.
+            // Let's pass the float coords. Character.posicion is {x, y, z}.
+
+            await moverPersonajeActivo({ x: finalPos.x, z: finalPos.z });
+
         } else {
-          console.log("Movimiento fallido:", result.mensaje);
+            console.log("No path found");
         }
       }
     }

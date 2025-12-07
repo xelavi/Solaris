@@ -70,30 +70,20 @@ export function usePartida() {
       return { exito: false, mensaje: "No quedan acciones" };
     }
 
-    // Validar que es caminable
-    if (!esCaminable(destino.x, destino.z)) {
-      return { exito: false, mensaje: "Destino no caminable" };
-    }
+    // Since we are using NavMesh on frontend, we assume the path is valid if frontend sends it.
+    // However, we should do basic distance validation.
+    const currentPos = { x: personaje.posicion.x, z: personaje.posicion.z };
+    const dx = destino.x - currentPos.x;
+    const dz = destino.z - currentPos.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
 
-    // Calcular camino
-    const camino = obtenerCamino(
-      { x: personaje.posicion.x, z: personaje.posicion.z },
-      destino,
-    );
-
-    if (!camino) {
-      return { exito: false, mensaje: "No hay camino válido" };
-    }
-
-    // Validar distancia vs Movimiento
-    // El camino incluye el inicio, así que la distancia es length - 1
-    const distancia = camino.length - 1;
     const movimientoMax = personaje.atributos.movimiento;
 
-    if (distancia > movimientoMax) {
+    // Allow some margin for pathfinding deviations
+    if (distance > movimientoMax * 1.5) {
       return {
         exito: false,
-        mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distancia})`,
+        mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distance.toFixed(1)})`,
       };
     }
 
@@ -104,10 +94,10 @@ export function usePartida() {
     // Consumir acción
     accionesRestantes.value--;
     agregarLog(
-      `${personaje.nombre} se movió a (${destino.x}, ${destino.z}). Acciones restantes: ${accionesRestantes.value}`,
+      `${personaje.nombre} se movió a (${destino.x.toFixed(1)}, ${destino.z.toFixed(1)}). Acciones restantes: ${accionesRestantes.value}`,
     );
 
-    return { exito: true, camino }; // Devolvemos el camino para que el frontend pueda animarlo
+    return { exito: true, camino: [destino] };
   }
 
   function addCharacter(id: string, name: string) {
