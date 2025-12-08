@@ -67,6 +67,7 @@ const {
   personajeActivo,
   accionPreparada,
   setAccionPreparada,
+  turnoEnProceso,
   iniciarPartida,
   moverPersonajeActivo,
 } = usePartida();
@@ -430,11 +431,14 @@ function updateCharacterMeshes(partida: any) {
       const targetPos = new THREE.Vector3(pj.posicion.x, 0.9, pj.posicion.z); // y=0.9 for capsule center
 
       if (!mesh.userData.isMoving && !mesh.userData.isWaitingForPath) {
-        if (mesh.position.distanceTo(targetPos) > 10) {
+        const dist = mesh.position.distanceTo(targetPos);
+        if (dist > 10) {
           mesh.position.copy(targetPos);
-        } else {
+        } else if (dist > 0.1) {
+             // Animate short distance updates (e.g. Charge or Sync)
              if (!mesh.userData.justFinishedMove) {
-                 mesh.position.copy(targetPos);
+                 mesh.userData.isMoving = true;
+                 mesh.userData.pathQueue = [targetPos.clone()];
             }
             mesh.userData.justFinishedMove = false;
         }
@@ -525,6 +529,7 @@ function animate() {
 // --- Interaction ---
 async function onCanvasClick(event: MouseEvent) {
   if (!renderer || !camera) return;
+  if (turnoEnProceso.value) return;
 
   // Calculate mouse position
   const rect = renderer.domElement.getBoundingClientRect();

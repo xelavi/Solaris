@@ -15,6 +15,7 @@ const turnoActual = ref(0);
 const accionesRestantes = ref(3); // 3 acciones por turno según reglas
 const logs = ref<string[]>([]);
 const accionPreparada = ref<any | null>(null);
+const turnoEnProceso = ref(false); // Bloqueo de acciones durante transición
 
 export function usePartida() {
   const { generarMapa } = useMapa();
@@ -30,13 +31,16 @@ export function usePartida() {
 
   function checkAutoPassTurn() {
       if (accionesRestantes.value <= 0) {
-          // Add small delay for UX so player sees the action result
+          turnoEnProceso.value = true;
+          // Reduced delay to 500ms for snappier feel
           setTimeout(() => {
              // Double check in case actions were refunded or changed
              if (accionesRestantes.value <= 0) {
                  pasarTurno();
+             } else {
+                 turnoEnProceso.value = false;
              }
-          }, 1000);
+          }, 500);
       }
   }
 
@@ -62,6 +66,7 @@ export function usePartida() {
         ordenTurnos.value = calcularIniciativas(todosPersonajes);
         turnoActual.value = 0;
         accionesRestantes.value = 3;
+        turnoEnProceso.value = false;
 
         agregarLog("Partida iniciada. Iniciativas calculadas.");
       }
@@ -76,10 +81,13 @@ export function usePartida() {
     turnoActual.value = (turnoActual.value + 1) % ordenTurnos.value.length;
     accionesRestantes.value = 3;
     accionPreparada.value = null; // Reset prepared action on turn end
+    turnoEnProceso.value = false;
     agregarLog(`Turno de ${personajeActivo.value?.nombre}`);
   }
 
   async function moverPersonajeActivo(destino: { x: number; z: number }) {
+    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
+
     const personaje = personajeActivo.value;
     if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
 
@@ -129,7 +137,9 @@ export function usePartida() {
     accionPreparada.value = accion;
   }
 
-  function usarActiva(instanciaId: string, nombreActiva: string) {
+  function usarActiva(instanciaId: string, nombreActiva: string, objetivoId?: string) {
+    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
+
     const personaje = personajeActivo.value;
     if (!personaje || personaje.instanciaId !== instanciaId) {
       return { exito: false, mensaje: "No es tu turno" };
@@ -139,6 +149,28 @@ export function usePartida() {
       return { exito: false, mensaje: "No quedan acciones" };
     }
 
+    // Lógica específica para "Carga"
+    if (nombreActiva === "Carga") {
+        if (accionesRestantes.value < 2) {
+             agregarLog("No tienes suficientes acciones para Carga (Necesitas 2).");
+             return { exito: false, mensaje: "Necesitas 2 acciones" };
+        }
+
+        if (!objetivoId) {
+             return { exito: false, mensaje: "Necesitas un objetivo" };
+        }
+
+        // Ejecutar Carga
+        const res = ejecutarCarga(personaje, objetivoId);
+        if (res.exito) {
+            accionesRestantes.value -= 2;
+            checkAutoPassTurn();
+            return { exito: true };
+        } else {
+            return res;
+        }
+    }
+
     accionesRestantes.value--;
     agregarLog(`${personaje.nombre} usa ${nombreActiva}.`);
 
@@ -146,7 +178,80 @@ export function usePartida() {
     return { exito: true };
   }
 
+  function ejecutarCarga(atacante: PersonajeInstancia, defensorId: string) {
+      // 1. Encontrar defensor
+      let defensor: PersonajeInstancia | undefined;
+      if (!partidaActual.value) return { exito: false, mensaje: "No hay partida" };
+
+      for(const equipo of partidaActual.value.equipos) {
+          const found = equipo.personajes.find(p => p.nombre === defensorId || p.instanciaId === defensorId);
+          if (found) {
+              defensor = found;
+              break;
+          }
+      }
+      if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
+
+      // 2. Moverse hacia el enemigo (simple vector math for now, NavMesh logic is handled by client usually but we update state)
+      // Posición objetivo: 1.5m del enemigo en dirección al atacante
+      const dirX = atacante.posicion.x - defensor.posicion.x;
+      const dirZ = atacante.posicion.z - defensor.posicion.z;
+      const len = Math.sqrt(dirX*dirX + dirZ*dirZ);
+
+      const range = 1.5; // Melee range
+
+      if (len > 0.1) {
+          const destX = defensor.posicion.x + (dirX / len) * range;
+          const destZ = defensor.posicion.z + (dirZ / len) * range;
+
+          atacante.posicion.x = destX;
+          atacante.posicion.z = destZ;
+
+          agregarLog(`${atacante.nombre} carga hacia ${defensor.nombre}!`);
+      }
+
+      // 3. Atacar
+      // Reutilizamos la lógica de ataque pero sin gastar acción extra (ya gastamos 2 en usarActiva)
+      // Llamamos a realizarAtaque interno
+      const resultado = calcularAtaqueInterno(atacante, defensor);
+
+      defensor.vidaActual = resultado.vidaRestante;
+      agregarLog(resultado.mensaje);
+
+      return { exito: true };
+  }
+
+  function calcularAtaqueInterno(personaje: PersonajeInstancia, defensor: PersonajeInstancia) {
+      // Buscar datos del arma equipada
+        let armaData = null;
+        if (personaje.armaEquipada) {
+            armaData = armasData.armas.find((a: any) => a.id === personaje.armaEquipada) || null;
+        }
+
+        // Calcular defensa del defensor
+        const defensa = { lacerante: 0, penetrante: 0, contundente: 0 };
+        const resistencia = defensor.atributos.resistencia || 0;
+        defensa.lacerante = resistencia;
+        defensa.penetrante = resistencia;
+        defensa.contundente = resistencia;
+
+        if (defensor.armaduras && defensor.armaduras.length > 0) {
+            defensor.armaduras.forEach(id => {
+                const arm = armadurasData.armaduras.find((a: any) => a.id === id);
+                if (arm) {
+                    defensa.lacerante += arm.lacerante || 0;
+                    defensa.penetrante += arm.penetrante || 0;
+                    defensa.contundente += arm.contundente || 0;
+                }
+            });
+        }
+
+        return realizarAtaque(personaje, defensor, armaData, defensa);
+  }
+
   function ejecutarAtaque(atacanteId: string, defensorId: string) {
+    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
+
     const personaje = personajeActivo.value;
     if (!personaje || personaje.instanciaId !== atacanteId) {
       return { exito: false, mensaje: "No es tu turno" };
@@ -170,31 +275,7 @@ export function usePartida() {
 
     if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
 
-    // Buscar datos del arma equipada
-    let armaData = null;
-    if (personaje.armaEquipada) {
-        armaData = armasData.armas.find((a: any) => a.id === personaje.armaEquipada) || null;
-    }
-
-    // Calcular defensa del defensor
-    const defensa = { lacerante: 0, penetrante: 0, contundente: 0 };
-    const resistencia = defensor.atributos.resistencia || 0;
-    defensa.lacerante = resistencia;
-    defensa.penetrante = resistencia;
-    defensa.contundente = resistencia;
-
-    if (defensor.armaduras && defensor.armaduras.length > 0) {
-        defensor.armaduras.forEach(id => {
-            const arm = armadurasData.armaduras.find((a: any) => a.id === id);
-            if (arm) {
-                defensa.lacerante += arm.lacerante || 0;
-                defensa.penetrante += arm.penetrante || 0;
-                defensa.contundente += arm.contundente || 0;
-            }
-        });
-    }
-
-    const resultado = realizarAtaque(personaje, defensor, armaData, defensa);
+    const resultado = calcularAtaqueInterno(personaje, defensor);
 
     // Apply results (Mutate state)
     defensor.vidaActual = resultado.vidaRestante;
@@ -209,6 +290,8 @@ export function usePartida() {
   }
 
   function cambiarArmaActivo(nuevaArmaId: number | null) {
+      if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
+
       const personaje = personajeActivo.value;
       if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
 
@@ -245,6 +328,7 @@ export function usePartida() {
     personajeActivo,
     logs,
     accionPreparada,
+    turnoEnProceso,
     setAccionPreparada,
     usarActiva,
     ejecutarAtaque,

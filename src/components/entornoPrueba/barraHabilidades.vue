@@ -170,6 +170,7 @@ function onCharacterClicked(e: CustomEvent) {
         usarActiva(
           personajeActivo.value.instanciaId,
           accionPreparada.value.nombre,
+          target.instanciaId || target.nombre
         );
     }
 
