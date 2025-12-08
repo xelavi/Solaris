@@ -13,10 +13,11 @@
             class="bg-gray-800 text-white rounded-lg p-3 shadow-xl border border-gray-600"
           >
             <div class="font-bold text-red-400 text-sm mb-1">
-              Ataque Básico
+              {{ ATAQUE_BASICO.nombre }}
             </div>
             <div class="text-gray-300 text-xs leading-relaxed">
-              Realiza un ataque con el arma equipada (1 Acción).
+              Realiza un ataque con el arma equipada (1 Acción). <br>
+              Rango: {{ ATAQUE_BASICO.range }}m
             </div>
           </div>
           <div
@@ -43,7 +44,7 @@
 
       <!-- Activas -->
       <div v-for="activa in activas" :key="activa.id" class="relative group">
-        <!-- Tooltip (Positioned above) -->
+        <!-- Tooltip -->
         <div
           class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 w-56 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
         >
@@ -60,7 +61,6 @@
               {{ activa.diminutivo }} - {{ activa.atributo }}
             </div>
           </div>
-          <!-- Arrow -->
           <div
             class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-8 border-transparent border-t-gray-800"
           ></div>
@@ -72,9 +72,9 @@
           class="w-14 h-14 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 border-2 rounded-lg flex items-center justify-center transition-all duration-200 hover:-translate-y-1 hover:shadow-lg group-hover:shadow-amber-500/20"
           :class="{
             'border-amber-500 shadow-amber-500/50 ring-2 ring-amber-500':
-              accionPreparada === activa,
+              esActivaSeleccionada(activa),
             'border-gray-600 hover:border-amber-500':
-              accionPreparada !== activa,
+              !esActivaSeleccionada(activa),
           }"
         >
           <span class="text-xs font-bold text-white">{{
@@ -96,7 +96,7 @@
       v-if="accionPreparada"
       class="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-amber-500/80 text-black px-4 py-2 rounded-full font-bold animate-pulse whitespace-nowrap pointer-events-auto flex items-center gap-2"
     >
-      <span v-if="esAtaqueBasico">Selecciona enemigo para Atacar</span>
+      <span v-if="esAtaqueBasico">Selecciona enemigo para Atacar (Rango: {{ ATAQUE_BASICO.range }}m)</span>
       <span v-else>Selecciona objetivo para {{ accionPreparada.nombre }}</span>
       <button
         @click="cancelarSeleccion"
@@ -111,27 +111,43 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import activasData from "../../assets/activas.json";
+import armasData from "../../assets/armas.json";
 import { usePartida } from "../../domain/usePartida";
 
 const { personajeActivo, usarActiva, ejecutarAtaque, accionPreparada, setAccionPreparada } =
   usePartida();
 const activas = ref(activasData.activas);
 
-// Special "Action" object for Basic Attack to distinguish it
-const ATAQUE_BASICO = { nombre: "Ataque Básico", id: "basic_attack", range: 1.5 }; // Range should come from weapon ideally
+// Computed Basic Attack with Dynamic Range
+const ATAQUE_BASICO = computed(() => {
+    let range = 1.5;
+    if (personajeActivo.value && personajeActivo.value.armaEquipada) {
+        const weapon = armasData.armas.find((a: any) => a.id === personajeActivo.value!.armaEquipada);
+        if (weapon) {
+             if (weapon.distancia_max) {
+                 range = weapon.distancia_max;
+             }
+        }
+    }
+    return { nombre: "Ataque Básico", id: "basic_attack", range };
+});
 
-const esAtaqueBasico = computed(() => accionPreparada.value === ATAQUE_BASICO);
+const esAtaqueBasico = computed(() => accionPreparada.value && accionPreparada.value.id === "basic_attack");
+
+function esActivaSeleccionada(activa: any) {
+    return accionPreparada.value && accionPreparada.value.id === activa.id;
+}
 
 function toggleAtaque() {
-    if (accionPreparada.value === ATAQUE_BASICO) {
+    if (esAtaqueBasico.value) {
         setAccionPreparada(null);
     } else {
-        setAccionPreparada(ATAQUE_BASICO);
+        setAccionPreparada(ATAQUE_BASICO.value);
     }
 }
 
 function toggleActiva(activa: any) {
-  if (accionPreparada.value === activa) {
+  if (esActivaSeleccionada(activa)) {
     setAccionPreparada(null);
   } else {
     setAccionPreparada(activa);
@@ -146,7 +162,7 @@ function onCharacterClicked(e: CustomEvent) {
   if (accionPreparada.value && personajeActivo.value) {
     const target = e.detail; // PersonajeInstancia
 
-    if (accionPreparada.value === ATAQUE_BASICO) {
+    if (accionPreparada.value.id === "basic_attack") {
         // Ejecutar ataque básico
         ejecutarAtaque(personajeActivo.value.instanciaId, target.instanciaId || target.nombre);
     } else {

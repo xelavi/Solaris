@@ -4,6 +4,8 @@ import { Character } from "./Character";
 import { calcularIniciativas, type ResultadoIniciativa } from "./Activas";
 import { useMapa } from "./useMapa";
 import { realizarAtaque } from "./Partida";
+import armasData from "../assets/armas.json";
+import armadurasData from "../assets/armaduras.json";
 
 // Estado global de la partida (Singleton pattern para este composable)
 const partidaActual = ref<PartidaData | null>(null);
@@ -15,7 +17,7 @@ const logs = ref<string[]>([]);
 const accionPreparada = ref<any | null>(null);
 
 export function usePartida() {
-  const { generarMapa, obtenerCamino, esCaminable } = useMapa();
+  const { generarMapa } = useMapa();
 
   const personajeActivo = computed(() => {
     if (ordenTurnos.value.length === 0) return null;
@@ -24,6 +26,18 @@ export function usePartida() {
 
   function agregarLog(mensaje: string) {
     logs.value.push(`[${new Date().toLocaleTimeString()}] ${mensaje}`);
+  }
+
+  function checkAutoPassTurn() {
+      if (accionesRestantes.value <= 0) {
+          // Add small delay for UX so player sees the action result
+          setTimeout(() => {
+             // Double check in case actions were refunded or changed
+             if (accionesRestantes.value <= 0) {
+                 pasarTurno();
+             }
+          }, 1000);
+      }
   }
 
   function iniciarPartida(partidaId: string) {
@@ -61,6 +75,7 @@ export function usePartida() {
 
     turnoActual.value = (turnoActual.value + 1) % ordenTurnos.value.length;
     accionesRestantes.value = 3;
+    accionPreparada.value = null; // Reset prepared action on turn end
     agregarLog(`Turno de ${personajeActivo.value?.nombre}`);
   }
 
@@ -72,8 +87,6 @@ export function usePartida() {
       return { exito: false, mensaje: "No quedan acciones" };
     }
 
-    // Since we are using NavMesh on frontend, we assume the path is valid if frontend sends it.
-    // However, we should do basic distance validation.
     const currentPos = { x: personaje.posicion.x, z: personaje.posicion.z };
     const dx = destino.x - currentPos.x;
     const dz = destino.z - currentPos.z;
@@ -99,6 +112,7 @@ export function usePartida() {
       `${personaje.nombre} se movió a (${destino.x.toFixed(1)}, ${destino.z.toFixed(1)}). Acciones restantes: ${accionesRestantes.value}`,
     );
 
+    checkAutoPassTurn();
     return { exito: true, camino: [destino] };
   }
 
@@ -127,6 +141,8 @@ export function usePartida() {
 
     accionesRestantes.value--;
     agregarLog(`${personaje.nombre} usa ${nombreActiva}.`);
+
+    checkAutoPassTurn();
     return { exito: true };
   }
 
@@ -144,11 +160,6 @@ export function usePartida() {
     if (!partidaActual.value) return { exito: false, mensaje: "No hay partida" };
     let defensor: PersonajeInstancia | undefined;
 
-    // We assume atacanteId and defensorId are names or instanceIds.
-    // In escena.vue we passed the whole object but simpler to pass ID if we can search.
-    // Given the current setup, let's search by name (as ID) since that is what we used before.
-    // Or simpler, search in all teams.
-
     for(const equipo of partidaActual.value.equipos) {
         const found = equipo.personajes.find(p => p.nombre === defensorId || p.instanciaId === defensorId);
         if (found) {
@@ -159,12 +170,31 @@ export function usePartida() {
 
     if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
 
-    // Realizar ataque (Pure logic)
-    // Need dummy weapon/defense for now or real ones if available
-    const arma = null; // Should fetch from personaje.armaEquipada
-    const defensa = { lacerante: 0, penetrante: 0, contundente: 0 }; // Should fetch from defensor.armaduras
+    // Buscar datos del arma equipada
+    let armaData = null;
+    if (personaje.armaEquipada) {
+        armaData = armasData.armas.find((a: any) => a.id === personaje.armaEquipada) || null;
+    }
 
-    const resultado = realizarAtaque(personaje, defensor, arma, defensa);
+    // Calcular defensa del defensor
+    const defensa = { lacerante: 0, penetrante: 0, contundente: 0 };
+    const resistencia = defensor.atributos.resistencia || 0;
+    defensa.lacerante = resistencia;
+    defensa.penetrante = resistencia;
+    defensa.contundente = resistencia;
+
+    if (defensor.armaduras && defensor.armaduras.length > 0) {
+        defensor.armaduras.forEach(id => {
+            const arm = armadurasData.armaduras.find((a: any) => a.id === id);
+            if (arm) {
+                defensa.lacerante += arm.lacerante || 0;
+                defensa.penetrante += arm.penetrante || 0;
+                defensa.contundente += arm.contundente || 0;
+            }
+        });
+    }
+
+    const resultado = realizarAtaque(personaje, defensor, armaData, defensa);
 
     // Apply results (Mutate state)
     defensor.vidaActual = resultado.vidaRestante;
@@ -174,7 +204,37 @@ export function usePartida() {
     // Log detailed result
     agregarLog(resultado.mensaje);
 
+    checkAutoPassTurn();
     return { exito: true, resultado };
+  }
+
+  function cambiarArmaActivo(nuevaArmaId: number | null) {
+      const personaje = personajeActivo.value;
+      if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
+
+      if (accionesRestantes.value <= 0) {
+          return { exito: false, mensaje: "No quedan acciones" };
+      }
+
+      // Check ownership
+      if (nuevaArmaId !== null && !personaje.armas.includes(nuevaArmaId)) {
+          return { exito: false, mensaje: "No tienes esa arma" };
+      }
+
+      const prevArmaId = personaje.armaEquipada;
+      personaje.armaEquipada = nuevaArmaId;
+
+      let nombreArma = "Manos vacías";
+      if (nuevaArmaId) {
+          const a = armasData.armas.find((w: any) => w.id === nuevaArmaId);
+          if (a) nombreArma = a.nombre;
+      }
+
+      accionesRestantes.value--;
+      agregarLog(`${personaje.nombre} equipó ${nombreArma}.`);
+      checkAutoPassTurn();
+
+      return { exito: true };
   }
 
   return {
@@ -188,6 +248,7 @@ export function usePartida() {
     setAccionPreparada,
     usarActiva,
     ejecutarAtaque,
+    cambiarArmaActivo,
     iniciarPartida,
     pasarTurno,
     moverPersonajeActivo,

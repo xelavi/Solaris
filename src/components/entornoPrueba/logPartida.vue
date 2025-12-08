@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed bottom-4 left-4 z-50 w-80 max-h-60 bg-black/70 backdrop-blur-sm rounded-lg border border-gray-700 overflow-hidden flex flex-col font-mono text-xs"
+    class="fixed top-4 right-4 z-50 w-80 max-h-60 bg-black/70 backdrop-blur-sm rounded-lg border border-gray-700 overflow-hidden flex flex-col font-mono text-xs"
   >
     <div class="bg-gray-800 p-2 border-b border-gray-700 font-bold text-gray-300">
       Historial de Combate
