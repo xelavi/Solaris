@@ -3,6 +3,7 @@ import type { PartidaData, PersonajeInstancia } from "./Partida";
 import { Character } from "./Character";
 import { calcularIniciativas, type ResultadoIniciativa } from "./Activas";
 import { useMapa } from "./useMapa";
+import { realizarAtaque } from "./Partida";
 
 // Estado global de la partida (Singleton pattern para este composable)
 const partidaActual = ref<PartidaData | null>(null);
@@ -129,6 +130,53 @@ export function usePartida() {
     return { exito: true };
   }
 
+  function ejecutarAtaque(atacanteId: string, defensorId: string) {
+    const personaje = personajeActivo.value;
+    if (!personaje || personaje.instanciaId !== atacanteId) {
+      return { exito: false, mensaje: "No es tu turno" };
+    }
+
+    if (accionesRestantes.value <= 0) {
+      return { exito: false, mensaje: "No quedan acciones" };
+    }
+
+    // Buscar defensor en partidaActual
+    if (!partidaActual.value) return { exito: false, mensaje: "No hay partida" };
+    let defensor: PersonajeInstancia | undefined;
+
+    // We assume atacanteId and defensorId are names or instanceIds.
+    // In escena.vue we passed the whole object but simpler to pass ID if we can search.
+    // Given the current setup, let's search by name (as ID) since that is what we used before.
+    // Or simpler, search in all teams.
+
+    for(const equipo of partidaActual.value.equipos) {
+        const found = equipo.personajes.find(p => p.nombre === defensorId || p.instanciaId === defensorId);
+        if (found) {
+            defensor = found;
+            break;
+        }
+    }
+
+    if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
+
+    // Realizar ataque (Pure logic)
+    // Need dummy weapon/defense for now or real ones if available
+    const arma = null; // Should fetch from personaje.armaEquipada
+    const defensa = { lacerante: 0, penetrante: 0, contundente: 0 }; // Should fetch from defensor.armaduras
+
+    const resultado = realizarAtaque(personaje, defensor, arma, defensa);
+
+    // Apply results (Mutate state)
+    defensor.vidaActual = resultado.vidaRestante;
+
+    accionesRestantes.value--;
+
+    // Log detailed result
+    agregarLog(resultado.mensaje);
+
+    return { exito: true, resultado };
+  }
+
   return {
     partidaActual,
     ordenTurnos,
@@ -139,6 +187,7 @@ export function usePartida() {
     accionPreparada,
     setAccionPreparada,
     usarActiva,
+    ejecutarAtaque,
     iniciarPartida,
     pasarTurno,
     moverPersonajeActivo,

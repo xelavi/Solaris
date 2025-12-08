@@ -25,6 +25,7 @@
     />
 
     <BarraHabilidades />
+    <LogPartida />
 
     <!-- Turn Info / Actions -->
     <div
@@ -49,6 +50,7 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 import { Pathfinding } from "three-pathfinding";
 import PanelCharacter from "./panelCharacter.vue";
 import FichaCharacter from "./fichaCharacter.vue";
+import LogPartida from "./logPartida.vue";
 import BarraHabilidades from "./barraHabilidades.vue";
 import PanelIniciativa from "./panelIniciativa.vue";
 import { usePartida } from "../../domain/usePartida";
@@ -64,6 +66,7 @@ const {
   turnoActual,
   personajeActivo,
   accionPreparada,
+  setAccionPreparada,
   iniciarPartida,
   moverPersonajeActivo,
 } = usePartida();
@@ -328,6 +331,10 @@ function updateRangeIndicator(pj: PersonajeInstancia | null, accion: any) {
           // Let's assume range is Movement * 2 for visual feedback of "Reach"
           range = pj.atributos.movimiento + 2; // +2 for attack range approx
           color = 0xff4400;
+      } else if (accion.range) {
+          // Generic range from action object (e.g. Basic Attack)
+          range = accion.range;
+          color = 0xff0000;
       } else {
           // Standard action range logic (placeholder)
           range = 5;
@@ -339,7 +346,12 @@ function updateRangeIndicator(pj: PersonajeInstancia | null, accion: any) {
 
   } else {
       // Movement mode
-      range = pj.atributos.movimiento;
+      const mesh = characterMeshes.get(pj.nombre);
+      if (mesh && mesh.userData.isMoving) {
+          range = 0; // Hide during movement
+      } else {
+          range = pj.atributos.movimiento;
+      }
       color = 0x4ade80;
       clearHighlights();
   }
@@ -536,21 +548,13 @@ async function onCanvasClick(event: MouseEvent) {
         new CustomEvent("character-clicked", { detail: target }),
       );
     } else if (obj === navMesh) {
-        // If an action is prepared, maybe clicking ground cancels it or moves?
-        // Usually, RPGs allow moving even if skill is selected (or clicking ground cancels skill).
-        // Let's assume clicking ground moves unless cancelled.
-        // But if action is prepared, we might not want to move accidentally.
+      // Move active character
+      if (personajeActivo.value) {
+        // If action is prepared, cancel it when moving
         if (accionPreparada.value) {
-            // Cancel action or ignore? Let's ignore movement if targeting.
-            return;
+           setAccionPreparada(null);
         }
 
-      // Move active character
-      if (
-        personajeActivo.value &&
-        personajeSeleccionado.value &&
-        personajeSeleccionado.value.nombre === personajeActivo.value.nombre
-      ) {
         const mesh = characterMeshes.get(personajeActivo.value.nombre);
         if (!mesh) return;
 
