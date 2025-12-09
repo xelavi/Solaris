@@ -11,8 +11,8 @@
         <p class="text-sm font-medium text-gray-400 mt-1">Nivel {{ personaje.nivel }}</p>
       </div>
 
-      <div v-if="esActivo" class="flex flex-col items-end">
-         <div class="px-2 py-0.5 bg-green-900/50 text-green-400 text-[10px] font-bold rounded border border-green-700 mb-1 tracking-wider uppercase">
+      <div class="flex flex-col items-end">
+         <div v-if="esActivo" class="px-2 py-0.5 bg-green-900/50 text-green-400 text-[10px] font-bold rounded border border-green-700 mb-1 tracking-wider uppercase">
             Tu Turno
          </div>
 
@@ -24,7 +24,7 @@
                    v-for="i in personaje.atributos.acciones"
                    :key="i"
                    class="w-3 h-3 rotate-45 border"
-                   :class="i <= accionesRestantes ? 'bg-yellow-500 border-yellow-300 shadow-[0_0_5px_rgba(234,179,8,0.8)]' : 'bg-gray-800 border-gray-600'"
+                   :class="isActionAvailable(i) ? 'bg-yellow-500 border-yellow-300 shadow-[0_0_5px_rgba(234,179,8,0.8)]' : 'bg-gray-800 border-gray-600'"
                 ></div>
             </div>
          </div>
@@ -212,6 +212,15 @@ const { cambiarArmaActivo, personajeActivo, accionesRestantes } = usePartida();
 const esActivo = computed(() => {
     return personajeActivo.value && personajeActivo.value.instanciaId === props.personaje.instanciaId;
 });
+
+function isActionAvailable(index: number) {
+    if (esActivo.value) {
+        return index <= accionesRestantes.value;
+    }
+    // For non-active characters, show full actions (or empty if you prefer)
+    // Usually in RPGs, you see max capacity.
+    return true;
+}
 
 const porcentajeVida = computed(() => {
   return Math.min(100, Math.max(0, (props.personaje.vidaActual / props.personaje.atributos.hp) * 100));

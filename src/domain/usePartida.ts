@@ -167,6 +167,7 @@ export function usePartida() {
             checkAutoPassTurn();
             return { exito: true };
         } else {
+            agregarLog(`Fallo al cargar: ${res.mensaje}`);
             return res;
         }
     }
@@ -192,17 +193,29 @@ export function usePartida() {
       }
       if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
 
-      // 2. Moverse hacia el enemigo (simple vector math for now, NavMesh logic is handled by client usually but we update state)
-      // Posición objetivo: 1.5m del enemigo en dirección al atacante
-      const dirX = atacante.posicion.x - defensor.posicion.x;
-      const dirZ = atacante.posicion.z - defensor.posicion.z;
+      // 2. Determinar rango del arma para saber dónde detenerse
+      let range = 1.5; // Default Melee
+      if (atacante.armaEquipada) {
+          const a = armasData.armas.find((w: any) => w.id === atacante.armaEquipada);
+          if (a && a.distancia_max) range = a.distancia_max;
+      }
+
+      // 3. Moverse hacia el enemigo
+      const dirX = defensor.posicion.x - atacante.posicion.x;
+      const dirZ = defensor.posicion.z - atacante.posicion.z;
       const len = Math.sqrt(dirX*dirX + dirZ*dirZ);
 
-      const range = 1.5; // Melee range
+      // Validar si el objetivo está alcanzable con movimiento (1x movimiento)
+      // Distancia a recorrer = Distancia Total - Rango Arma
+      const distTravel = Math.max(0, len - range);
 
-      if (len > 0.1) {
-          const destX = defensor.posicion.x + (dirX / len) * range;
-          const destZ = defensor.posicion.z + (dirZ / len) * range;
+      if (distTravel > atacante.atributos.movimiento) {
+           return { exito: false, mensaje: `Objetivo demasiado lejos (Necesitas: ${distTravel.toFixed(1)}m, Movimiento: ${atacante.atributos.movimiento}m)` };
+      }
+
+      if (len > range) {
+          const destX = atacante.posicion.x + (dirX / len) * distTravel;
+          const destZ = atacante.posicion.z + (dirZ / len) * distTravel;
 
           atacante.posicion.x = destX;
           atacante.posicion.z = destZ;
@@ -210,7 +223,7 @@ export function usePartida() {
           agregarLog(`${atacante.nombre} carga hacia ${defensor.nombre}!`);
       }
 
-      // 3. Atacar
+      // 4. Atacar
       // Reutilizamos la lógica de ataque pero sin gastar acción extra (ya gastamos 2 en usarActiva)
       // Llamamos a realizarAtaque interno
       const resultado = calcularAtaqueInterno(atacante, defensor);
@@ -274,6 +287,28 @@ export function usePartida() {
     }
 
     if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
+
+    // Validar Rango
+    const dist = Math.sqrt(
+        (personaje.posicion.x - defensor.posicion.x)**2 +
+        (personaje.posicion.z - defensor.posicion.z)**2
+    );
+
+    let minRange = 0;
+    let maxRange = 1.5;
+    if (personaje.armaEquipada) {
+         const a = armasData.armas.find((w: any) => w.id === personaje.armaEquipada);
+         if (a) {
+             if (a.distancia_min) minRange = a.distancia_min;
+             if (a.distancia_max) maxRange = a.distancia_max;
+         }
+    }
+
+    if (dist < minRange || dist > maxRange) {
+        const msg = `Fuera de rango (Dist: ${dist.toFixed(1)}m, Rango: ${minRange}-${maxRange}m)`;
+        agregarLog(msg);
+        return { exito: false, mensaje: msg };
+    }
 
     const resultado = calcularAtaqueInterno(personaje, defensor);
 

@@ -496,7 +496,8 @@ function animate() {
 
       const dir = new THREE.Vector3().subVectors(target, currentPos);
       const dist = dir.length();
-      const speed = 10 * dt;
+      // Reduced speed for more realistic movement (approx 4m/s)
+      const speed = 4 * dt;
 
       if (dist < speed) {
         mesh.position.copy(target);
