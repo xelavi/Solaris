@@ -358,16 +358,29 @@ function updateRangeIndicator(pj: PersonajeInstancia | null, accion: any) {
   }
 
   // Draw Range Circle
-  const geometry = new THREE.RingGeometry(range - 0.1, range, 64);
+  const geometry = new THREE.RingGeometry(range - 0.15, range, 64);
   geometry.rotateX(-Math.PI / 2);
   const material = new THREE.MeshBasicMaterial({
       color: color,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.8,
       side: THREE.DoubleSide
   });
 
   rangeIndicatorMesh = new THREE.Mesh(geometry, material);
+
+  // Add Inner Fill
+  const fillGeo = new THREE.CircleGeometry(range - 0.15, 64);
+  fillGeo.rotateX(-Math.PI / 2);
+  const fillMat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide
+  });
+  const fillMesh = new THREE.Mesh(fillGeo, fillMat);
+  rangeIndicatorMesh.add(fillMesh);
+
   rangeIndicatorMesh.position.copy(mesh.position);
   rangeIndicatorMesh.position.y = 0.05; // Slightly above ground
   scene.add(rangeIndicatorMesh);
@@ -559,6 +572,7 @@ async function onCanvasClick(event: MouseEvent) {
         // If action is prepared, cancel it when moving
         if (accionPreparada.value) {
            setAccionPreparada(null);
+           return;
         }
 
         const mesh = characterMeshes.get(personajeActivo.value.nombre);
@@ -584,7 +598,7 @@ async function onCanvasClick(event: MouseEvent) {
             }
 
             const movimientoMax = personajeActivo.value.atributos.movimiento;
-            if (totalDist > movimientoMax * 1.5) {
+            if (totalDist > movimientoMax) {
                  console.log("Too far!", totalDist);
                  // Optional: visual feedback for invalid move
                  return;

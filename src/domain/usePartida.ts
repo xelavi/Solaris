@@ -102,8 +102,8 @@ export function usePartida() {
 
     const movimientoMax = personaje.atributos.movimiento;
 
-    // Allow some margin for pathfinding deviations
-    if (distance > movimientoMax * 1.5) {
+    // Allow some margin for pathfinding deviations (1.1x)
+    if (distance > movimientoMax * 1.1) {
       return {
         exito: false,
         mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distance.toFixed(1)})`,

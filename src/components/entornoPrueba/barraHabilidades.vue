@@ -43,7 +43,7 @@
       <div class="w-px h-10 bg-gray-700 mx-1"></div>
 
       <!-- Activas -->
-      <div v-for="activa in activas" :key="activa.id" class="relative group">
+      <div v-for="activa in activasDisponibles" :key="activa.id" class="relative group">
         <!-- Tooltip -->
         <div
           class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 w-56 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
@@ -117,6 +117,10 @@ import { usePartida } from "../../domain/usePartida";
 const { personajeActivo, usarActiva, ejecutarAtaque, accionPreparada, setAccionPreparada } =
   usePartida();
 const activas = ref(activasData.activas);
+
+const activasDisponibles = computed(() => {
+    return activas.value.filter(a => !a.descripcion.includes("(Reacción)"));
+});
 
 // Computed Basic Attack with Dynamic Range
 const ATAQUE_BASICO = computed(() => {
