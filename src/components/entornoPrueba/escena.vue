@@ -47,6 +47,7 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
+import Stats from "three/addons/libs/stats.module.js";
 import { Pathfinding } from "three-pathfinding";
 import PanelCharacter from "./panelCharacter.vue";
 import FichaCharacter from "./fichaCharacter.vue";
@@ -73,6 +74,7 @@ const {
 } = usePartida();
 
 const { mapa, obtenerAlcance } = useMapa();
+
 
 // Local State for UI
 const personajeSeleccionado = ref<PersonajeInstancia | null>(null);
@@ -107,7 +109,7 @@ let cubes: THREE.Mesh[] = []; // Only for walls now
 const characterMeshes = new Map<string, THREE.Mesh>();
 let activeIndicatorMesh: THREE.Mesh | null = null;
 let rangeIndicatorMesh: THREE.Mesh | null = null;
-
+const stats = new Stats();
 // Constants
 const CUBE_SIZE = 1;
 
@@ -117,7 +119,9 @@ function init() {
   const el = canvasContainer.value!;
   const width = el.clientWidth;
   const height = el.clientHeight;
-
+  
+  
+  el.appendChild(stats.dom);  
   // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -478,6 +482,7 @@ function updateClickables() {
 // --- Animation Loop ---
 function animate() {
   rafId = requestAnimationFrame(animate);
+  stats.update();
   controls.update();
 
   const dt = 0.016; // Approx delta time
