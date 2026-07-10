@@ -31,6 +31,12 @@
         >
           <span>Editor de Voxeles</span>
         </button>
+        <button
+          @click="irABestiario"
+          class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30 flex items-center gap-3 text-lg"
+        >
+          <span>Bestiario</span>
+        </button>
       </div>
 
       <div
@@ -106,6 +112,7 @@ const navigateToFicha = inject<(id: string) => void>("navigateToFicha");
 const navigateToCrear = inject<() => void>("navigateToCrear");
 const navigateToPartidas = inject<() => void>("navigateToPartidas");
 const navigateToEditorVoxeles = inject<() => void>("navigateToEditorVoxeles");
+const navigateToBestiario = inject<() => void>("navigateToBestiario");
 
 function cargarPersonajes() {
   try {
@@ -168,6 +175,12 @@ function irAPartidas() {
 function irAEditorVoxeles() {
   if (navigateToEditorVoxeles) {
     navigateToEditorVoxeles();
+  }
+}
+
+function irABestiario() {
+  if (navigateToBestiario) {
+    navigateToBestiario();
   }
 }
 
