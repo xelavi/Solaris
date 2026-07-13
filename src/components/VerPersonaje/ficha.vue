@@ -1,12 +1,15 @@
 <template>
   <div :class="['ficha-root', { page: !embebido }]">
+    <!-- A pantalla completa la ficha controla su propio zoom; embebida en la
+         ventana flotante, es la ventana la que gestiona el tamaño. -->
     <ControlZoom
+      v-if="!embebido"
       :zoom="zoom"
       @reducir="reducir"
       @aumentar="aumentar"
       @restablecer="restablecer"
     />
-    <div class="mx-auto" :style="{ width: '1280px', zoom }">
+    <div class="mx-auto" :style="embebido ? { width: '1280px' } : { width: '1280px', zoom }">
       <!-- Barra superior: volver + pestañas -->
       <div v-if="!embebido" class="fx-topbar">
         <button @click="volver" class="fx-back">← Volver a personajes</button>

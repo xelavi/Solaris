@@ -1,12 +1,6 @@
 <template>
   <div class="ficha-root">
-    <ControlZoom
-      :zoom="zoom"
-      @reducir="reducir"
-      @aumentar="aumentar"
-      @restablecer="restablecer"
-    />
-    <div class="mx-auto" :style="{ width: '1280px', zoom }">
+    <div class="mx-auto" style="width: 1280px">
       <div v-if="criatura">
         <!-- Fila 1: identidad + puntos de vida -->
         <div class="fx-row1">
@@ -254,14 +248,6 @@ import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import type { PayloadTirada } from "../../domain/usePartida";
 import habilidadesData from "../../assets/habilidades.json";
-import { useZoomFicha } from "../../domain/useZoomFicha";
-import ControlZoom from "../ControlZoom.vue";
-
-// Zoom ajustable por el usuario (persistido).
-const { zoom, aumentar, reducir, restablecer } = useZoomFicha(
-  "criaturaCombate",
-  1280,
-);
 
 const props = defineProps<{ criaturaId?: string }>();
 

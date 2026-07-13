@@ -22,8 +22,9 @@
       v-for="(ficha, idx) in fichasFlotantes"
       :key="ficha.uid"
       :titulo="`Ficha — ${ficha.nombre}`"
-      :ancho="fichaAncho"
-      :alto="fichaAlto"
+      :ancho="1280"
+      :alto="960"
+      :zoom="zoomFicha"
       :desplazamiento="idx"
       @close="cerrarFicha(ficha.uid)"
     >
@@ -45,6 +46,15 @@
         @tirar="onTirarFicha($event, ficha.nombre)"
       />
     </VentanaFlotante>
+
+    <!-- Control de tamaño de las fichas flotantes (redimensiona la ventana). -->
+    <ControlZoom
+      v-if="fichasFlotantes.length"
+      :zoom="zoomFicha"
+      @reducir="reducirZoomFicha"
+      @aumentar="aumentarZoomFicha"
+      @restablecer="restablecerZoomFicha"
+    />
 
     <!-- Menú contextual (clic derecho sobre un token) -->
     <div
@@ -351,6 +361,8 @@ import PanelCharacter from "./panelCharacter.vue";
 import Ficha from "../VerPersonaje/ficha.vue";
 import FichaCriaturaCombate from "./fichaCriaturaCombate.vue";
 import VentanaFlotante from "./ventanaFlotante.vue";
+import ControlZoom from "../ControlZoom.vue";
+import { useZoomFicha } from "../../domain/useZoomFicha";
 import PanelLateral from "./panelLateral.vue";
 import GestorMapas from "./gestorMapas.vue";
 import MenuIzquierdo from "./menuIzquierdo.vue";
@@ -407,8 +419,14 @@ const {
 // Tamaño inicial de la ficha flotante: grande y ajustado al viewport (deja
 // margen para la barra izquierda y el panel lateral derecho). El usuario puede
 // seguir redimensionándola con el tirador de la esquina.
-const fichaAncho = ref(Math.min(1280, Math.round(window.innerWidth * 0.9)));
-const fichaAlto = ref(Math.min(900, Math.round(window.innerHeight * 0.9)));
+// Zoom (tamaño) de las fichas flotantes: el control −/+ redimensiona la ventana
+// entera. Ajustable por el usuario y persistido.
+const {
+  zoom: zoomFicha,
+  aumentar: aumentarZoomFicha,
+  reducir: reducirZoomFicha,
+  restablecer: restablecerZoomFicha,
+} = useZoomFicha("ventanaFicha", 1280);
 
 // Vuelca al chat lateral una tirada / uso de habilidad desde una ficha flotante.
 function onTirarFicha(payload: PayloadTirada, nombre?: string) {
