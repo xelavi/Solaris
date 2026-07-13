@@ -84,6 +84,9 @@ export interface TokenPartida {
   id: string;
   /** id del personaje/criatura de origen. */
   refId: string;
+  /** id de la entrada del diario que originó este token: solo puede haber un
+   * token en el mapa por cada entrada del diario. */
+  diarioId?: string;
   tipo: "personaje" | "criatura";
   nombre: string;
   pos: { col: number; row: number; nivel: number };

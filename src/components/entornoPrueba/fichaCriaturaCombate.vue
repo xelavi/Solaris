@@ -32,21 +32,47 @@
           </div>
 
           <div class="fx-panel">
-            <div class="fx-phead"><span class="fx-grow">Puntos de vida</span></div>
+            <div class="fx-phead">
+              <span class="fx-grow">Puntos de vida</span>
+              <button
+                v-if="tokenVinculado"
+                class="fx-gear"
+                :class="{ on: editVida }"
+                title="Ajustar vida"
+                aria-label="Ajustar vida"
+                @click="editVida = !editVida"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.4 3.5c0-.3 0-.6-.06-.9l1.7-1.32a.4.4 0 0 0 .1-.52l-1.6-2.77a.4.4 0 0 0-.5-.18l-2 .8a6 6 0 0 0-1.56-.9l-.3-2.13a.4.4 0 0 0-.4-.34h-3.2a.4.4 0 0 0-.4.34l-.3 2.13c-.56.23-1.08.53-1.56.9l-2-.8a.4.4 0 0 0-.5.18l-1.6 2.77a.4.4 0 0 0 .1.52l1.7 1.32c-.04.3-.06.6-.06.9s.02.6.06.9l-1.7 1.32a.4.4 0 0 0-.1.52l1.6 2.77c.1.18.32.25.5.18l2-.8c.48.37 1 .67 1.56.9l.3 2.13c.03.2.2.34.4.34h3.2c.2 0 .37-.14.4-.34l.3-2.13c.56-.23 1.08-.53 1.56-.9l2 .8c.18.07.4 0 .5-.18l1.6-2.77a.4.4 0 0 0-.1-.52l-1.7-1.32c.04-.3.06-.6.06-.9Z"
+                  />
+                </svg>
+              </button>
+            </div>
             <div class="fx-hpwrap">
               <div class="fx-hpmain">
                 <div class="fx-hpbox cur">
                   <div class="fx-hp-cap">Vida</div>
-                  <div class="fx-hp-field tnum">{{ criatura.atributos.hp }}</div>
+                  <div class="fx-hp-field tnum">{{ vidaActual }}</div>
                 </div>
                 <div class="fx-hpbox">
-                  <div class="fx-hp-cap">Regeneración</div>
-                  <div class="fx-hp-field tnum">
-                    +{{ criatura.atributos.regeneracion }}
-                  </div>
+                  <div class="fx-hp-cap">Máximo</div>
+                  <div class="fx-hp-field tnum">{{ vidaMax }}</div>
                 </div>
               </div>
-              <div class="fx-hpbar"><span style="width: 100%"></span></div>
+              <div v-if="editVida && tokenVinculado" class="fx-hpedit">
+                <span class="fx-hpedit-l">Vida actual</span>
+                <input
+                  type="number"
+                  class="fx-hpinput tnum"
+                  min="0"
+                  :value="vidaActual"
+                  @input="
+                    fijarVidaToken(($event.target as HTMLInputElement).value)
+                  "
+                />
+              </div>
+              <div class="fx-hpbar"><span :style="{ width: hpPct + '%' }"></span></div>
             </div>
           </div>
         </div>
@@ -246,10 +272,34 @@ import type {
 } from "../../domain/Criatura";
 import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
+import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
 import habilidadesData from "../../assets/habilidades.json";
 
-const props = defineProps<{ criaturaId?: string }>();
+const props = defineProps<{
+  criaturaId?: string;
+  // id de la entrada del diario: localiza el token de esta instancia en el
+  // mapa para mostrar y editar su vida actual (sincronizada con el escenario).
+  diarioId?: string;
+}>();
+
+const { partidaActual, establecerVidaToken } = usePartida();
+const tokenVinculado = computed(() =>
+  props.diarioId
+    ? partidaActual.value?.tokens?.find((t) => t.diarioId === props.diarioId)
+    : undefined,
+);
+const vidaMax = computed(() => criatura.value?.atributos.hp ?? 0);
+const vidaActual = computed(() => tokenVinculado.value?.vida?.actual ?? vidaMax.value);
+const hpPct = computed(() => {
+  const max = vidaMax.value || 1;
+  return Math.max(0, Math.min(100, Math.round((vidaActual.value / max) * 100)));
+});
+const editVida = ref(false);
+function fijarVidaToken(valor: string | number) {
+  if (!tokenVinculado.value) return;
+  establecerVidaToken(tokenVinculado.value.id, Number(valor));
+}
 
 // Igual que la ficha del personaje en partida: al usar una habilidad/técnica o
 // tirar iniciativa se emite "tirar" con la tirada resuelta para el chat lateral.
@@ -653,6 +703,66 @@ function usarTecnica(tecnica: Tecnica) {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #e0a41c, var(--hp));
+}
+.fx-gear {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.fx-gear svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  transition: transform 0.25s ease;
+}
+.fx-gear:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+.fx-gear:hover svg {
+  transform: rotate(45deg);
+}
+.fx-gear.on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+.fx-hpedit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+.fx-hpedit-l {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.fx-hpinput {
+  width: 54px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: #16a34a;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+.fx-hpinput:focus {
+  outline: none;
+  border-color: color-mix(in srgb, #16a34a 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #16a34a 22%, transparent);
 }
 
 /* ---------- Fila 2: atributos + armadura/velocidad ---------- */

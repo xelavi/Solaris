@@ -37,11 +37,13 @@
       <FichaCriaturaCombate
         v-else-if="ficha.tipo === 'criatura'"
         :criatura-id="ficha.id"
+        :diario-id="ficha.diarioId"
         @tirar="onTirarFicha($event, ficha.nombre)"
       />
       <Ficha
         v-else
         :character-id="ficha.id"
+        :diario-id="ficha.diarioId"
         embebido
         @tirar="onTirarFicha($event, ficha.nombre)"
       />
@@ -1130,7 +1132,12 @@ function onDragOver(e: DragEvent) {
 function onDrop(e: DragEvent) {
   const raw = e.dataTransfer?.getData("application/json");
   if (!raw) return;
-  let data: { refId: string; tipo: "personaje" | "criatura"; nombre: string };
+  let data: {
+    id: string;
+    refId: string;
+    tipo: "personaje" | "criatura";
+    nombre: string;
+  };
   try {
     data = JSON.parse(raw);
   } catch {
@@ -1605,8 +1612,8 @@ function menuVerFicha() {
   const token = partidaActual.value?.tokens?.find((t) => t.id === menu.tokenId);
   if (token) {
     if (token.tipo === "criatura")
-      abrirFichaCriatura(token.refId, token.nombre);
-    else abrirFichaGuardado(token.refId, token.nombre);
+      abrirFichaCriatura(token.refId, token.nombre, token.diarioId);
+    else abrirFichaGuardado(token.refId, token.nombre, token.diarioId);
   }
   menuContextual.value = null;
 }

@@ -204,8 +204,8 @@
               :key="entrada.id"
               draggable="true"
               @dragstart="onDragStart($event, entrada)"
-              @click="abrirFichaGuardado(entrada.refId, entrada.nombre)"
-              @contextmenu.prevent="abrirFichaGuardado(entrada.refId, entrada.nombre)"
+              @click="abrirFichaGuardado(entrada.refId, entrada.nombre, entrada.id)"
+              @contextmenu.prevent="abrirFichaGuardado(entrada.refId, entrada.nombre, entrada.id)"
               title="Clic para ver la ficha · arrastra al mapa"
               class="group flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800/60 px-3 py-2 transition-colors hover:border-indigo-500/50 hover:bg-gray-800 active:cursor-grabbing"
             >
@@ -218,12 +218,20 @@
               }}</span>
               <div class="flex items-center gap-1.5">
                 <button
+                  v-if="!tieneTokenColocado(entrada.id)"
                   @click.stop="colocarToken(entrada)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-indigo-400"
                   title="Colocar en el mapa"
                 >
                   📍
                 </button>
+                <span
+                  v-else
+                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100"
+                  title="Ya está en el mapa"
+                >
+                  En el mapa
+                </span>
                 <button
                   @click.stop="quitarDelDiario(entrada.id)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
@@ -267,8 +275,8 @@
               :key="entrada.id"
               draggable="true"
               @dragstart="onDragStart($event, entrada)"
-              @click="abrirFichaCriatura(entrada.refId, entrada.nombre)"
-              @contextmenu.prevent="abrirFichaCriatura(entrada.refId, entrada.nombre)"
+              @click="abrirFichaCriatura(entrada.refId, entrada.nombre, entrada.id)"
+              @contextmenu.prevent="abrirFichaCriatura(entrada.refId, entrada.nombre, entrada.id)"
               title="Clic para ver la ficha · arrastra al mapa"
               class="group flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800/60 px-3 py-2 transition-colors hover:border-indigo-500/50 hover:bg-gray-800 active:cursor-grabbing"
             >
@@ -281,12 +289,20 @@
               }}</span>
               <div class="flex items-center gap-1.5">
                 <button
+                  v-if="!tieneTokenColocado(entrada.id)"
                   @click.stop="colocarToken(entrada)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-indigo-400"
                   title="Colocar en el mapa"
                 >
                   📍
                 </button>
+                <span
+                  v-else
+                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100"
+                  title="Ya está en el mapa"
+                >
+                  En el mapa
+                </span>
                 <button
                   @click.stop="quitarDelDiario(entrada.id)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
@@ -359,8 +375,7 @@
               v-for="item in disponibles"
               :key="item.id"
               @click="seleccionar(item)"
-              :disabled="yaEnDiario(item.id)"
-              class="flex w-full items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-left transition-colors hover:border-indigo-500 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+              class="flex w-full items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-left transition-colors hover:border-indigo-500 hover:bg-gray-700"
             >
               <span
                 class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-sm font-bold text-white"
@@ -374,12 +389,6 @@
               <span class="flex-1 text-sm font-semibold text-gray-100">{{
                 item.nombre
               }}</span>
-              <span
-                v-if="yaEnDiario(item.id)"
-                class="text-[10px] text-gray-500"
-              >
-                Ya añadido
-              </span>
             </button>
           </div>
         </div>
@@ -469,6 +478,13 @@ function inicial(nombre: string): string {
   return nombre?.trim().charAt(0).toUpperCase() || "?";
 }
 
+// Una entrada del diario solo puede tener un token en el mapa a la vez.
+function tieneTokenColocado(entradaId: string): boolean {
+  return (partidaActual.value?.tokens ?? []).some(
+    (t) => t.diarioId === entradaId,
+  );
+}
+
 // --- Modal añadir entidad ---
 interface ItemDisponible {
   id: string;
@@ -508,10 +524,6 @@ const disponibles = computed<ItemDisponible[]>(() => {
   return [];
 });
 
-function yaEnDiario(refId: string): boolean {
-  return entradas.value.some((e) => e.refId === refId);
-}
-
 function abrirModal() {
   tipoElegido.value = null;
   modalAbierto.value = true;
@@ -528,7 +540,7 @@ function elegirTipo(tipo: EntradaDiario["tipo"]) {
 }
 
 function seleccionar(item: ItemDisponible) {
-  if (!tipoElegido.value || yaEnDiario(item.id)) return;
+  if (!tipoElegido.value) return;
   agregarAlDiario(tipoElegido.value, item.id, item.nombre);
 }
 
@@ -539,6 +551,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   e.dataTransfer.setData(
     "application/json",
     JSON.stringify({
+      id: entrada.id,
       refId: entrada.refId,
       tipo: entrada.tipo,
       nombre: entrada.nombre,

@@ -92,8 +92,8 @@ function nuevoIdMensaje(): number {
 // `clave` de identidad (para no abrir dos ventanas del mismo personaje/criatura).
 type FichaFlotante =
   | { uid: number; clave: string; tipo: "instancia"; nombre: string; data: PersonajeInstancia }
-  | { uid: number; clave: string; tipo: "guardado"; nombre: string; id: string }
-  | { uid: number; clave: string; tipo: "criatura"; nombre: string; id: string };
+  | { uid: number; clave: string; tipo: "guardado"; nombre: string; id: string; diarioId?: string }
+  | { uid: number; clave: string; tipo: "criatura"; nombre: string; id: string; diarioId?: string };
 // Varias fichas pueden estar abiertas a la vez sobre la escena de juego.
 const fichasFlotantes = ref<FichaFlotante[]>([]);
 let _fichaSeq = 0;
@@ -171,23 +171,28 @@ export function usePartida() {
     });
   }
 
-  function abrirFichaGuardado(id: string, nombre: string) {
+  // `diarioId` distingue instancias repetidas del mismo personaje/criatura
+  // (p. ej. "Goblin (1)" y "Goblin (2)"): sin él, las dos abrirían la misma
+  // ventana flotante al compartir `id` (el personaje/criatura de origen).
+  function abrirFichaGuardado(id: string, nombre: string, diarioId?: string) {
     agregarFicha({
       uid: ++_fichaSeq,
-      clave: `guardado:${id}`,
+      clave: `guardado:${diarioId ?? id}`,
       tipo: "guardado",
       nombre,
       id,
+      diarioId,
     });
   }
 
-  function abrirFichaCriatura(id: string, nombre: string) {
+  function abrirFichaCriatura(id: string, nombre: string, diarioId?: string) {
     agregarFicha({
       uid: ++_fichaSeq,
-      clave: `criatura:${id}`,
+      clave: `criatura:${diarioId ?? id}`,
       tipo: "criatura",
       nombre,
       id,
+      diarioId,
     });
   }
 
@@ -279,6 +284,9 @@ export function usePartida() {
   }
 
   // --- Diario ---
+  // Se puede añadir el mismo personaje/criatura varias veces: cada alta es una
+  // entrada (y, más adelante, un token) independiente, aunque compartan
+  // `refId`. Para distinguirlas se numera el nombre: "Goblin (1)", "Goblin (2)"…
   function agregarAlDiario(
     tipo: EntradaDiario["tipo"],
     refId: string,
@@ -286,17 +294,20 @@ export function usePartida() {
   ) {
     if (!partidaActual.value) return;
     if (!partidaActual.value.diario) partidaActual.value.diario = [];
-    // Evita duplicar la misma referencia en el diario.
-    if (partidaActual.value.diario.some((e) => e.refId === refId)) return;
+
+    const repeticiones = partidaActual.value.diario.filter(
+      (e) => e.refId === refId && e.tipo === tipo,
+    ).length;
+    const nombreNumerado = `${nombre} (${repeticiones + 1})`;
 
     partidaActual.value.diario.push({
       id: `diario_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       refId,
       tipo,
-      nombre,
+      nombre: nombreNumerado,
     });
     guardarPartidaActual();
-    agregarLog(`📖 ${nombre} añadido al diario.`);
+    agregarLog(`📖 ${nombreNumerado} añadido al diario.`);
   }
 
   function quitarDelDiario(entradaId: string) {
@@ -344,13 +355,20 @@ export function usePartida() {
   // Coloca un token de una entrada del diario. Si se pasa `posDestino` (p. ej.
   // al arrastrar y soltar sobre un hexágono), se usa esa posición; si no, se
   // busca la primera casilla libre del mapa hexagonal activo.
+  // Cada entrada del diario solo puede tener UN token en el mapa a la vez
+  // (aunque varias entradas compartan `refId` por ser el mismo personaje
+  // añadido más de una vez): si ya está colocada, no hace nada.
   async function colocarToken(
-    entrada: Pick<EntradaDiario, "refId" | "tipo" | "nombre">,
+    entrada: Pick<EntradaDiario, "id" | "refId" | "tipo" | "nombre">,
     posDestino?: { col: number; row: number; nivel: number },
   ) {
     const p = partidaActual.value;
     if (!p) return;
     if (!p.tokens) p.tokens = [];
+    if (p.tokens.some((t) => t.diarioId === entrada.id)) {
+      agregarLog(`⚠️ ${entrada.nombre} ya está en el mapa.`);
+      return;
+    }
 
     let pos = posDestino ?? { col: 0, row: 0, nivel: 0 };
     if (!posDestino && p.mapa) {
@@ -369,6 +387,7 @@ export function usePartida() {
     p.tokens.push({
       id: `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       refId: entrada.refId,
+      diarioId: entrada.id,
       tipo: entrada.tipo,
       nombre: entrada.nombre,
       pos,

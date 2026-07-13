@@ -119,28 +119,42 @@
                 <div class="fx-hpbox cur">
                   <div class="fx-hp-cap">Actual</div>
                   <div class="fx-hp-field tnum">
-                    {{ personaje.hp.actual
-                    }}<span v-if="bono('hp')" class="fx-hp-bonus"
+                    {{ vidaMostrada.actual
+                    }}<span v-if="!tokenVinculado && bono('hp')" class="fx-hp-bonus"
                       >+{{ bono("hp") }}</span
                     >
                   </div>
                 </div>
                 <div class="fx-hpbox">
                   <div class="fx-hp-cap">Máximo</div>
-                  <div class="fx-hp-field tnum">{{ personaje.hp.maximo }}</div>
+                  <div class="fx-hp-field tnum">{{ vidaMostrada.max }}</div>
                 </div>
               </div>
               <div v-if="editVida" class="fx-hpedit">
-                <span class="fx-hpedit-l">Vida extra</span>
-                <input
-                  type="number"
-                  class="fx-hpinput tnum"
-                  min="0"
-                  :value="bono('hp')"
-                  @input="
-                    fijarBono('hp', ($event.target as HTMLInputElement).value)
-                  "
-                />
+                <template v-if="tokenVinculado">
+                  <span class="fx-hpedit-l">Vida actual</span>
+                  <input
+                    type="number"
+                    class="fx-hpinput tnum"
+                    min="0"
+                    :value="vidaMostrada.actual"
+                    @input="
+                      fijarVidaToken(($event.target as HTMLInputElement).value)
+                    "
+                  />
+                </template>
+                <template v-else>
+                  <span class="fx-hpedit-l">Vida extra</span>
+                  <input
+                    type="number"
+                    class="fx-hpinput tnum"
+                    min="0"
+                    :value="bono('hp')"
+                    @input="
+                      fijarBono('hp', ($event.target as HTMLInputElement).value)
+                    "
+                  />
+                </template>
               </div>
               <div class="fx-hpbar">
                 <span :style="{ width: hpPct + '%' }"></span>
@@ -1052,6 +1066,10 @@ const props = defineProps<{
   // superior de navegación, no persiste cambios en el repositorio y hace
   // interactivos habilidades/ataques/activas (emiten "usar").
   embebido?: boolean;
+  // id de la entrada del diario de la partida: identifica esta instancia
+  // concreta del personaje (puede haber varias del mismo characterId) y
+  // permite encontrar su token en el mapa para sincronizar la vida actual.
+  diarioId?: string;
 }>();
 
 // En modo embebido, al pulsar una habilidad / ataque / activa / iniciativa se
@@ -1075,8 +1093,17 @@ const textoVentaja = computed(() => etiquetaVentaja(ventajaTirada.value));
 // VerPersonaje. Se guardan por clave (atributo/armadura/vida…) y son >= 0.
 // El objeto se toma del estado de la partida (bonosDeFicha) para que sobreviva
 // al cerrar y reabrir la ventana flotante; en modo no embebido es local.
-const { bonosDeFicha } = usePartida();
+const { bonosDeFicha, partidaActual, establecerVidaToken } = usePartida();
 const bonos = ref<Record<string, number>>({});
+
+// Token de esta instancia colocado en el mapa (si lo hay): cuando existe, la
+// vida actual/máxima mostrada y editable es la del token (fuente única de
+// verdad), en vez del bono temporal de "vida extra" de la ficha suelta.
+const tokenVinculado = computed(() =>
+  props.diarioId
+    ? partidaActual.value?.tokens?.find((t) => t.diarioId === props.diarioId)
+    : undefined,
+);
 function bono(clave: string): number {
   return bonos.value[clave] || 0;
 }
@@ -1466,13 +1493,27 @@ function claseEjecucion(tipo?: string): string {
   }
 }
 
+// Vida a mostrar: si hay un token vinculado en el mapa, su vida es la fuente
+// de verdad (se actualiza sola al cambiarla desde el escenario); si no, se
+// usa la vida base de la ficha con el bono temporal de "vida extra".
+const vidaMostrada = computed(() => {
+  if (tokenVinculado.value?.vida) {
+    return { actual: tokenVinculado.value.vida.actual, max: tokenVinculado.value.vida.max };
+  }
+  const b = bono("hp");
+  return { actual: personaje.value.hp.actual + b, max: personaje.value.hp.maximo + b };
+});
+
+// Fija la vida actual del token vinculado (edición desde la ficha embebida).
+function fijarVidaToken(valor: string | number) {
+  if (!tokenVinculado.value) return;
+  establecerVidaToken(tokenVinculado.value.id, Number(valor));
+}
+
 // Porcentaje de vida para la barra
 const hpPct = computed(() => {
-  // El bono de vida cuenta como vida real: se suma a actual y máximo.
-  const b = bono("hp");
-  const max = personaje.value.hp.maximo + b || 1;
-  const actual = personaje.value.hp.actual + b;
-  return Math.max(0, Math.min(100, Math.round((actual / max) * 100)));
+  const max = vidaMostrada.value.max || 1;
+  return Math.max(0, Math.min(100, Math.round((vidaMostrada.value.actual / max) * 100)));
 });
 
 // Habilidades ordenadas (competentes primero, luego por total) y filtradas
@@ -2053,7 +2094,8 @@ onMounted(() => {
   // para que no se pierdan al cerrar la ficha flotante. Se identifica la ficha
   // por la instancia de partida o, en su defecto, por el id del personaje.
   if (props.embebido) {
-    const clave = props.personajeExterno?.instanciaId ?? props.characterId;
+    const clave =
+      props.diarioId ?? props.personajeExterno?.instanciaId ?? props.characterId;
     if (clave) bonos.value = bonosDeFicha(clave);
   }
 });
