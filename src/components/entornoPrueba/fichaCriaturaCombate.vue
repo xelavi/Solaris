@@ -1,5 +1,11 @@
 <template>
-  <div ref="contenedor" class="ficha-root">
+  <div class="ficha-root">
+    <ControlZoom
+      :zoom="zoom"
+      @reducir="reducir"
+      @aumentar="aumentar"
+      @restablecer="restablecer"
+    />
     <div class="mx-auto" :style="{ width: '1280px', zoom }">
       <div v-if="criatura">
         <!-- Fila 1: identidad + puntos de vida -->
@@ -248,10 +254,14 @@ import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import type { PayloadTirada } from "../../domain/usePartida";
 import habilidadesData from "../../assets/habilidades.json";
-import { useAjusteEscala } from "../../domain/useAjusteEscala";
+import { useZoomFicha } from "../../domain/useZoomFicha";
+import ControlZoom from "../ControlZoom.vue";
 
-// Escala la ficha (ancho de diseño 1280) para que quepa en la ventana flotante.
-const { contenedor, zoom } = useAjusteEscala(1280);
+// Zoom ajustable por el usuario (persistido).
+const { zoom, aumentar, reducir, restablecer } = useZoomFicha(
+  "criaturaCombate",
+  1280,
+);
 
 const props = defineProps<{ criaturaId?: string }>();
 

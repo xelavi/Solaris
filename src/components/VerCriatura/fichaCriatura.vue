@@ -1,5 +1,11 @@
 <template>
-  <div ref="contenedor" class="cx-root">
+  <div class="cx-root">
+    <ControlZoom
+      :zoom="zoom"
+      @reducir="reducir"
+      @aumentar="aumentar"
+      @restablecer="restablecer"
+    />
     <div class="mx-auto" :style="{ width: '1100px', zoom }">
       <!-- Barra superior -->
       <div class="cx-topbar">
@@ -188,10 +194,11 @@ import {
   type Etiqueta,
 } from "../../domain/Etiquetas";
 import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
-import { useAjusteEscala } from "../../domain/useAjusteEscala";
+import { useZoomFicha } from "../../domain/useZoomFicha";
+import ControlZoom from "../ControlZoom.vue";
 
-// Escala la ficha (ancho de diseño 1100) para que quepa en pantallas pequeñas.
-const { contenedor, zoom } = useAjusteEscala(1100);
+// Zoom ajustable por el usuario (persistido).
+const { zoom, aumentar, reducir, restablecer } = useZoomFicha("criatura", 1100);
 
 const catalogoEtiquetas = ref<Etiqueta[]>([]);
 

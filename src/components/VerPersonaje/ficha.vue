@@ -1,5 +1,11 @@
 <template>
-  <div ref="contenedor" :class="['ficha-root', { page: !embebido }]">
+  <div :class="['ficha-root', { page: !embebido }]">
+    <ControlZoom
+      :zoom="zoom"
+      @reducir="reducir"
+      @aumentar="aumentar"
+      @restablecer="restablecer"
+    />
     <div class="mx-auto" :style="{ width: '1280px', zoom }">
       <!-- Barra superior: volver + pestañas -->
       <div v-if="!embebido" class="fx-topbar">
@@ -1027,11 +1033,12 @@ import {
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
-import { useAjusteEscala } from "../../domain/useAjusteEscala";
+import { useZoomFicha } from "../../domain/useZoomFicha";
+import ControlZoom from "../ControlZoom.vue";
 
-// Escala la ficha (ancho de diseño 1280) para que quepa en pantallas pequeñas
-// o en la ventana flotante del juego.
-const { contenedor, zoom } = useAjusteEscala(1280);
+// Zoom ajustable por el usuario (persistido) para que la ficha se vea al tamaño
+// que quiera, aunque a pantalla completa "quepa" técnicamente.
+const { zoom, aumentar, reducir, restablecer } = useZoomFicha("personaje", 1280);
 
 const props = defineProps<{
   characterId?: string;
