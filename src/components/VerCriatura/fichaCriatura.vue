@@ -1,6 +1,6 @@
 <template>
-  <div class="cx-root">
-    <div class="mx-auto w-full max-w-[1100px]">
+  <div ref="contenedor" class="cx-root">
+    <div class="mx-auto" :style="{ width: '1100px', zoom }">
       <!-- Barra superior -->
       <div class="cx-topbar">
         <button @click="volver" class="cx-back">← Volver al bestiario</button>
@@ -188,6 +188,10 @@ import {
   type Etiqueta,
 } from "../../domain/Etiquetas";
 import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import { useAjusteEscala } from "../../domain/useAjusteEscala";
+
+// Escala la ficha (ancho de diseño 1100) para que quepa en pantallas pequeñas.
+const { contenedor, zoom } = useAjusteEscala(1100);
 
 const catalogoEtiquetas = ref<Etiqueta[]>([]);
 

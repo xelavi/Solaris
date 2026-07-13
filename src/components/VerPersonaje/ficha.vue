@@ -1,6 +1,6 @@
 <template>
-  <div :class="['ficha-root', { page: !embebido }]">
-    <div class="mx-auto w-full max-w-[1280px]">
+  <div ref="contenedor" :class="['ficha-root', { page: !embebido }]">
+    <div class="mx-auto" :style="{ width: '1280px', zoom }">
       <!-- Barra superior: volver + pestañas -->
       <div v-if="!embebido" class="fx-topbar">
         <button @click="volver" class="fx-back">← Volver a personajes</button>
@@ -1027,6 +1027,11 @@ import {
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
+import { useAjusteEscala } from "../../domain/useAjusteEscala";
+
+// Escala la ficha (ancho de diseño 1280) para que quepa en pantallas pequeñas
+// o en la ventana flotante del juego.
+const { contenedor, zoom } = useAjusteEscala(1280);
 
 const props = defineProps<{
   characterId?: string;

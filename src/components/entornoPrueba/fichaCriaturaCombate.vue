@@ -1,6 +1,6 @@
 <template>
-  <div class="ficha-root">
-    <div class="mx-auto w-full max-w-[1280px]">
+  <div ref="contenedor" class="ficha-root">
+    <div class="mx-auto" :style="{ width: '1280px', zoom }">
       <div v-if="criatura">
         <!-- Fila 1: identidad + puntos de vida -->
         <div class="fx-row1">
@@ -248,6 +248,10 @@ import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import type { PayloadTirada } from "../../domain/usePartida";
 import habilidadesData from "../../assets/habilidades.json";
+import { useAjusteEscala } from "../../domain/useAjusteEscala";
+
+// Escala la ficha (ancho de diseño 1280) para que quepa en la ventana flotante.
+const { contenedor, zoom } = useAjusteEscala(1280);
 
 const props = defineProps<{ criaturaId?: string }>();
 
