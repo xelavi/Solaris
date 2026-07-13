@@ -1,6 +1,12 @@
 <template>
   <div class="w-full h-screen relative">
-    <div ref="canvasContainer" class="w-full h-full"></div>
+    <div
+      ref="canvasContainer"
+      class="w-full h-full"
+      @dragover.prevent="onDragOver"
+      @drop.prevent="onDrop"
+      @mouseleave="onCanvasLeave"
+    ></div>
 
     <!-- UI Overlay -->
     <PanelCharacter
@@ -12,72 +18,443 @@
       :vida-max="panelData.vidaMax"
     />
 
-    <FichaCharacter
-      v-if="personajeSeleccionado"
-      :personaje="personajeSeleccionado"
-      class="absolute top-4 left-4 z-50"
-    />
-
-    <PanelIniciativa
-      v-if="ordenTurnos.length > 0"
-      :orden-turnos="ordenTurnos"
-      :turno-actual="turnoActual"
-    />
-
-    <BarraHabilidades />
-    <LogPartida />
-
-    <!-- Turn Info / Actions -->
-    <div
-      class="absolute bottom-4 right-4 text-white bg-black/50 p-4 rounded pointer-events-none"
+    <VentanaFlotante
+      v-for="(ficha, idx) in fichasFlotantes"
+      :key="ficha.uid"
+      :titulo="`Ficha — ${ficha.nombre}`"
+      :ancho="fichaAncho"
+      :alto="fichaAlto"
+      :desplazamiento="idx"
+      @close="cerrarFicha(ficha.uid)"
     >
-      <p v-if="personajeActivo">
-        Turno de:
+      <Ficha
+        v-if="ficha.tipo === 'instancia'"
+        :personaje-externo="ficha.data"
+        embebido
+        @tirar="onTirarFicha($event, ficha.nombre)"
+      />
+      <FichaCriaturaCombate
+        v-else-if="ficha.tipo === 'criatura'"
+        :criatura-id="ficha.id"
+        @tirar="onTirarFicha($event, ficha.nombre)"
+      />
+      <Ficha
+        v-else
+        :character-id="ficha.id"
+        embebido
+        @tirar="onTirarFicha($event, ficha.nombre)"
+      />
+    </VentanaFlotante>
+
+    <!-- Menú contextual (clic derecho sobre un token) -->
+    <div
+      v-if="menuContextual"
+      class="absolute z-50 min-w-[9rem] overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 text-sm text-gray-100 shadow-2xl backdrop-blur-md"
+      :style="{ left: `${menuContextual.x}px`, top: `${menuContextual.y}px` }"
+      @contextmenu.prevent
+    >
+      <div
+        class="truncate border-b border-gray-700 px-3 py-2 text-xs font-bold tracking-wide text-indigo-300"
+      >
+        {{ menuContextual.nombre }}
+      </div>
+      <!-- Editor rápido de vida -->
+      <div
+        v-if="vidaTokenMenu"
+        class="flex items-center gap-1.5 border-b border-gray-700 px-3 py-2"
+      >
+        <span class="text-red-400">❤️</span>
+        <button
+          class="flex h-6 w-6 items-center justify-center rounded bg-gray-800 text-base leading-none transition-colors hover:bg-red-600/70"
+          title="Quitar 1"
+          @click="ajustarVidaMenu(-1)"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          class="w-12 rounded border border-gray-600 bg-gray-800 px-1 py-0.5 text-center text-sm text-gray-100 focus:border-indigo-500 focus:outline-none"
+          :value="vidaTokenMenu.actual"
+          min="0"
+          :max="vidaTokenMenu.max"
+          @change="fijarVidaMenu(($event.target as HTMLInputElement).value)"
+          @keyup.enter="fijarVidaMenu(($event.target as HTMLInputElement).value)"
+        />
+        <span class="text-xs text-gray-400">/ {{ vidaTokenMenu.max }}</span>
+        <button
+          class="flex h-6 w-6 items-center justify-center rounded bg-gray-800 text-base leading-none transition-colors hover:bg-green-600/70"
+          title="Curar 1"
+          @click="ajustarVidaMenu(1)"
+        >
+          +
+        </button>
+      </div>
+      <button
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuVerFicha"
+      >
+        📄 Ver Ficha
+      </button>
+      <button
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuMover"
+      >
+        🥾 Mover
+      </button>
+      <button
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuAtacar"
+      >
+        ⚔️ Atacar
+      </button>
+      <button
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuAnadirEstado"
+      >
+        ✨ Estados
+      </button>
+    </div>
+
+    <!-- Panel de selección de estado alterado -->
+    <div
+      v-if="panelEstados"
+      class="absolute z-50 flex max-h-[70vh] w-64 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 text-sm text-gray-100 shadow-2xl backdrop-blur-md"
+      :style="{ left: `${panelEstados.x}px`, top: `${panelEstados.y}px` }"
+      @contextmenu.prevent
+    >
+      <div
+        class="flex items-center justify-between border-b border-gray-700 px-3 py-2"
+      >
+        <span class="text-xs font-bold tracking-wide text-indigo-300"
+          >Estados</span
+        >
+        <button
+          class="text-gray-400 hover:text-white"
+          @click="panelEstados = null"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="overflow-y-auto p-2">
+        <!-- Estados aplicados: clic para quitarlos -->
+        <div
+          v-if="estadosAplicadosPanel.length"
+          class="mb-3 border-b border-gray-700 pb-2"
+        >
+          <div
+            class="px-1 py-1 text-[10px] font-bold tracking-widest text-gray-500 uppercase"
+          >
+            Aplicados · clic para quitar
+          </div>
+          <div class="flex flex-wrap gap-1 px-1">
+            <button
+              v-for="est in estadosAplicadosPanel"
+              :key="est.estadoId"
+              class="flex items-center gap-1 rounded border border-gray-600 bg-gray-800 px-1.5 py-1 text-xs transition-colors hover:border-red-500 hover:bg-red-600/30"
+              :title="`Quitar ${est.etiqueta}`"
+              @click="quitarEstadoPanel(est.estadoId)"
+            >
+              <span class="text-sm leading-none">{{ est.icono }}</span>
+              <span class="max-w-[7rem] truncate">{{ est.etiqueta }}</span>
+              <span class="text-gray-400">✕</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-for="cat in CATEGORIAS_ESTADO" :key="cat.id" class="mb-2">
+          <div
+            class="px-1 py-1 text-[10px] font-bold tracking-widest text-gray-500 uppercase"
+          >
+            {{ cat.label }}
+          </div>
+          <button
+            v-for="estado in estadosPorCategoria[cat.id]"
+            :key="estado.id"
+            class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-indigo-600/70"
+            :title="estado.descripcion"
+            @click="aplicarEstado(estado)"
+          >
+            <span class="w-5 text-center text-base">{{
+              iconoEstado(estado.id)
+            }}</span>
+            <span class="flex-1 truncate">{{ estado.nombre }}</span>
+            <span
+              v-if="estado.acumulable"
+              class="text-[10px] text-gray-500"
+              title="Estado acumulable (valor X)"
+              >X</span
+            >
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú flotante para poner el valor X de un estado numérico -->
+    <div
+      v-if="panelValorEstado"
+      class="absolute z-50 flex w-56 flex-col overflow-hidden rounded-lg border border-gray-700 bg-gray-900/95 text-sm text-gray-100 shadow-2xl backdrop-blur-md"
+      :style="{ left: `${panelValorEstado.x}px`, top: `${panelValorEstado.y}px` }"
+      @contextmenu.prevent
+    >
+      <div
+        class="flex items-center gap-2 border-b border-gray-700 px-3 py-2"
+      >
+        <span class="text-base leading-none">{{
+          iconoEstado(panelValorEstado.estado.id)
+        }}</span>
+        <span class="flex-1 truncate text-xs font-bold tracking-wide text-indigo-300">{{
+          panelValorEstado.estado.nombre
+        }}</span>
+        <button
+          class="text-gray-400 hover:text-white"
+          @click="panelValorEstado = null"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="flex flex-col gap-2 p-3">
+        <div
+          v-if="panelValorEstado.valorActual > 0"
+          class="text-[11px] text-gray-400"
+        >
+          Valor actual:
+          <span class="font-bold text-gray-100">{{
+            panelValorEstado.valorActual
+          }}</span>
+        </div>
+        <input
+          type="number"
+          min="1"
+          class="w-full rounded border border-gray-600 bg-gray-800 px-2 py-1.5 text-center text-lg font-bold text-gray-100 focus:border-indigo-500 focus:outline-none"
+          v-model.number="panelValorEstado.entrada"
+          @keyup.enter="fijarValorEstado"
+          autofocus
+        />
+        <button
+          class="rounded bg-indigo-600 px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-indigo-500"
+          @click="fijarValorEstado"
+        >
+          Establecer valor
+        </button>
+        <button
+          v-if="panelValorEstado.valorActual > 0"
+          class="rounded border border-red-500/60 bg-red-600/20 px-3 py-1.5 text-sm font-semibold text-red-300 transition-colors hover:bg-red-600/40"
+          :title="`Suma al valor actual (${panelValorEstado.valorActual})`"
+          @click="aumentarValorEstado"
+        >
+          🩸 Aumentar (+{{ Math.max(1, Math.floor(panelValorEstado.entrada) || 1) }})
+        </button>
+      </div>
+    </div>
+
+    <!-- HUD sobre cada token: barra de vida + iconos de estado -->
+    <div
+      v-for="hud in tokenHuds"
+      v-show="hud.visible"
+      :key="hud.id"
+      class="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-full"
+      :style="{ left: `${hud.x}px`, top: `${hud.y}px` }"
+    >
+      <!-- Iconos de estado -->
+      <div
+        v-if="hud.estados.length"
+        class="pointer-events-auto mb-1 flex flex-wrap justify-center gap-0.5"
+      >
+        <button
+          v-for="est in hud.estados"
+          :key="est.estadoId"
+          class="group relative flex h-5 min-w-5 items-center justify-center rounded border border-gray-700 bg-gray-900/85 px-0.5 text-xs leading-none shadow transition-transform hover:scale-110"
+          @click="quitarEstadoHud(hud.id, est.estadoId)"
+        >
+          {{ est.icono }}
+          <!-- Tooltip: nombre (+ número) al pasar el ratón -->
+          <span
+            class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 hidden -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded border border-gray-700 bg-gray-900/95 px-2 py-1 text-[11px] font-semibold text-gray-100 shadow-lg group-hover:flex"
+          >
+            <span>{{ est.nombre }}</span>
+            <span
+              v-if="est.valor != null"
+              class="flex h-4 min-w-4 items-center justify-center rounded bg-indigo-600 px-1 text-[10px] font-bold leading-none text-white"
+              >{{ est.valor }}</span
+            >
+          </span>
+        </button>
+      </div>
+      <!-- Barra de vida -->
+      <div
+        class="h-1.5 w-14 overflow-hidden rounded-full border border-black/40 bg-gray-800/90 shadow"
+      >
+        <div
+          class="h-full rounded-full transition-all duration-200"
+          :style="{
+            width: `${Math.max(0, Math.min(100, (hud.vidaActual / hud.vidaMax) * 100))}%`,
+            backgroundColor: colorBarraVida(hud.vidaActual, hud.vidaMax),
+          }"
+        ></div>
+      </div>
+    </div>
+
+    <PanelLateral />
+    <GestorMapas />
+    <MenuIzquierdo />
+
+    <!-- Etiqueta de la medición de distancia (punto medio de la línea) -->
+    <div
+      v-if="medicionLabel?.visible"
+      class="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-yellow-500/50 bg-gray-900/90 px-2 py-0.5 font-mono text-sm font-bold text-yellow-300 shadow-lg"
+      :style="{ left: `${medicionLabel.x}px`, top: `${medicionLabel.y}px` }"
+    >
+      {{ medicionLabel.texto }}
+    </div>
+
+    <!-- Etiqueta de la plantilla de área / cono (nº de casillas) -->
+    <div
+      v-if="plantillaLabel?.visible"
+      class="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-sky-500/50 bg-gray-900/90 px-2 py-0.5 font-mono text-sm font-bold text-sky-300 shadow-lg"
+      :style="{ left: `${plantillaLabel.x}px`, top: `${plantillaLabel.y}px` }"
+    >
+      {{ plantillaLabel.texto }}
+    </div>
+
+    <!-- Info del personaje seleccionado -->
+    <div
+      class="absolute bottom-4 left-20 text-white bg-black/50 p-4 rounded pointer-events-none"
+    >
+      <p v-if="tokenSeleccionadoNombre">
+        Token:
+        <span class="font-bold text-yellow-400">{{
+          tokenSeleccionadoNombre
+        }}</span>
+        <span class="ml-2 text-xs text-gray-300"
+          >— pulsa <strong>M</strong> o clic derecho → Mover</span
+        >
+      </p>
+      <p v-else-if="personajeActivo">
+        Seleccionado:
         <span class="font-bold text-yellow-400">{{
           personajeActivo.nombre
         }}</span>
       </p>
-      <p v-else>Esperando inicio...</p>
+      <p v-else>Coloca un token desde el Diario y haz clic para seleccionarlo</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import Stats from "three/addons/libs/stats.module.js";
 import { Pathfinding } from "three-pathfinding";
 import PanelCharacter from "./panelCharacter.vue";
-import FichaCharacter from "./fichaCharacter.vue";
-import LogPartida from "./logPartida.vue";
-import BarraHabilidades from "./barraHabilidades.vue";
-import PanelIniciativa from "./panelIniciativa.vue";
+import Ficha from "../VerPersonaje/ficha.vue";
+import FichaCriaturaCombate from "./fichaCriaturaCombate.vue";
+import VentanaFlotante from "./ventanaFlotante.vue";
+import PanelLateral from "./panelLateral.vue";
+import GestorMapas from "./gestorMapas.vue";
+import MenuIzquierdo from "./menuIzquierdo.vue";
 import { usePartida } from "../../domain/usePartida";
+import type { PayloadTirada } from "../../domain/usePartida";
 import { useMapa } from "../../domain/useMapa";
-import type { PersonajeInstancia } from "../../domain/Partida";
+import { useHerramientas } from "../../domain/useHerramientas";
+import type { PersonajeInstancia, TokenPartida } from "../../domain/Partida";
+import { obtenerPersonaje } from "../../domain/storage/personajesRepo";
+import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import armasData from "../../assets/armas.json";
+import {
+  CATALOGO_ESTADOS,
+  iconoEstado,
+  obtenerEstado,
+  nombreEstadoAplicado,
+  type CategoriaEstado,
+  type EstadoAlterado,
+} from "../../domain/EstadosAlterados";
+import {
+  centroHex,
+  alturaSuperficie,
+  calcularCasillas,
+  claveCelda,
+  type MapaHex,
+  type MapaHexCelda,
+} from "../../domain/mapaHex";
 
 const props = defineProps<{ partidaId?: string }>();
 
 // Composables
 const {
   partidaActual,
-  ordenTurnos,
-  turnoActual,
   personajeActivo,
-  accionPreparada,
-  setAccionPreparada,
-  turnoEnProceso,
+  seleccionarPersonaje,
   iniciarPartida,
   moverPersonajeActivo,
+  colocarToken,
+  moverToken,
+  enviarTiradaChat,
+  fichasFlotantes,
+  abrirFichaInstancia,
+  abrirFichaGuardado,
+  abrirFichaCriatura,
+  cerrarFicha,
+  establecerVidaToken,
+  ajustarVidaToken,
+  agregarEstadoToken,
+  establecerValorEstadoToken,
+  quitarEstadoToken,
 } = usePartida();
 
-const { mapa, obtenerAlcance } = useMapa();
+// Tamaño inicial de la ficha flotante: grande y ajustado al viewport (deja
+// margen para la barra izquierda y el panel lateral derecho). El usuario puede
+// seguir redimensionándola con el tirador de la esquina.
+const fichaAncho = ref(Math.min(1280, Math.round(window.innerWidth * 0.9)));
+const fichaAlto = ref(Math.min(900, Math.round(window.innerHeight * 0.9)));
 
+// Vuelca al chat lateral una tirada / uso de habilidad desde una ficha flotante.
+function onTirarFicha(payload: PayloadTirada, nombre?: string) {
+  enviarTiradaChat(nombre ?? "Alguien", payload);
+}
+
+const { mapa } = useMapa();
+const { herramientaActiva, desactivar: desactivarHerramienta } = useHerramientas();
+
+// --- Herramienta de medir distancias ---
+// Dos puntos de mundo clicados (puede ser sobre el terreno o en el vacío). La
+// distancia se da en "casillas": el lado de un hexágono (= hexRadius) equivale a
+// 1. `puntoPreview` es la posición del cursor mientras se coloca el 2º punto.
+let medPuntoA: THREE.Vector3 | null = null;
+let medPuntoB: THREE.Vector3 | null = null;
+let medPreview: THREE.Vector3 | null = null;
+let medLinea: THREE.Line | null = null;
+let medMatLinea: THREE.LineBasicMaterial | null = null;
+const medMarcadores: THREE.Mesh[] = [];
+// Plano horizontal y=0 para poder medir clicando "en medio de la nada".
+const medPlano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+// Etiqueta HTML con la distancia, posicionada en el punto medio de la línea.
+const medicionLabel = ref<{
+  x: number;
+  y: number;
+  texto: string;
+  visible: boolean;
+} | null>(null);
+
+// --- Plantillas de área / cono (medición en casillas) ---
+// Casilla de origen (donde se clicó) y si la plantilla está congelada. Mientras
+// no lo esté, la plantilla crece siguiendo al cursor.
+let plantillaOrigen: { col: number; row: number; y: number } | null = null;
+let plantillaFijada = false;
+const plantillaMarcadores: THREE.Mesh[] = [];
+let plantillaMat: THREE.MeshBasicMaterial | null = null;
+// Etiqueta con el nº de casillas pintadas (anclada a la casilla del cursor).
+let plantillaLabelWorld: THREE.Vector3 | null = null;
+let plantillaLabelTexto = "";
+const plantillaLabel = ref<{
+  x: number;
+  y: number;
+  texto: string;
+  visible: boolean;
+} | null>(null);
 
 // Local State for UI
-const personajeSeleccionado = ref<PersonajeInstancia | null>(null);
 const panelVisible = ref(false);
 const panelPosition = ref({ x: 0, y: 0 });
 const panelData = ref<{
@@ -104,12 +481,117 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const clickables: THREE.Object3D[] = [];
 let cubes: THREE.Mesh[] = []; // Only for walls now
+// Meshes del mapa hexagonal activo (prismas). Se limpian al cambiar de mapa.
+const hexMeshes: THREE.Object3D[] = [];
+// Casillas seleccionables del mapa activo: prismas con hueco libre suficiente
+// por encima (ver calcularCasillas). Clave "col,row,y". Un prisma tapado por
+// otro justo encima (o a distancia <= HUECO_ENTIDAD) no entra aquí y no se
+// puede seleccionar/mover a él.
+const casillasValidas = new Set<string>();
+// Índice clave "col,row,y" -> celda del mapa hex activo. Sirve para colocar los
+// marcadores de rango de movimiento sobre la cara superior de cada casilla.
+const celdaPorClave = new Map<string, MapaHexCelda>();
 
 // Character Meshes Map (ID -> Mesh)
 const characterMeshes = new Map<string, THREE.Mesh>();
 let activeIndicatorMesh: THREE.Mesh | null = null;
-let rangeIndicatorMesh: THREE.Mesh | null = null;
 const stats = new Stats();
+
+// Tokens colocados sobre el mapa (tokenId -> mesh) + token seleccionado.
+const tokenMeshes = new Map<string, THREE.Mesh>();
+const tokenSeleccionado = ref<string | null>(null);
+const COLORES_TOKENS = [
+  0xff4d4d, 0x4d79ff, 0x4dff88, 0xffd24d, 0xff4dd2, 0x4dffff, 0xff8c1a,
+  0xa64dff, 0x1aff8c, 0xff1a66, 0x8cff1a, 0x1a8cff,
+];
+// --- Menú contextual + rango de movimiento sobre tokens ---
+// Menú que aparece al hacer clic derecho sobre un token (Ver Ficha / Mover).
+const menuContextual = ref<{
+  x: number;
+  y: number;
+  tokenId: string;
+  nombre: string;
+} | null>(null);
+// Token cuyo rango de movimiento se está mostrando (modo "mover"). Al estar
+// activo, un clic sobre una casilla alcanzable mueve el token allí.
+const modoMovimiento = ref<{ tokenId: string } | null>(null);
+// Token cuyo rango de ataque se está mostrando (modo "atacar"). A diferencia del
+// modo mover, es solo visualización: un clic cualquiera lo cierra sin mover.
+const modoAtaque = ref<{ tokenId: string } | null>(null);
+// Alcance (distancia_max) de cada arma indexado por id, para calcular el rango
+// de ataque a partir de las armas que lleva el personaje.
+const ARMAS_POR_ID = new Map<number, { distancia_max: number | null }>(
+  (armasData.armas as { id: number; distancia_max: number | null }[]).map(
+    (a) => [a.id, a],
+  ),
+);
+// Casillas alcanzables actuales: clave "col,row,y" -> posición del token.
+const celdasAlcanzables = new Map<
+  string,
+  { col: number; row: number; nivel: number }
+>();
+// Marcadores 3D translúcidos que pintan el rango; se retiran al mover/cancelar.
+const marcadoresRango: THREE.Mesh[] = [];
+let matRango: THREE.MeshBasicMaterial | null = null;
+
+// Panel para elegir un estado alterado a aplicar sobre un token (desde el menú).
+const panelEstados = ref<{ x: number; y: number; tokenId: string } | null>(
+  null,
+);
+// Menú flotante (a la derecha del panel de estados) para poner el valor X de un
+// estado numérico/acumulable (Sangrado, Inhibido, Ímpetu…). `valorActual` es la
+// X ya aplicada, si la hay, para poder aumentarla (Sangrado se acumula).
+const panelValorEstado = ref<{
+  x: number;
+  y: number;
+  tokenId: string;
+  estado: EstadoAlterado;
+  valorActual: number;
+  entrada: number;
+} | null>(null);
+// Catálogo de estados agrupado por categoría, para el panel.
+const CATEGORIAS_ESTADO: { id: CategoriaEstado; label: string }[] = [
+  { id: "fisica", label: "Físicos" },
+  { id: "mental", label: "Mentales" },
+  { id: "agotamiento", label: "Agotamiento" },
+];
+const estadosPorCategoria = computed<Record<CategoriaEstado, EstadoAlterado[]>>(
+  () => ({
+    fisica: CATALOGO_ESTADOS.filter((e) => e.categoria === "fisica"),
+    mental: CATALOGO_ESTADOS.filter((e) => e.categoria === "mental"),
+    agotamiento: CATALOGO_ESTADOS.filter((e) => e.categoria === "agotamiento"),
+  }),
+);
+// Estados actualmente aplicados sobre el token del panel (para poder quitarlos).
+const estadosAplicadosPanel = computed(() => {
+  const tokenId = panelEstados.value?.tokenId;
+  if (!tokenId) return [];
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  return (token?.estados ?? []).map((e) => ({
+    estadoId: e.estadoId,
+    icono: iconoEstado(e.estadoId),
+    etiqueta: nombreEstadoAplicado(e),
+  }));
+});
+
+// HUDs (barra de vida + iconos de estado) proyectados sobre cada token.
+interface TokenHud {
+  id: string;
+  x: number;
+  y: number;
+  visible: boolean;
+  vidaActual: number;
+  vidaMax: number;
+  estados: {
+    estadoId: number;
+    icono: string;
+    nombre: string;
+    valor?: number;
+    etiqueta: string;
+  }[];
+}
+const tokenHuds = ref<TokenHud[]>([]);
+
 // Constants
 const CUBE_SIZE = 1;
 
@@ -133,7 +615,6 @@ function init() {
 
   // Scene
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x111111, 20, 100);
 
   // Camera
   const aspect = width / height;
@@ -177,15 +658,28 @@ function init() {
 
 // --- Rendering ---
 
-// Watch for Map Changes
+// Watch for Map Changes (cuadrícula plana de fallback, solo si NO hay mapa
+// hexagonal activo en la partida).
 watch(
   mapa,
   (newMapa) => {
+    if (partidaActual.value?.mapa) return;
     if (newMapa && newMapa.length > 0) {
       renderMap(newMapa);
     }
   },
   { deep: true, immediate: true },
+);
+
+// Watch del mapa hexagonal activo de la partida: al seleccionarlo/cambiarlo en
+// el gestor de mapas, se repinta el terreno de prismas.
+watch(
+  () => partidaActual.value?.mapa,
+  (mapaHex) => {
+    if (mapaHex) renderMapaHex(mapaHex);
+    else limpiarMapaHex();
+  },
+  { immediate: true },
 );
 
 function renderMap(grid: any[][]) {
@@ -270,6 +764,390 @@ function renderMap(grid: any[][]) {
   updateClickables();
 }
 
+// --- Render del mapa hexagonal (portado de jugarPartida.vue) ---
+
+// Prisma hexagonal pointy-top con base en y=0, igual que en el editor.
+function crearGeometriaPrisma(
+  radio: number,
+  altura: number,
+  mitad: boolean,
+): THREE.BufferGeometry {
+  const pts: THREE.Vector2[] = [];
+  const ultimo = mitad ? 3 : 5;
+  for (let k = 0; k <= ultimo; k++) {
+    const a = (k * Math.PI) / 3;
+    pts.push(new THREE.Vector2(radio * Math.sin(a), radio * Math.cos(a)));
+  }
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(pts), {
+    depth: altura,
+    bevelEnabled: false,
+  });
+  geo.rotateX(-Math.PI / 2);
+  return geo;
+}
+
+// ¿Se puede seleccionar/mover a esta celda? Solo si es una casilla válida
+// (tiene el hueco libre necesario por encima).
+function celdaSeleccionable(celda: MapaHexCelda): boolean {
+  return casillasValidas.has(claveCelda(celda.col, celda.row, celda.y));
+}
+
+function limpiarMapaHex() {
+  casillasValidas.clear();
+  celdaPorClave.clear();
+  limpiarRango();
+  if (!scene) return;
+  hexMeshes.forEach((m) => {
+    scene.remove(m);
+    const obj = m as THREE.Mesh;
+    obj.geometry?.dispose();
+    const mat = obj.material;
+    if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
+    else mat?.dispose();
+  });
+  hexMeshes.length = 0;
+}
+
+function renderMapaHex(mapaHex: MapaHex) {
+  if (!scene) return;
+
+  // Quitar terreno previo (hex + cuadrícula plana/paredes).
+  limpiarMapaHex();
+  cubes.forEach((c) => scene.remove(c));
+  cubes = [];
+  if (navMesh) {
+    scene.remove(navMesh);
+    navMesh = null;
+  }
+
+  // Recalcular las casillas seleccionables del mapa (prismas con hueco libre
+  // encima). Se hace al cargar/cambiar el mapa, no en cada clic. Debe ir
+  // después de limpiarMapaHex(), que vacía el set.
+  for (const c of calcularCasillas(mapaHex)) {
+    casillasValidas.add(claveCelda(c.col, c.row, c.y));
+  }
+  celdaPorClave.clear();
+  for (const c of mapaHex.cells) {
+    celdaPorClave.set(claveCelda(c.col, c.row, c.y), c);
+  }
+
+  const alturaPrisma = mapaHex.prismHeight;
+  const geoCompleto = crearGeometriaPrisma(mapaHex.hexRadius, alturaPrisma, false);
+  const geoMedio = crearGeometriaPrisma(mapaHex.hexRadius, alturaPrisma, true);
+  const matTerreno = new THREE.MeshStandardMaterial({
+    metalness: 0.1,
+    roughness: 0.8,
+  });
+  const dummy = new THREE.Object3D();
+  const color = new THREE.Color();
+
+  const crearInstancias = (
+    geo: THREE.BufferGeometry,
+    celdas: MapaHexCelda[],
+  ) => {
+    if (celdas.length === 0) return;
+    const mesh = new THREE.InstancedMesh(geo, matTerreno, celdas.length);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    celdas.forEach((c, i) => {
+      const p = centroHex(mapaHex, c.col, c.row);
+      dummy.position.set(p.x, c.y * alturaPrisma, p.z);
+      dummy.rotation.set(0, c.shape === "half" ? (c.rot * Math.PI) / 3 : 0, 0);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+      mesh.setColorAt(i, color.set(c.color));
+    });
+    // Guardamos las celdas en orden para poder mapear un instanceId del
+    // raycast → celda (col,row,y) al mover un token.
+    mesh.userData.celdas = celdas;
+    scene.add(mesh);
+    hexMeshes.push(mesh);
+  };
+  crearInstancias(
+    geoCompleto,
+    mapaHex.cells.filter((c) => c.shape !== "half"),
+  );
+  crearInstancias(
+    geoMedio,
+    mapaHex.cells.filter((c) => c.shape === "half"),
+  );
+
+  centrarCamaraHex(mapaHex);
+  syncTokens();
+  updateClickables();
+}
+
+// --- Tokens sobre el mapa ---
+
+// Altura del cilindro de un token según su tipo. Las criaturas usan un cilindro
+// la mitad de bajo para distinguirlas de un vistazo de los personajes.
+const ALTURA_TOKEN_PERSONAJE = 3;
+const ALTURA_TOKEN_CRIATURA = 1.5;
+function alturaToken(tipo: TokenPartida["tipo"]): number {
+  return tipo === "criatura" ? ALTURA_TOKEN_CRIATURA : ALTURA_TOKEN_PERSONAJE;
+}
+
+// Posición de mundo de un token según el mapa hexagonal activo. La `y` deja el
+// cilindro apoyado sobre la superficie (centro a media altura del cilindro).
+function posicionMundoToken(
+  pos: { col: number; row: number; nivel: number },
+  altura = ALTURA_TOKEN_PERSONAJE,
+): THREE.Vector3 {
+  const m = partidaActual.value?.mapa;
+  if (m) {
+    const p = centroHex(m, pos.col, pos.row);
+    return new THREE.Vector3(
+      p.x,
+      alturaSuperficie(m, pos.nivel) + altura / 2,
+      p.z,
+    );
+  }
+  // Sin mapa hexagonal: reparto plano aproximado.
+  return new THREE.Vector3(pos.col * 2, altura / 2, pos.row * 2);
+}
+
+// Sincroniza los meshes de token con el estado de la partida (crea/actualiza/
+// elimina) y refleja la selección con un tono emisivo.
+function syncTokens() {
+  if (!scene) return;
+  const tokens = partidaActual.value?.tokens ?? [];
+  const activos = new Set<string>();
+
+  tokens.forEach((t, idx) => {
+    activos.add(t.id);
+    const altura = alturaToken(t.tipo);
+    let mesh = tokenMeshes.get(t.id);
+    if (!mesh) {
+      const geometry = new THREE.CylinderGeometry(1, 1, altura, 20);
+      const material = new THREE.MeshStandardMaterial({
+        color: COLORES_TOKENS[idx % COLORES_TOKENS.length],
+        metalness: 0.3,
+        roughness: 0.7,
+      });
+      mesh = new THREE.Mesh(geometry, material);
+      mesh.castShadow = true;
+      mesh.userData.tokenId = t.id;
+      mesh.userData.altura = altura;
+      scene.add(mesh);
+      tokenMeshes.set(t.id, mesh);
+    }
+    mesh.position.copy(posicionMundoToken(t.pos, altura));
+    const mat = mesh.material as THREE.MeshStandardMaterial;
+    mat.emissive.set(t.id === tokenSeleccionado.value ? 0x555500 : 0x000000);
+  });
+
+  for (const [id, mesh] of tokenMeshes) {
+    if (!activos.has(id)) {
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+      tokenMeshes.delete(id);
+    }
+  }
+  updateClickables();
+}
+
+// Repinta los tokens cuando cambian (colocar/mover/quitar desde el diario) y
+// reconstruye los HUD (barra de vida + estados) sobre cada uno.
+watch(
+  () => partidaActual.value?.tokens,
+  () => {
+    syncTokens();
+    reconstruirHuds();
+  },
+  { deep: true, immediate: true },
+);
+
+// (Re)crea las entradas de HUD a partir del estado de los tokens. Solo el
+// contenido (vida/estados); la posición en pantalla se actualiza cada frame en
+// el bucle de render (proyectando la posición 3D del token).
+function reconstruirHuds() {
+  const tokens = partidaActual.value?.tokens ?? [];
+  tokenHuds.value = tokens.map((t) => {
+    const previo = tokenHuds.value.find((h) => h.id === t.id);
+    const max = t.vida?.max ?? 10;
+    return {
+      id: t.id,
+      x: previo?.x ?? 0,
+      y: previo?.y ?? 0,
+      visible: previo?.visible ?? false,
+      vidaActual: t.vida?.actual ?? max,
+      vidaMax: max,
+      estados: (t.estados ?? []).map((e) => ({
+        estadoId: e.estadoId,
+        icono: iconoEstado(e.estadoId),
+        nombre: obtenerEstado(e.estadoId)?.nombre ?? "Estado",
+        valor: e.valor,
+        etiqueta: nombreEstadoAplicado(e),
+      })),
+    };
+  });
+}
+
+// Color de la barra de vida según el porcentaje restante.
+function colorBarraVida(actual: number, max: number): string {
+  const pct = max > 0 ? (actual / max) * 100 : 0;
+  if (pct > 50) return "#22c55e";
+  if (pct > 25) return "#eab308";
+  return "#ef4444";
+}
+
+// Proyecta la posición 3D de cada token a coordenadas de pantalla y actualiza
+// la posición de su HUD. Se llama en cada frame desde animate().
+const vecProyeccion = new THREE.Vector3();
+function actualizarPosicionesHuds() {
+  if (!renderer || !camera || tokenHuds.value.length === 0) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  for (const hud of tokenHuds.value) {
+    const mesh = tokenMeshes.get(hud.id);
+    if (!mesh) {
+      hud.visible = false;
+      continue;
+    }
+    // Un poco por encima de la cabeza del cilindro (según su altura: el centro
+    // está a media altura, así que la cima es +altura/2 y dejamos 0.9 de aire).
+    const alturaMesh = (mesh.userData.altura as number) ?? ALTURA_TOKEN_PERSONAJE;
+    vecProyeccion.copy(mesh.position);
+    vecProyeccion.y += alturaMesh / 2 + 0.9;
+    vecProyeccion.project(camera);
+    hud.visible = vecProyeccion.z < 1;
+    hud.x = rect.left + (vecProyeccion.x * 0.5 + 0.5) * rect.width;
+    hud.y = rect.top + (-vecProyeccion.y * 0.5 + 0.5) * rect.height;
+  }
+}
+
+const tokenSeleccionadoNombre = computed(
+  () =>
+    partidaActual.value?.tokens?.find((t) => t.id === tokenSeleccionado.value)
+      ?.nombre ?? null,
+);
+
+// --- Hexágono bajo el ratón (mecanismo reutilizable) ---
+// Detecta sobre qué casilla del mapa está el cursor y la resalta con un tono
+// más claro. `hexHovered` queda expuesto como estado para otras funciones
+// futuras (colocar, medir, seleccionar área...).
+const hexHovered = ref<{ col: number; row: number; nivel: number } | null>(
+  null,
+);
+const BLANCO = new THREE.Color(0xffffff);
+// Tono para señalar una casilla tapada (no seleccionable) bajo el cursor.
+const ROJO_BLOQUEO = new THREE.Color(0xff3333);
+const colorTmp = new THREE.Color();
+let hexResaltado: { mesh: THREE.InstancedMesh; instanceId: number } | null =
+  null;
+
+interface HexRaycast {
+  mesh: THREE.InstancedMesh;
+  instanceId: number;
+  celda: MapaHexCelda;
+}
+
+// Raycast a los prismas del mapa y resuelve la celda concreta bajo el puntero.
+function hexEnPuntero(clientX: number, clientY: number): HexRaycast | null {
+  if (!renderer || !camera || hexMeshes.length === 0) return null;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(hexMeshes, false);
+  const hit = hits[0];
+  if (!hit || hit.instanceId == null) return null;
+  const mesh = hit.object as THREE.InstancedMesh;
+  const celda = (mesh.userData.celdas as MapaHexCelda[])?.[hit.instanceId];
+  if (!celda) return null;
+  return { mesh, instanceId: hit.instanceId, celda };
+}
+
+function limpiarResaltado() {
+  if (!hexResaltado) return;
+  const { mesh, instanceId } = hexResaltado;
+  const celda = (mesh.userData.celdas as MapaHexCelda[])?.[instanceId];
+  if (celda) {
+    mesh.setColorAt(instanceId, colorTmp.set(celda.color));
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+  hexResaltado = null;
+}
+
+function resaltarHex(res: HexRaycast | null) {
+  // Si cambia el hex resaltado, restaura el anterior primero.
+  if (
+    hexResaltado &&
+    (!res ||
+      hexResaltado.mesh !== res.mesh ||
+      hexResaltado.instanceId !== res.instanceId)
+  ) {
+    limpiarResaltado();
+  }
+  if (!res) return;
+  // Blanco si es una casilla seleccionable; rojo si está tapada.
+  const destino = celdaSeleccionable(res.celda) ? BLANCO : ROJO_BLOQUEO;
+  colorTmp.set(res.celda.color).lerp(destino, 0.4);
+  res.mesh.setColorAt(res.instanceId, colorTmp);
+  if (res.mesh.instanceColor) res.mesh.instanceColor.needsUpdate = true;
+  hexResaltado = { mesh: res.mesh, instanceId: res.instanceId };
+}
+
+// Actualiza resaltado + estado del hex bajo el cursor.
+function actualizarHexHover(clientX: number, clientY: number) {
+  const res = hexEnPuntero(clientX, clientY);
+  resaltarHex(res);
+  hexHovered.value = res
+    ? { col: res.celda.col, row: res.celda.row, nivel: res.celda.y }
+    : null;
+}
+
+function onCanvasLeave() {
+  resaltarHex(null);
+  hexHovered.value = null;
+}
+
+// --- Arrastrar y soltar una entrada del diario sobre el mapa ---
+function onDragOver(e: DragEvent) {
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  actualizarHexHover(e.clientX, e.clientY);
+}
+
+function onDrop(e: DragEvent) {
+  const raw = e.dataTransfer?.getData("application/json");
+  if (!raw) return;
+  let data: { refId: string; tipo: "personaje" | "criatura"; nombre: string };
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  const res = hexEnPuntero(e.clientX, e.clientY);
+  // Solo se coloca sobre la casilla apuntada si es seleccionable; si está
+  // tapada, se deja sin posición para que colocarToken busque la primera libre.
+  const pos =
+    res && celdaSeleccionable(res.celda)
+      ? { col: res.celda.col, row: res.celda.row, nivel: res.celda.y }
+      : undefined;
+  colocarToken(data, pos);
+  onCanvasLeave();
+}
+
+// Encaja la cámara sobre el mapa hexagonal cargado.
+function centrarCamaraHex(mapaHex: MapaHex) {
+  if (!controls || !camera || mapaHex.cells.length === 0) return;
+  const box = new THREE.Box3();
+  mapaHex.cells.forEach((c) => {
+    const p = centroHex(mapaHex, c.col, c.row);
+    box.expandByPoint(
+      new THREE.Vector3(p.x, c.y * mapaHex.prismHeight, p.z),
+    );
+  });
+  const center = box.getCenter(new THREE.Vector3());
+  const tamano = box.getSize(new THREE.Vector3()).length();
+  controls.target.copy(center);
+  const dist = Math.max(20, tamano * 0.6);
+  camera.position
+    .copy(center)
+    .add(new THREE.Vector3(dist, dist, dist));
+  controls.update();
+}
+
 // Watch for Game State Changes (Characters)
 watch(
   partidaActual,
@@ -281,12 +1159,11 @@ watch(
   { deep: true, immediate: true },
 );
 
-// Watch for Active Character / Action to update indicators
+// Watch for Selected Character to update indicators
 watch(
-  [personajeActivo, accionPreparada],
-  ([pj, accion]) => {
+  personajeActivo,
+  (pj) => {
     updateActiveCharacterVisuals(pj);
-    updateRangeIndicator(pj, accion);
   },
   { immediate: true },
 );
@@ -314,106 +1191,6 @@ function updateActiveCharacterVisuals(pj: PersonajeInstancia | null) {
     scene.add(activeIndicatorMesh);
   }
 }
-
-function updateRangeIndicator(pj: PersonajeInstancia | null, accion: any) {
-  if (rangeIndicatorMesh) {
-    scene.remove(rangeIndicatorMesh);
-    rangeIndicatorMesh = null;
-  }
-
-  if (!pj) return;
-
-  const mesh = characterMeshes.get(pj.nombre);
-  if (!mesh) return;
-
-  let range = 0;
-  let color = 0x00ff00; // Default move green
-
-  if (accion) {
-      // Offensive action mode
-      if (accion.nombre === "Carga") {
-          // Special logic for Charge: Move + Attack?
-          // Let's assume range is Movement * 2 for visual feedback of "Reach"
-          range = pj.atributos.movimiento + 2; // +2 for attack range approx
-          color = 0xff4400;
-      } else if (accion.range) {
-          // Generic range from action object (e.g. Basic Attack)
-          range = accion.range;
-          color = 0xff0000;
-      } else {
-          // Standard action range logic (placeholder)
-          range = 5;
-          color = 0xff0000;
-      }
-
-      // Highlight Targets
-      highlightTargets(pj, range);
-
-  } else {
-      // Movement mode
-      const mesh = characterMeshes.get(pj.nombre);
-      if (mesh && mesh.userData.isMoving) {
-          range = 0; // Hide during movement
-      } else {
-          range = pj.atributos.movimiento;
-      }
-      color = 0x4ade80;
-      clearHighlights();
-  }
-
-  // Draw Range Circle
-  const geometry = new THREE.RingGeometry(range - 0.15, range, 64);
-  geometry.rotateX(-Math.PI / 2);
-  const material = new THREE.MeshBasicMaterial({
-      color: color,
-      transparent: true,
-      opacity: 0.8,
-      side: THREE.DoubleSide
-  });
-
-  rangeIndicatorMesh = new THREE.Mesh(geometry, material);
-
-  // Add Inner Fill
-  const fillGeo = new THREE.CircleGeometry(range - 0.15, 64);
-  fillGeo.rotateX(-Math.PI / 2);
-  const fillMat = new THREE.MeshBasicMaterial({
-      color: color,
-      transparent: true,
-      opacity: 0.1,
-      side: THREE.DoubleSide
-  });
-  const fillMesh = new THREE.Mesh(fillGeo, fillMat);
-  rangeIndicatorMesh.add(fillMesh);
-
-  rangeIndicatorMesh.position.copy(mesh.position);
-  rangeIndicatorMesh.position.y = 0.05; // Slightly above ground
-  scene.add(rangeIndicatorMesh);
-}
-
-function highlightTargets(attacker: PersonajeInstancia, range: number) {
-  // Simple distance check against all other characters
-  characterMeshes.forEach((mesh, id) => {
-     if (id === attacker.nombre) return;
-
-     const targetData = mesh.userData.characterData as PersonajeInstancia;
-     const dist = mesh.position.distanceTo(characterMeshes.get(attacker.nombre)!.position);
-
-     if (dist <= range) {
-         // Valid target
-         (mesh.material as THREE.MeshStandardMaterial).emissive.setHex(0x550000);
-     } else {
-         // Out of range
-         (mesh.material as THREE.MeshStandardMaterial).emissive.setHex(0x000000);
-     }
-  });
-}
-
-function clearHighlights() {
-    characterMeshes.forEach((mesh) => {
-        (mesh.material as THREE.MeshStandardMaterial).emissive.setHex(0x000000);
-    });
-}
-
 
 function updateCharacterMeshes(partida: any) {
   const activeIds = new Set<string>();
@@ -477,6 +1254,9 @@ function updateClickables() {
   clickables.length = 0;
   if (navMesh) clickables.push(navMesh);
   characterMeshes.forEach((m) => clickables.push(m));
+  tokenMeshes.forEach((m) => clickables.push(m));
+  // Prismas del mapa hex: destino para mover el token seleccionado.
+  hexMeshes.forEach((m) => clickables.push(m));
 }
 
 // --- Animation Loop ---
@@ -493,12 +1273,6 @@ function animate() {
       const charPos = characterMeshes.get(personajeActivo.value!.nombre)!.position;
       activeIndicatorMesh.position.set(charPos.x, charPos.y + 1.8 + Math.sin(now) * 0.2, charPos.z);
       activeIndicatorMesh.rotation.y += dt;
-  }
-
-  // Sync Range Indicator Position
-  if (rangeIndicatorMesh && characterMeshes.get(personajeActivo.value?.nombre || '')) {
-      const charPos = characterMeshes.get(personajeActivo.value!.nombre)!.position;
-      rangeIndicatorMesh.position.set(charPos.x, 0.05, charPos.z);
   }
 
   // Interpolate Character Positions
@@ -540,15 +1314,805 @@ function animate() {
     }
   });
 
+  // Reposicionar los HUD (barra de vida + estados) sobre los tokens.
+  actualizarPosicionesHuds();
+
+  // Reposicionar la etiqueta de la medición activa.
+  actualizarLabelMedicion();
+  actualizarLabelPlantilla();
+
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
   }
 }
 
+// --- Rango de movimiento (BFS sobre la cuadrícula hexagonal) ---
+
+// Paridad de fila (0/1) para el trazado odd-r; igual que en mapaHex.centroHex.
+const paridadFila = (n: number) => ((n % 2) + 2) % 2;
+
+// Desplazamientos a los 6 vecinos en offset odd-r (pointy-top). El primer
+// índice es la paridad de la fila de origen.
+const VECINOS_ODDR: ReadonlyArray<ReadonlyArray<readonly [number, number]>> = [
+  // filas pares
+  [
+    [1, 0],
+    [0, -1],
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, 1],
+  ],
+  // filas impares
+  [
+    [1, 0],
+    [1, -1],
+    [0, -1],
+    [-1, 0],
+    [0, 1],
+    [1, 1],
+  ],
+];
+
+function vecinosHex(col: number, row: number): [number, number][] {
+  const tabla = VECINOS_ODDR[paridadFila(row)] ?? VECINOS_ODDR[0]!;
+  return tabla.map(([dc, dr]) => [col + dc, row + dr] as [number, number]);
+}
+
+// Puntos de movimiento del personaje/criatura de origen del token.
+async function movimientoDeToken(token: TokenPartida): Promise<number> {
+  const guardado =
+    token.tipo === "criatura"
+      ? await obtenerCriatura(token.refId)
+      : await obtenerPersonaje(token.refId);
+  return guardado?.atributos?.movimiento ?? 3;
+}
+
+// Casillas alcanzables desde `origen` con `pasos` puntos de movimiento. Cada
+// paso avanza a un vecino que sea casilla válida y cuya diferencia de altura
+// sea de una casilla como mucho (se puede subir/bajar 1; más se considera una
+// pared y no se puede atravesar). No incluye la casilla de origen.
+function calcularAlcance(
+  origen: { col: number; row: number; nivel: number },
+  pasos: number,
+): Map<string, { col: number; row: number; nivel: number }> {
+  const resultado = new Map<
+    string,
+    { col: number; row: number; nivel: number }
+  >();
+  const dist = new Map<string, number>();
+  const claveOrigen = claveCelda(origen.col, origen.row, origen.nivel);
+  dist.set(claveOrigen, 0);
+  const cola: { col: number; row: number; nivel: number }[] = [origen];
+
+  while (cola.length > 0) {
+    const actual = cola.shift()!;
+    const d = dist.get(
+      claveCelda(actual.col, actual.row, actual.nivel),
+    )!;
+    if (d >= pasos) continue;
+
+    for (const [nc, nr] of vecinosHex(actual.col, actual.row)) {
+      // Solo alturas a distancia 1 (subir/bajar un escalón); ±2 o más es pared.
+      for (const ny of [actual.nivel - 1, actual.nivel, actual.nivel + 1]) {
+        const clave = claveCelda(nc, nr, ny);
+        if (!casillasValidas.has(clave)) continue;
+        const previo = dist.get(clave);
+        if (previo !== undefined && previo <= d + 1) continue;
+        dist.set(clave, d + 1);
+        const celda = { col: nc, row: nr, nivel: ny };
+        resultado.set(clave, celda);
+        cola.push(celda);
+      }
+    }
+  }
+
+  resultado.delete(claveOrigen);
+  return resultado;
+}
+
+function limpiarRango() {
+  marcadoresRango.forEach((m) => {
+    if (scene) scene.remove(m);
+    m.geometry.dispose();
+  });
+  marcadoresRango.length = 0;
+  if (matRango) {
+    matRango.dispose();
+    matRango = null;
+  }
+  celdasAlcanzables.clear();
+  modoMovimiento.value = null;
+  modoAtaque.value = null;
+}
+
+// Pinta el rango de movimiento del token (marcadores translúcidos sobre la cara
+// superior de cada casilla alcanzable) y entra en modo "mover".
+async function mostrarRango(tokenId: string) {
+  limpiarRango();
+  const mapaHex = partidaActual.value?.mapa;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  if (!mapaHex || !token || !scene) return;
+
+  const alcance = calcularAlcance(token.pos, await movimientoDeToken(token));
+  if (alcance.size === 0) return;
+
+  matRango = new THREE.MeshBasicMaterial({
+    color: 0x33ff99,
+    transparent: true,
+    opacity: 0.35,
+    depthWrite: false,
+  });
+
+  for (const [clave, celda] of alcance) {
+    celdasAlcanzables.set(clave, celda);
+    const info = celdaPorClave.get(clave);
+    const geo = crearGeometriaPrisma(
+      mapaHex.hexRadius * 0.9,
+      0.12,
+      info?.shape === "half",
+    );
+    const marcador = new THREE.Mesh(geo, matRango);
+    const p = centroHex(mapaHex, celda.col, celda.row);
+    marcador.position.set(p.x, alturaSuperficie(mapaHex, celda.nivel) + 0.05, p.z);
+    if (info?.shape === "half") marcador.rotation.y = (info.rot * Math.PI) / 3;
+    marcador.renderOrder = 1;
+    scene.add(marcador);
+    marcadoresRango.push(marcador);
+  }
+
+  modoMovimiento.value = { tokenId };
+}
+
+// Instancia de personaje de la partida (con su `armaEquipada`) a la que
+// corresponde un token, buscándola por su id de origen (`refId` === personajeId).
+function instanciaDeToken(token: TokenPartida): PersonajeInstancia | undefined {
+  for (const equipo of partidaActual.value?.equipos ?? []) {
+    const pj = equipo.personajes.find((p) => p.personajeId === token.refId);
+    if (pj) return pj;
+  }
+  return undefined;
+}
+
+// Alcance de ataque (en casillas) del token según el arma equipada en la ficha.
+// Un arma cuerpo a cuerpo (sin `distancia_max`) alcanza las casillas adyacentes
+// (1); las armas a distancia usan su `distancia_max`. Se usa el arma seleccionada
+// (`armaEquipada`); si no hay ninguna equipada, se ataca cuerpo a cuerpo (1). Las
+// criaturas no equipan armas, así que atacan cuerpo a cuerpo (1).
+function alcanceAtaqueDeToken(token: TokenPartida): number {
+  if (token.tipo === "criatura") return 1;
+  const idEquipada = instanciaDeToken(token)?.armaEquipada;
+  if (idEquipada == null) return 1;
+  return ARMAS_POR_ID.get(idEquipada)?.distancia_max ?? 1;
+}
+
+// Casillas (col,row) dentro de `radio` pasos hexagonales desde el origen,
+// ignorando la altura (un ataque alcanza cualquier nivel dentro de su rango, sin
+// el escalonado ±1 del movimiento). No incluye la casilla de origen.
+function hexesEnRadio(
+  origen: { col: number; row: number },
+  radio: number,
+): Set<string> {
+  const resultado = new Set<string>();
+  const dist = new Map<string, number>();
+  const claveOrigen = `${origen.col},${origen.row}`;
+  dist.set(claveOrigen, 0);
+  const cola: { col: number; row: number }[] = [{ col: origen.col, row: origen.row }];
+
+  while (cola.length > 0) {
+    const actual = cola.shift()!;
+    const d = dist.get(`${actual.col},${actual.row}`)!;
+    if (d >= radio) continue;
+    for (const [nc, nr] of vecinosHex(actual.col, actual.row)) {
+      const clave = `${nc},${nr}`;
+      if (dist.has(clave)) continue;
+      dist.set(clave, d + 1);
+      resultado.add(clave);
+      cola.push({ col: nc, row: nr });
+    }
+  }
+
+  return resultado;
+}
+
+// Pinta el rango de ataque del token (marcadores rojizos sobre cada casilla que
+// el arma puede alcanzar) y entra en modo "atacar". Es solo visualización: no
+// mueve el token; cualquier clic posterior limpia el rango.
+function mostrarRangoAtaque(tokenId: string) {
+  limpiarRango();
+  const mapaHex = partidaActual.value?.mapa;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  if (!mapaHex || !token || !scene) return;
+
+  const enRadio = hexesEnRadio(token.pos, alcanceAtaqueDeToken(token));
+  if (enRadio.size === 0) return;
+
+  matRango = new THREE.MeshBasicMaterial({
+    color: 0xff4444,
+    transparent: true,
+    opacity: 0.3,
+    depthWrite: false,
+  });
+
+  for (const celda of celdaPorClave.values()) {
+    if (!enRadio.has(`${celda.col},${celda.row}`)) continue;
+    const geo = crearGeometriaPrisma(
+      mapaHex.hexRadius * 0.9,
+      0.12,
+      celda.shape === "half",
+    );
+    const marcador = new THREE.Mesh(geo, matRango);
+    const p = centroHex(mapaHex, celda.col, celda.row);
+    marcador.position.set(p.x, alturaSuperficie(mapaHex, celda.y) + 0.05, p.z);
+    if (celda.shape === "half") marcador.rotation.y = (celda.rot * Math.PI) / 3;
+    marcador.renderOrder = 1;
+    scene.add(marcador);
+    marcadoresRango.push(marcador);
+  }
+
+  modoAtaque.value = { tokenId };
+}
+
+// --- Menú contextual (clic derecho sobre un token) ---
+function onContextMenu(event: MouseEvent) {
+  if (!renderer || !camera) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(
+    Array.from(tokenMeshes.values()),
+    false,
+  );
+  const tokenId = hits[0]?.object.userData.tokenId as string | undefined;
+  if (!tokenId) {
+    menuContextual.value = null;
+    return;
+  }
+  // Evita el menú del navegador y la rotación de cámara sobre el token.
+  event.preventDefault();
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  menuContextual.value = {
+    x: event.clientX,
+    y: event.clientY,
+    tokenId,
+    nombre: token?.nombre ?? "",
+  };
+}
+
+function menuVerFicha() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === menu.tokenId);
+  if (token) {
+    if (token.tipo === "criatura")
+      abrirFichaCriatura(token.refId, token.nombre);
+    else abrirFichaGuardado(token.refId, token.nombre);
+  }
+  menuContextual.value = null;
+}
+
+function menuMover() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  tokenSeleccionado.value = menu.tokenId;
+  syncTokens();
+  mostrarRango(menu.tokenId);
+  menuContextual.value = null;
+}
+
+function menuAtacar() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  tokenSeleccionado.value = menu.tokenId;
+  syncTokens();
+  mostrarRangoAtaque(menu.tokenId);
+  menuContextual.value = null;
+}
+
+// Vida del token abierto en el menú contextual (para el editor rápido).
+const vidaTokenMenu = computed(() => {
+  const tokenId = menuContextual.value?.tokenId;
+  if (!tokenId) return null;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  return token?.vida ?? null;
+});
+
+// Fija la vida actual del token del menú desde el input.
+function fijarVidaMenu(valor: string | number) {
+  const tokenId = menuContextual.value?.tokenId;
+  if (!tokenId) return;
+  establecerVidaToken(tokenId, Number(valor));
+}
+
+// Suma/resta a la vida actual del token del menú (botones +/-).
+function ajustarVidaMenu(delta: number) {
+  const tokenId = menuContextual.value?.tokenId;
+  if (tokenId) ajustarVidaToken(tokenId, delta);
+}
+
+// Abre el panel de selección de estado alterado para el token del menú.
+function menuAnadirEstado() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  panelEstados.value = { x: menu.x, y: menu.y, tokenId: menu.tokenId };
+  menuContextual.value = null;
+}
+
+// Aplica un estado del catálogo al token del panel. Los estados simples se
+// aplican directamente; los numéricos (acumulables) abren un menú flotante a la
+// derecha para poner el valor X de forma cómoda.
+function aplicarEstado(estado: EstadoAlterado) {
+  const panel = panelEstados.value;
+  if (!panel) return;
+  if (!estado.acumulable) {
+    agregarEstadoToken(panel.tokenId, estado.id);
+    return;
+  }
+  const token = partidaActual.value?.tokens?.find((t) => t.id === panel.tokenId);
+  const actual =
+    token?.estados?.find((e) => e.estadoId === estado.id)?.valor ?? 0;
+  // Se abre a la derecha del panel de estados (ancho w-64 = 256px + separación).
+  panelValorEstado.value = {
+    x: panel.x + 272,
+    y: panel.y,
+    tokenId: panel.tokenId,
+    estado,
+    valorActual: actual,
+    entrada: actual > 0 ? actual : 1,
+  };
+}
+
+// Fija el valor X del estado numérico al número introducido (reemplaza).
+function fijarValorEstado() {
+  const p = panelValorEstado.value;
+  if (!p) return;
+  establecerValorEstadoToken(p.tokenId, p.estado.id, p.entrada);
+  panelValorEstado.value = null;
+}
+
+// Suma el número introducido al valor actual (para acumular, p. ej. Sangrado).
+function aumentarValorEstado() {
+  const p = panelValorEstado.value;
+  if (!p) return;
+  const suma = Math.max(1, Math.floor(p.entrada) || 1);
+  agregarEstadoToken(p.tokenId, p.estado.id, suma);
+  panelValorEstado.value = null;
+}
+
+// Quita un estado al pulsar su icono en el HUD del token.
+function quitarEstadoHud(tokenId: string, estadoId: number) {
+  quitarEstadoToken(tokenId, estadoId);
+}
+
+// Quita un estado desde el panel (se mantiene abierto para retirar varios).
+function quitarEstadoPanel(estadoId: number) {
+  const tokenId = panelEstados.value?.tokenId;
+  if (tokenId) quitarEstadoToken(tokenId, estadoId);
+}
+
+// Atajos de teclado: M activa/cancela el modo mover sobre el token
+// seleccionado; Escape cancela el modo o cierra el menú contextual.
+function onKeyDown(event: KeyboardEvent) {
+  // No interceptar si se está escribiendo en un campo (chat, etc.).
+  const destino = event.target as HTMLElement | null;
+  if (
+    destino &&
+    (destino.tagName === "INPUT" ||
+      destino.tagName === "TEXTAREA" ||
+      destino.isContentEditable)
+  )
+    return;
+
+  if (event.key === "m" || event.key === "M") {
+    event.preventDefault();
+    if (modoMovimiento.value) {
+      limpiarRango();
+    } else if (tokenSeleccionado.value) {
+      mostrarRango(tokenSeleccionado.value);
+    }
+  } else if (event.key === "a" || event.key === "A") {
+    event.preventDefault();
+    if (modoAtaque.value) {
+      limpiarRango();
+    } else if (tokenSeleccionado.value) {
+      mostrarRangoAtaque(tokenSeleccionado.value);
+    }
+  } else if (event.key === "Escape") {
+    menuContextual.value = null;
+    panelValorEstado.value = null;
+    panelEstados.value = null;
+    if (modoMovimiento.value || modoAtaque.value) limpiarRango();
+    if (herramientaActiva.value) desactivarHerramienta();
+  }
+}
+
+// --- Medir distancias ---
+
+// Resuelve el punto de mundo bajo el cursor: la superficie del terreno hex si el
+// rayo la toca, o su intersección con el plano y=0 en caso contrario (permite
+// medir clicando en el vacío / fuera del mapa).
+function puntoMundoEnPuntero(
+  clientX: number,
+  clientY: number,
+): THREE.Vector3 | null {
+  if (!renderer || !camera) return null;
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(hexMeshes, false)[0];
+  if (hit) return hit.point.clone();
+  const p = new THREE.Vector3();
+  return raycaster.ray.intersectPlane(medPlano, p) ? p.clone() : null;
+}
+
+// Distancia recta 3D entre dos puntos, en ecsas. La componente horizontal usa 1
+// ecsa = distancia perpendicular entre dos lados opuestos del hexágono
+// (across-flats = √3 · hexRadius); la vertical, 1 ecsa = altura de un nivel de
+// prisma (prismHeight), coherente con el movimiento (subir/bajar 1 nivel = 1
+// paso). Ambas se combinan en línea recta. Sin mapa hex, 1 unidad = 1 ecsa.
+function distanciaEnEcsas(a: THREE.Vector3, b: THREE.Vector3): number {
+  const mapaHex = partidaActual.value?.mapa;
+  const unidadH = mapaHex ? mapaHex.hexRadius * Math.sqrt(3) : 1;
+  const unidadV = mapaHex ? mapaHex.prismHeight : 1;
+  const horiz = Math.hypot(a.x - b.x, a.z - b.z) / unidadH;
+  const vert = (a.y - b.y) / unidadV;
+  return Math.hypot(horiz, vert);
+}
+
+function medMarcador(p: THREE.Vector3) {
+  const geo = new THREE.SphereGeometry(0.18, 12, 12);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffcc33, depthTest: false });
+  const m = new THREE.Mesh(geo, mat);
+  m.position.copy(p);
+  m.renderOrder = 999;
+  scene.add(m);
+  medMarcadores.push(m);
+}
+
+// Crea o actualiza la línea recta entre a y b (siempre visible: depthTest off).
+function medDibujarLinea(a: THREE.Vector3, b: THREE.Vector3) {
+  if (!medLinea) {
+    medMatLinea = new THREE.LineBasicMaterial({
+      color: 0xffcc33,
+      depthTest: false,
+      transparent: true,
+    });
+    const geo = new THREE.BufferGeometry().setFromPoints([a, b]);
+    medLinea = new THREE.Line(geo, medMatLinea);
+    medLinea.renderOrder = 999;
+    scene.add(medLinea);
+  } else {
+    medLinea.geometry.setFromPoints([a, b]);
+  }
+}
+
+function limpiarMedicion() {
+  medPuntoA = null;
+  medPuntoB = null;
+  medPreview = null;
+  if (medLinea) {
+    scene.remove(medLinea);
+    medLinea.geometry.dispose();
+    medLinea = null;
+  }
+  medMatLinea?.dispose();
+  medMatLinea = null;
+  medMarcadores.forEach((m) => {
+    scene.remove(m);
+    m.geometry.dispose();
+    (m.material as THREE.Material).dispose();
+  });
+  medMarcadores.length = 0;
+  medicionLabel.value = null;
+}
+
+// Un clic coloca el 1º punto; el siguiente el 2º (y fija la medida); el
+// siguiente reinicia una medición nueva.
+function clicMedicion(event: MouseEvent) {
+  const p = puntoMundoEnPuntero(event.clientX, event.clientY);
+  if (!p) return;
+  if (!medPuntoA || medPuntoB) {
+    limpiarMedicion();
+    medPuntoA = p;
+    medMarcador(p);
+  } else {
+    medPuntoB = p;
+    medMarcador(p);
+    medDibujarLinea(medPuntoA, p);
+  }
+}
+
+// Proyecta el punto medio de la medición a pantalla y actualiza la etiqueta con
+// la distancia. Se llama cada frame desde animate().
+const medVec = new THREE.Vector3();
+function actualizarLabelMedicion() {
+  const a = medPuntoA;
+  const b = medPuntoB ?? medPreview;
+  if (herramientaActiva.value !== "medir" || !a || !b || !renderer || !camera) {
+    if (medicionLabel.value) medicionLabel.value = null;
+    return;
+  }
+  medVec.copy(a).add(b).multiplyScalar(0.5);
+  medVec.y += 0.35;
+  medVec.project(camera);
+  const rect = renderer.domElement.getBoundingClientRect();
+  medicionLabel.value = {
+    x: rect.left + (medVec.x * 0.5 + 0.5) * rect.width,
+    y: rect.top + (-medVec.y * 0.5 + 0.5) * rect.height,
+    texto: `${distanciaEnEcsas(a, b).toFixed(1)} ecsas`,
+    visible: medVec.z < 1,
+  };
+}
+
+// --- Plantillas de área / cono ---
+
+// Coordenada cúbica de una casilla (offset odd-r pointy-top, igual que centroHex).
+function hexACubo(col: number, row: number): { x: number; y: number; z: number } {
+  const x = col - (row - (row & 1)) / 2;
+  const z = row;
+  return { x, y: -x - z, z };
+}
+
+// Inversa: de cúbica a offset (col,row).
+function cuboAOffset(c: { x: number; z: number }): { col: number; row: number } {
+  return { col: c.x + (c.z - (c.z & 1)) / 2, row: c.z };
+}
+
+// Las 6 direcciones hexagonales en cúbica, en orden angular (cada una a 60° de
+// la siguiente); dos consecutivas comparten un vértice del hexágono.
+const DIRS_CUBO: { x: number; y: number; z: number }[] = [
+  { x: 1, y: -1, z: 0 },
+  { x: 1, y: 0, z: -1 },
+  { x: 0, y: 1, z: -1 },
+  { x: -1, y: 1, z: 0 },
+  { x: -1, y: 0, z: 1 },
+  { x: 0, y: -1, z: 1 },
+];
+
+// Distancia en casillas (pasos hexagonales) entre dos celdas, ignorando altura.
+function distanciaHex(
+  a: { col: number; row: number },
+  b: { col: number; row: number },
+): number {
+  const ca = hexACubo(a.col, a.row);
+  const cb = hexACubo(b.col, b.row);
+  return (
+    (Math.abs(ca.x - cb.x) + Math.abs(ca.y - cb.y) + Math.abs(ca.z - cb.z)) / 2
+  );
+}
+
+// Footprints (col,row) dentro de `radio` casillas del origen (incluye el origen).
+function calcularArea(
+  origen: { col: number; row: number },
+  radio: number,
+): Set<string> {
+  const claves = new Set<string>();
+  for (const celda of celdaPorClave.values()) {
+    if (distanciaHex(origen, celda) <= radio) claves.add(`${celda.col},${celda.row}`);
+  }
+  return claves;
+}
+
+// Footprints (col,row) del cono/triángulo desde `origen` hacia `cursor`. Se
+// construye como un sector simétrico de 60° en coordenadas cúbicas: se elige el
+// vértice (par de direcciones adyacentes dA/dB) más alineado con la dirección
+// origen→cursor y se rellena O + a·dA + b·dB con 1 ≤ a+b ≤ alcance. Así, a
+// distancia 1 abarca las 2 casillas adyacentes a esas dos caras y crece como un
+// triángulo perfecto, igual por ambos lados. Solo se cuentan casillas del mapa.
+function calcularCono(
+  origen: { col: number; row: number; y: number },
+  cursor: { col: number; row: number },
+): Set<string> {
+  const claves = new Set<string>();
+  const mapaHex = partidaActual.value?.mapa;
+  const alcance = distanciaHex(origen, cursor);
+  if (!mapaHex || alcance < 1) return claves;
+
+  const o = centroHex(mapaHex, origen.col, origen.row);
+  const c = centroHex(mapaHex, cursor.col, cursor.row);
+  const aim = new THREE.Vector2(c.x - o.x, c.z - o.z);
+  if (aim.lengthSq() === 0) return claves;
+  aim.normalize();
+
+  const oc = hexACubo(origen.col, origen.row);
+  // Dirección de mundo de cada uno de los 6 vecinos (orden angular de DIRS_CUBO).
+  const dirsMundo = DIRS_CUBO.map((d) => {
+    const off = cuboAOffset({ x: oc.x + d.x, z: oc.z + d.z });
+    const p = centroHex(mapaHex, off.col, off.row);
+    return new THREE.Vector2(p.x - o.x, p.z - o.z).normalize();
+  });
+  // Vértice (par de direcciones adyacentes) cuyo bisector mejor apunta al cursor.
+  let mejor = 0;
+  let mejorDot = -Infinity;
+  for (let i = 0; i < 6; i++) {
+    const bis = dirsMundo[i]!.clone().add(dirsMundo[(i + 1) % 6]!).normalize();
+    const d = bis.dot(aim);
+    if (d > mejorDot) {
+      mejorDot = d;
+      mejor = i;
+    }
+  }
+  const dA = DIRS_CUBO[mejor]!;
+  const dB = DIRS_CUBO[(mejor + 1) % 6]!;
+
+  // Footprints existentes del mapa, para no contar/pintar casillas fuera de él.
+  const existentes = new Set<string>();
+  for (const celda of celdaPorClave.values()) {
+    existentes.add(`${celda.col},${celda.row}`);
+  }
+
+  for (let a = 0; a <= alcance; a++) {
+    for (let b = 0; b <= alcance - a; b++) {
+      if (a + b < 1) continue;
+      const off = cuboAOffset({
+        x: oc.x + dA.x * a + dB.x * b,
+        z: oc.z + dA.z * a + dB.z * b,
+      });
+      const clave = `${off.col},${off.row}`;
+      if (existentes.has(clave)) claves.add(clave);
+    }
+  }
+  return claves;
+}
+
+// Pinta marcadores translúcidos sobre la cara superior de cada casilla indicada.
+function pintarPlantilla(claves: Set<string>, color: number) {
+  plantillaMarcadores.forEach((m) => {
+    scene.remove(m);
+    m.geometry.dispose();
+  });
+  plantillaMarcadores.length = 0;
+  const mapaHex = partidaActual.value?.mapa;
+  if (!mapaHex) return;
+  if (!plantillaMat) {
+    plantillaMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
+  }
+  plantillaMat.color.setHex(color);
+  for (const celda of celdaPorClave.values()) {
+    if (!claves.has(`${celda.col},${celda.row}`)) continue;
+    const geo = crearGeometriaPrisma(
+      mapaHex.hexRadius * 0.92,
+      0.12,
+      celda.shape === "half",
+    );
+    const m = new THREE.Mesh(geo, plantillaMat);
+    const p = centroHex(mapaHex, celda.col, celda.row);
+    m.position.set(p.x, alturaSuperficie(mapaHex, celda.y) + 0.05, p.z);
+    if (celda.shape === "half") m.rotation.y = (celda.rot * Math.PI) / 3;
+    m.renderOrder = 1;
+    scene.add(m);
+    plantillaMarcadores.push(m);
+  }
+}
+
+// Recalcula y repinta la plantilla (área o cono) desde el origen hasta la casilla
+// bajo el cursor, y actualiza la etiqueta con el nº de casillas.
+function actualizarPlantilla(cursor: { col: number; row: number; y: number }) {
+  if (!plantillaOrigen) return;
+  const mapaHex = partidaActual.value?.mapa;
+  if (!mapaHex) return;
+
+  const esCono = herramientaActiva.value === "cono";
+  const claves = esCono
+    ? calcularCono(plantillaOrigen, cursor)
+    : calcularArea(plantillaOrigen, distanciaHex(plantillaOrigen, cursor));
+  pintarPlantilla(claves, esCono ? 0xff8c1a : 0x33aaff);
+
+  const p = centroHex(mapaHex, cursor.col, cursor.row);
+  plantillaLabelWorld = new THREE.Vector3(
+    p.x,
+    alturaSuperficie(mapaHex, cursor.y) + 0.4,
+    p.z,
+  );
+  plantillaLabelTexto = `${claves.size} ${claves.size === 1 ? "casilla" : "casillas"}`;
+}
+
+function limpiarPlantilla() {
+  plantillaMarcadores.forEach((m) => {
+    scene.remove(m);
+    m.geometry.dispose();
+  });
+  plantillaMarcadores.length = 0;
+  plantillaMat?.dispose();
+  plantillaMat = null;
+  plantillaOrigen = null;
+  plantillaFijada = false;
+  plantillaLabelWorld = null;
+  plantillaLabelTexto = "";
+  plantillaLabel.value = null;
+}
+
+// Proyecta la etiqueta de la plantilla a pantalla. Se llama cada frame.
+function actualizarLabelPlantilla() {
+  const activa =
+    herramientaActiva.value === "area" || herramientaActiva.value === "cono";
+  if (!plantillaLabelWorld || !renderer || !camera || !activa) {
+    if (plantillaLabel.value) plantillaLabel.value = null;
+    return;
+  }
+  medVec.copy(plantillaLabelWorld).project(camera);
+  const rect = renderer.domElement.getBoundingClientRect();
+  plantillaLabel.value = {
+    x: rect.left + (medVec.x * 0.5 + 0.5) * rect.width,
+    y: rect.top + (-medVec.y * 0.5 + 0.5) * rect.height,
+    texto: plantillaLabelTexto,
+    visible: medVec.z < 1,
+  };
+}
+
+// Al cambiar de herramienta: ajusta el cursor y limpia cualquier dibujo previo
+// (medición y plantilla) para empezar en limpio con la nueva.
+watch(herramientaActiva, (val) => {
+  if (renderer) renderer.domElement.style.cursor = val ? "crosshair" : "";
+  limpiarMedicion();
+  limpiarPlantilla();
+});
+
 // --- Interaction ---
 async function onCanvasClick(event: MouseEvent) {
+  // Herramienta de medir: los clics colocan los puntos de medición y no
+  // interactúan con tokens/personajes.
+  if (herramientaActiva.value === "medir") {
+    clicMedicion(event);
+    return;
+  }
+
+  // Herramientas de plantilla (área / cono): 1er clic fija el origen (sobre una
+  // casilla) y arranca la vista previa; el siguiente la congela; el siguiente
+  // reinicia con un origen nuevo.
+  if (herramientaActiva.value === "area" || herramientaActiva.value === "cono") {
+    if (!plantillaOrigen || plantillaFijada) {
+      const res = hexEnPuntero(event.clientX, event.clientY);
+      if (!res) return; // hay que clicar sobre una casilla
+      limpiarPlantilla();
+      plantillaOrigen = {
+        col: res.celda.col,
+        row: res.celda.row,
+        y: res.celda.y,
+      };
+      actualizarPlantilla(res.celda);
+    } else {
+      plantillaFijada = true;
+    }
+    return;
+  }
+
+  // Cualquier clic sobre el lienzo cierra el menú contextual / panel abierto.
+  menuContextual.value = null;
+  panelValorEstado.value = null;
+  panelEstados.value = null;
+
+  // En modo "atacar" el rango es solo informativo: cualquier clic lo limpia.
+  if (modoAtaque.value) {
+    limpiarRango();
+    return;
+  }
+
+  // En modo "mover": un clic sobre una casilla alcanzable mueve el token; un
+  // clic fuera del rango cancela el modo. Se resuelve antes que el resto de la
+  // interacción.
+  if (modoMovimiento.value) {
+    const res = hexEnPuntero(event.clientX, event.clientY);
+    const tokenId = modoMovimiento.value.tokenId;
+    const destino = res
+      ? celdasAlcanzables.get(
+          claveCelda(res.celda.col, res.celda.row, res.celda.y),
+        )
+      : undefined;
+    limpiarRango();
+    if (destino) {
+      moverToken(tokenId, destino);
+    }
+    return;
+  }
+
   if (!renderer || !camera) return;
-  if (turnoEnProceso.value) return;
 
   // Calculate mouse position
   const rect = renderer.domElement.getBoundingClientRect();
@@ -559,27 +2123,26 @@ async function onCanvasClick(event: MouseEvent) {
   const intersects = raycaster.intersectObjects(clickables, false);
 
   if (intersects.length > 0) {
-    const obj = intersects[0].object;
-    const point = intersects[0].point;
+    const hit = intersects[0];
+    const obj = hit.object;
+    const point = hit.point;
+
+    // Clic en un token: seleccionarlo. El movimiento no ocurre con el clic
+    // normal; hay que entrar antes en modo "mover" (menú contextual o tecla M).
+    if (obj.userData.tokenId) {
+      tokenSeleccionado.value = obj.userData.tokenId as string;
+      syncTokens();
+      return;
+    }
 
     if (obj.userData.isCharacter) {
       // Select character
       const target = obj.userData.characterData as PersonajeInstancia;
-      personajeSeleccionado.value = target;
-
-      // Dispatch event for targeting system
-      window.dispatchEvent(
-        new CustomEvent("character-clicked", { detail: target }),
-      );
+      abrirFichaInstancia(target);
+      seleccionarPersonaje(target);
     } else if (obj === navMesh) {
-      // Move active character
+      // Move selected character
       if (personajeActivo.value) {
-        // If action is prepared, cancel it when moving
-        if (accionPreparada.value) {
-           setAccionPreparada(null);
-           return;
-        }
-
         const mesh = characterMeshes.get(personajeActivo.value.nombre);
         if (!mesh) return;
 
@@ -593,22 +2156,6 @@ async function onCanvasClick(event: MouseEvent) {
         const path = pathfinding.findPath(startPos, point, ZONE, groupId);
 
         if (path && path.length > 0) {
-
-            // Calculate total path length
-            let totalDist = 0;
-            let current = startPos;
-            for(const p of path) {
-                totalDist += current.distanceTo(p);
-                current = p;
-            }
-
-            const movimientoMax = personajeActivo.value.atributos.movimiento;
-            if (totalDist > movimientoMax) {
-                 console.log("Too far!", totalDist);
-                 // Optional: visual feedback for invalid move
-                 return;
-            }
-
             // Start animation locally
             mesh.userData.isMoving = true;
             // Use correct height (0.9 for capsule)
@@ -629,6 +2176,35 @@ async function onCanvasClick(event: MouseEvent) {
 
 function onMouseMove(event: MouseEvent) {
   if (!renderer || !camera) return;
+
+  // Herramienta de medir: vista previa de la línea hacia el cursor mientras se
+  // coloca el segundo punto. No se resalta hex ni se muestra el panel.
+  if (herramientaActiva.value === "medir") {
+    if (medPuntoA && !medPuntoB) {
+      const p = puntoMundoEnPuntero(event.clientX, event.clientY);
+      if (p) {
+        medPreview = p;
+        medDibujarLinea(medPuntoA, p);
+      }
+    }
+    panelVisible.value = false;
+    return;
+  }
+
+  // Plantillas de área / cono: mientras no estén congeladas, crecen siguiendo la
+  // casilla bajo el cursor.
+  if (herramientaActiva.value === "area" || herramientaActiva.value === "cono") {
+    if (plantillaOrigen && !plantillaFijada) {
+      const res = hexEnPuntero(event.clientX, event.clientY);
+      if (res) actualizarPlantilla(res.celda);
+    }
+    panelVisible.value = false;
+    return;
+  }
+
+  // Resaltar el hexágono bajo el cursor.
+  actualizarHexHover(event.clientX, event.clientY);
+
   const rect = renderer.domElement.getBoundingClientRect();
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -658,15 +2234,20 @@ onMounted(() => {
     if (renderer) {
       renderer.domElement.addEventListener("click", onCanvasClick);
       renderer.domElement.addEventListener("mousemove", onMouseMove);
+      renderer.domElement.addEventListener("contextmenu", onContextMenu);
     }
   });
+  window.addEventListener("keydown", onKeyDown);
 });
 
 onBeforeUnmount(() => {
   if (renderer) {
     renderer.domElement.removeEventListener("click", onCanvasClick);
     renderer.domElement.removeEventListener("mousemove", onMouseMove);
+    renderer.domElement.removeEventListener("contextmenu", onContextMenu);
   }
+  window.removeEventListener("keydown", onKeyDown);
+  limpiarRango();
   cancelAnimationFrame(rafId);
   if (renderer) {
     renderer.dispose();

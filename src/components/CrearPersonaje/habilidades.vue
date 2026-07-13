@@ -1,154 +1,150 @@
 <template>
   <div class="space-y-6">
     <!-- Puntos Disponibles -->
-    <div
-      class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 shadow-lg"
-    >
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-sm font-semibold uppercase tracking-wide opacity-90">
-            Puntos Disponibles
-          </div>
-          <div class="text-4xl font-bold mt-1">{{ puntosDisponibles }}</div>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="stat-tile">
+        <div class="stat-label">Puntos disponibles</div>
+        <div
+          :class="[
+            'stat-value',
+            puntosDisponibles < 0 ? 'text-red-600' : 'text-indigo-600',
+          ]"
+        >
+          {{ puntosDisponibles }}
         </div>
-        <div class="text-right opacity-90">
-          <div class="text-sm">Límite por habilidad</div>
-          <div class="text-2xl font-semibold">
-            {{ limiteRangosPorHabilidad }}
-          </div>
-        </div>
-        <div class="text-right opacity-90">
-          <div class="text-sm">Habilidades extras</div>
-          <div class="text-2xl font-semibold">
-            {{ habilidadesExtrasMarcadas }} / {{ habilidadesExtrasDisponibles }}
-          </div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Límite por habilidad</div>
+        <div class="stat-value">{{ limiteRangosPorHabilidad }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Habilidades extras</div>
+        <div class="stat-value">
+          {{ habilidadesExtrasMarcadas }} / {{ habilidadesExtrasDisponibles }}
         </div>
       </div>
     </div>
 
     <!-- Tabla de Habilidades Generales -->
-    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden">
-      <!-- Header de la tabla -->
-      <div class="bg-blue-600 text-white px-6 py-3">
-        <h3 class="text-xl font-bold">Habilidades Generales</h3>
-      </div>
-      <div
-        class="bg-blue-600 text-white grid grid-cols-12 gap-4 px-6 py-4 font-semibold text-sm"
-      >
-        <div class="col-span-1 text-center">Activa</div>
-        <div class="col-span-3">Habilidad</div>
-        <div class="col-span-2 text-center">Mod. Atributo</div>
-        <div class="col-span-2 text-center">Puntos Rangos</div>
-        <div class="col-span-2 text-center">Bonif. Diversos</div>
-        <div class="col-span-2 text-center">Total</div>
-      </div>
+    <div class="data-table">
+      <h3 class="data-table-title">Habilidades generales</h3>
+      <div class="tabla-scroll max-h-[500px] overflow-y-auto">
+        <div class="data-table-head tabla-grid grid-cols-12">
+          <div class="col-span-1 text-center">Activa</div>
+          <div class="col-span-3">Habilidad</div>
+          <div class="col-span-2 text-center">Mod. Atributo</div>
+          <div class="col-span-2 text-center">Rangos</div>
+          <div class="col-span-2 text-center">Bonif. Diversos</div>
+          <div class="col-span-2 text-center">Total</div>
+        </div>
 
-      <!-- Filas de habilidades generales -->
-      <div class="divide-y divide-blue-200 max-h-200 overflow-y-auto">
-        <div
-          v-for="habilidad in habilidadesGenerales"
-          :key="habilidad.id"
-          class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-blue-100 transition-colors"
-        >
-          <!-- Checkbox Activa -->
-          <div class="col-span-1 flex justify-center">
-            <input
-              type="checkbox"
-              v-model="habilidad.activa"
-              :disabled="
-                esHabilidadBloqueada(habilidad) ||
-                (!habilidad.activa &&
-                  habilidadesExtrasMarcadas >= habilidadesExtrasDisponibles)
-              "
-              @change="guardarDatos"
-              :class="[
-                'w-6 h-6 text-blue-600 rounded border-2 border-blue-300 focus:ring-blue-500 cursor-pointer',
-                esHabilidadBloqueada(habilidad)
-                  ? 'opacity-70 cursor-not-allowed'
-                  : 'disabled:opacity-50 disabled:cursor-not-allowed',
-              ]"
-            />
-          </div>
-
-          <!-- Nombre de la habilidad -->
-          <div class="col-span-3">
-            <div class="font-semibold text-blue-700">
-              {{ habilidad.nombre }}
-              <span
-                v-if="habilidad.origenTrasfondo"
-                class="text-xs text-purple-600 ml-1"
-                >(Trasfondo)</span
-              >
-              <span
-                v-if="habilidad.origenOficio"
-                class="text-xs text-green-600 ml-1"
-                >(Oficio)</span
-              >
+        <!-- Filas de habilidades generales -->
+        <div class="divide-y divide-gray-200">
+          <div
+            v-for="habilidad in habilidadesGenerales"
+            :key="habilidad.id"
+            class="data-table-row tabla-grid grid-cols-12"
+          >
+            <!-- Checkbox Activa -->
+            <div class="col-span-1 flex justify-center">
+              <input
+                type="checkbox"
+                v-model="habilidad.activa"
+                :disabled="
+                  esHabilidadBloqueada(habilidad) ||
+                  (!habilidad.activa &&
+                    habilidadesExtrasMarcadas >= habilidadesExtrasDisponibles)
+                "
+                @change="guardarDatos"
+                :class="[
+                  'h-4.5 w-4.5 cursor-pointer rounded border-gray-400 bg-white accent-indigo-500',
+                  esHabilidadBloqueada(habilidad)
+                    ? 'cursor-not-allowed opacity-70'
+                    : 'disabled:cursor-not-allowed disabled:opacity-40',
+                ]"
+              />
             </div>
-            <div class="text-xs text-blue-500">({{ habilidad.atributo }})</div>
-          </div>
 
-          <!-- Modificador de Atributo -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-white border-2 border-blue-300 rounded-lg px-4 py-2 font-bold text-blue-700 min-w-[60px]"
-            >
-              {{ habilidad.modAtributo >= 0 ? "+" : ""
-              }}{{ habilidad.modAtributo }}
+            <!-- Nombre de la habilidad -->
+            <div class="col-span-3">
+              <div class="text-sm font-semibold text-gray-900">
+                {{ habilidad.nombre }}
+                <span
+                  v-if="habilidad.origenTrasfondo"
+                  class="ml-1 text-xs font-medium text-purple-600"
+                  >(Trasfondo)</span
+                >
+                <span
+                  v-if="habilidad.origenEspecialidad"
+                  class="ml-1 text-xs font-medium text-emerald-600"
+                  >(Especialidad)</span
+                >
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ habilidad.atributo }}
+              </div>
             </div>
-          </div>
 
-          <!-- Puntos Rangos (Editable) -->
-          <div class="col-span-2 text-center">
-            <div class="flex items-center justify-center gap-2">
-              <button
-                @click="modificarRangos(habilidad, -1)"
-                :disabled="habilidad.rangos <= 0"
-                class="w-8 h-8 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-200 disabled:cursor-not-allowed transition-colors"
-              >
-                -
-              </button>
+            <!-- Modificador de Atributo -->
+            <div class="col-span-2 text-center">
+              <span class="badge badge-muted min-w-12 justify-center">
+                {{ habilidad.modAtributo >= 0 ? "+" : ""
+                }}{{ habilidad.modAtributo }}
+              </span>
+            </div>
+
+            <!-- Puntos Rangos (Editable) -->
+            <div class="col-span-2 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button
+                  @click="modificarRangos(habilidad, -1)"
+                  :disabled="habilidad.rangos <= rangosMinimos(habilidad)"
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  v-model.number="habilidad.rangos"
+                  @focus="habilidad.rangosAnteriores = habilidad.rangos"
+                  @input="validarRangos(habilidad)"
+                  @change="guardarDatos"
+                  class="input-number w-14"
+                  min="0"
+                  :max="limiteRangosPorHabilidad"
+                />
+                <button
+                  @click="modificarRangos(habilidad, 1)"
+                  :disabled="
+                    puntosDisponibles < (habilidad.activa ? 1 : 2) ||
+                    habilidad.rangos >= limiteRangosPorHabilidad
+                  "
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                  title="Coste: {{habilidad.activa ? '1 punto' : '2 puntos'}}"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- Bonificadores Diversos (Editable) -->
+            <div class="col-span-2 text-center">
               <input
                 type="number"
-                v-model.number="habilidad.rangos"
-                @focus="habilidad.rangosAnteriores = habilidad.rangos"
-                @input="validarRangos(habilidad)"
+                v-model.number="habilidad.bonifDiversos"
                 @change="guardarDatos"
-                class="w-16 text-center bg-white border-2 border-blue-300 rounded-lg px-2 py-2 font-bold text-blue-700 focus:outline-none focus:border-blue-500"
-                min="0"
-                :max="limiteRangosPorHabilidad"
+                class="input-number w-16"
               />
-              <button
-                @click="modificarRangos(habilidad, 1)"
-                :disabled="
-                  puntosDisponibles < (habilidad.activa ? 1 : 2) ||
-                  habilidad.rangos >= limiteRangosPorHabilidad
-                "
-                class="w-8 h-8 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-200 disabled:cursor-not-allowed transition-colors"
-                title="Coste: {{habilidad.activa ? '1 punto' : '2 puntos'}}"
-              >
-                +
-              </button>
             </div>
-          </div>
 
-          <!-- Bonificadores Diversos (Editable) -->
-          <div class="col-span-2 text-center">
-            <input
-              type="number"
-              v-model.number="habilidad.bonifDiversos"
-              @change="guardarDatos"
-              class="w-20 text-center bg-white border-2 border-blue-300 rounded-lg px-2 py-2 font-bold text-blue-700 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-
-          <!-- Total -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-blue-600 text-white rounded-lg px-4 py-2 font-bold text-lg min-w-[60px] shadow-md"
-            >
-              {{ calcularTotal(habilidad) >= 0 ? "+" : ""
-              }}{{ calcularTotal(habilidad) }}
+            <!-- Total -->
+            <div class="col-span-2 text-center">
+              <span
+                class="inline-flex min-w-12 items-center justify-center rounded-lg bg-indigo-100 px-3 py-1.5 text-sm font-bold text-indigo-600"
+              >
+                {{ calcularTotal(habilidad) >= 0 ? "+" : ""
+                }}{{ calcularTotal(habilidad) }}
+              </span>
             </div>
           </div>
         </div>
@@ -156,102 +152,97 @@
     </div>
 
     <!-- Tabla de Habilidades de Artesanía -->
-    <div
-      class="bg-green-50 border-2 border-green-200 rounded-lg overflow-hidden"
-    >
-      <!-- Header de la tabla -->
-      <div class="bg-green-600 text-white px-6 py-3">
-        <h3 class="text-xl font-bold">Habilidades de Artesanía</h3>
-      </div>
-      <div
-        class="bg-green-600 text-white grid grid-cols-12 gap-4 px-6 py-4 font-semibold text-sm"
-      >
-        <div class="col-span-1 text-center">Activa</div>
-        <div class="col-span-3">Habilidad</div>
-        <div class="col-span-2 text-center">Mod. Atributo</div>
-        <div class="col-span-2 text-center">Puntos Rangos</div>
-        <div class="col-span-2 text-center">Bonif. Diversos</div>
-        <div class="col-span-2 text-center">Total</div>
-      </div>
+    <div class="data-table">
+      <h3 class="data-table-title">Habilidades de artesanía</h3>
+      <div class="tabla-scroll">
+        <div class="data-table-head tabla-grid grid-cols-12">
+          <div class="col-span-1 text-center">Activa</div>
+          <div class="col-span-3">Habilidad</div>
+          <div class="col-span-2 text-center">Mod. Atributo</div>
+          <div class="col-span-2 text-center">Rangos</div>
+          <div class="col-span-2 text-center">Bonif. Diversos</div>
+          <div class="col-span-2 text-center">Total</div>
+        </div>
 
-      <!-- Filas de habilidades de artesanía -->
-      <div class="divide-y divide-green-200">
-        <div
-          v-for="habilidad in habilidadesArtesania"
-          :key="habilidad.id"
-          class="grid grid-cols-12 gap-4 px-6 py-4 items-center bg-green-50 opacity-60"
-        >
-          <!-- Checkbox Activa (deshabilitado) -->
-          <div class="col-span-1 flex justify-center">
-            <input
-              type="checkbox"
-              :checked="false"
-              disabled
-              class="w-6 h-6 text-green-600 rounded border-2 border-green-300 opacity-50 cursor-not-allowed"
-            />
-          </div>
-
-          <!-- Nombre de la habilidad -->
-          <div class="col-span-3">
-            <div class="font-semibold text-green-700">
-              {{ habilidad.nombre }}
+        <!-- Filas de habilidades de artesanía -->
+        <div class="divide-y divide-gray-200 opacity-60">
+          <div
+            v-for="habilidad in habilidadesArtesania"
+            :key="habilidad.id"
+            class="data-table-row tabla-grid grid-cols-12"
+          >
+            <!-- Checkbox Activa (deshabilitado) -->
+            <div class="col-span-1 flex justify-center">
+              <input
+                type="checkbox"
+                :checked="false"
+                disabled
+                class="h-4.5 w-4.5 cursor-not-allowed rounded border-gray-400 bg-white opacity-50 accent-indigo-500"
+              />
             </div>
-            <div class="text-xs text-green-500">({{ habilidad.atributo }})</div>
-          </div>
 
-          <!-- Modificador de Atributo -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-white border-2 border-green-300 rounded-lg px-4 py-2 font-bold text-green-700 min-w-[60px]"
-            >
-              {{ habilidad.modAtributo >= 0 ? "+" : ""
-              }}{{ habilidad.modAtributo }}
+            <!-- Nombre de la habilidad -->
+            <div class="col-span-3">
+              <div class="text-sm font-semibold text-gray-900">
+                {{ habilidad.nombre }}
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ habilidad.atributo }}
+              </div>
             </div>
-          </div>
 
-          <!-- Puntos Rangos (Editable) -->
-          <div class="col-span-2 text-center">
-            <div class="flex items-center justify-center gap-2">
-              <button
-                @click="modificarRangos(habilidad, -1)"
-                :disabled="habilidad.rangos <= 0"
-                class="w-8 h-8 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 disabled:bg-green-200 disabled:cursor-not-allowed transition-colors"
-              >
-                -
-              </button>
+            <!-- Modificador de Atributo -->
+            <div class="col-span-2 text-center">
+              <span class="badge badge-muted min-w-12 justify-center">
+                {{ habilidad.modAtributo >= 0 ? "+" : ""
+                }}{{ habilidad.modAtributo }}
+              </span>
+            </div>
+
+            <!-- Puntos Rangos (Editable) -->
+            <div class="col-span-2 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button
+                  @click="modificarRangos(habilidad, -1)"
+                  :disabled="habilidad.rangos <= rangosMinimos(habilidad)"
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  v-model.number="habilidad.rangos"
+                  @input="validarRangos(habilidad)"
+                  class="input-number w-14"
+                  min="0"
+                />
+                <button
+                  @click="modificarRangos(habilidad, 1)"
+                  :disabled="puntosDisponibles <= 0"
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- Bonificadores Diversos (Editable) -->
+            <div class="col-span-2 text-center">
               <input
                 type="number"
-                v-model.number="habilidad.rangos"
-                @input="validarRangos(habilidad)"
-                class="w-16 text-center bg-white border-2 border-green-300 rounded-lg px-2 py-2 font-bold text-green-700 focus:outline-none focus:border-green-500"
-                min="0"
+                v-model.number="habilidad.bonifDiversos"
+                class="input-number w-16"
               />
-              <button
-                @click="modificarRangos(habilidad, 1)"
-                :disabled="puntosDisponibles <= 0"
-                class="w-8 h-8 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 disabled:bg-green-200 disabled:cursor-not-allowed transition-colors"
-              >
-                +
-              </button>
             </div>
-          </div>
 
-          <!-- Bonificadores Diversos (Editable) -->
-          <div class="col-span-2 text-center">
-            <input
-              type="number"
-              v-model.number="habilidad.bonifDiversos"
-              class="w-20 text-center bg-white border-2 border-green-300 rounded-lg px-2 py-2 font-bold text-green-700 focus:outline-none focus:border-green-500"
-            />
-          </div>
-
-          <!-- Total -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-green-600 text-white rounded-lg px-4 py-2 font-bold text-lg min-w-[60px] shadow-md"
-            >
-              {{ calcularTotal(habilidad) >= 0 ? "+" : ""
-              }}{{ calcularTotal(habilidad) }}
+            <!-- Total -->
+            <div class="col-span-2 text-center">
+              <span
+                class="inline-flex min-w-12 items-center justify-center rounded-lg bg-indigo-100 px-3 py-1.5 text-sm font-bold text-indigo-600"
+              >
+                {{ calcularTotal(habilidad) >= 0 ? "+" : ""
+                }}{{ calcularTotal(habilidad) }}
+              </span>
             </div>
           </div>
         </div>
@@ -259,107 +250,102 @@
     </div>
 
     <!-- Tabla de Habilidades de Recolección -->
-    <div
-      class="bg-amber-50 border-2 border-amber-200 rounded-lg overflow-hidden"
-    >
-      <!-- Header de la tabla -->
-      <div class="bg-amber-600 text-white px-6 py-3">
-        <h3 class="text-xl font-bold">Habilidades de Recolección</h3>
-      </div>
-      <div
-        class="bg-amber-600 text-white grid grid-cols-12 gap-4 px-6 py-4 font-semibold text-sm"
-      >
-        <div class="col-span-1 text-center">Comp.</div>
-        <div class="col-span-3">Habilidad</div>
-        <div class="col-span-2 text-center">Mod. Atributo</div>
-        <div class="col-span-2 text-center">Puntos Rangos</div>
-        <div class="col-span-2 text-center">Bonif. Diversos</div>
-        <div class="col-span-2 text-center">Total</div>
-      </div>
+    <div class="data-table">
+      <h3 class="data-table-title">Habilidades de recolección</h3>
+      <div class="tabla-scroll">
+        <div class="data-table-head tabla-grid grid-cols-12">
+          <div class="col-span-1 text-center">Comp.</div>
+          <div class="col-span-3">Habilidad</div>
+          <div class="col-span-2 text-center">Mod. Atributo</div>
+          <div class="col-span-2 text-center">Rangos</div>
+          <div class="col-span-2 text-center">Bonif. Diversos</div>
+          <div class="col-span-2 text-center">Total</div>
+        </div>
 
-      <!-- Filas de habilidades de recolección -->
-      <div class="divide-y divide-amber-200">
-        <div
-          v-for="habilidad in habilidadesRecoleccion"
-          :key="habilidad.id"
-          class="grid grid-cols-12 gap-4 px-6 py-4 items-center bg-amber-50 opacity-60"
-        >
-          <!-- Checkbox Activa (deshabilitado) -->
-          <div class="col-span-1 flex justify-center">
-            <input
-              type="checkbox"
-              :checked="false"
-              disabled
-              class="w-6 h-6 text-amber-600 rounded border-2 border-amber-300 opacity-50 cursor-not-allowed"
-            />
-          </div>
-
-          <!-- Nombre de la habilidad -->
-          <div class="col-span-3">
-            <div class="font-semibold text-amber-700">
-              {{ habilidad.nombre }}
+        <!-- Filas de habilidades de recolección -->
+        <div class="divide-y divide-gray-200 opacity-60">
+          <div
+            v-for="habilidad in habilidadesRecoleccion"
+            :key="habilidad.id"
+            class="data-table-row tabla-grid grid-cols-12"
+          >
+            <!-- Checkbox Activa (deshabilitado) -->
+            <div class="col-span-1 flex justify-center">
+              <input
+                type="checkbox"
+                :checked="false"
+                disabled
+                class="h-4.5 w-4.5 cursor-not-allowed rounded border-gray-400 bg-white opacity-50 accent-indigo-500"
+              />
             </div>
-            <div class="text-xs text-amber-500">({{ habilidad.atributo }})</div>
-          </div>
 
-          <!-- Modificador de Atributo -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-white border-2 border-amber-300 rounded-lg px-4 py-2 font-bold text-amber-700 min-w-[60px]"
-            >
-              {{ habilidad.modAtributo >= 0 ? "+" : ""
-              }}{{ habilidad.modAtributo }}
+            <!-- Nombre de la habilidad -->
+            <div class="col-span-3">
+              <div class="text-sm font-semibold text-gray-900">
+                {{ habilidad.nombre }}
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ habilidad.atributo }}
+              </div>
             </div>
-          </div>
 
-          <!-- Puntos Rangos (Editable) -->
-          <div class="col-span-2 text-center">
-            <div class="flex items-center justify-center gap-2">
-              <button
-                @click="modificarRangos(habilidad, -1)"
-                :disabled="habilidad.rangos <= 0"
-                class="w-8 h-8 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 disabled:bg-amber-200 disabled:cursor-not-allowed transition-colors"
-              >
-                -
-              </button>
+            <!-- Modificador de Atributo -->
+            <div class="col-span-2 text-center">
+              <span class="badge badge-muted min-w-12 justify-center">
+                {{ habilidad.modAtributo >= 0 ? "+" : ""
+                }}{{ habilidad.modAtributo }}
+              </span>
+            </div>
+
+            <!-- Puntos Rangos (Editable) -->
+            <div class="col-span-2 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button
+                  @click="modificarRangos(habilidad, -1)"
+                  :disabled="habilidad.rangos <= rangosMinimos(habilidad)"
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  v-model.number="habilidad.rangos"
+                  @focus="habilidad.rangosAnteriores = habilidad.rangos"
+                  @input="validarRangos(habilidad)"
+                  class="input-number w-14"
+                  min="0"
+                />
+                <button
+                  @click="modificarRangos(habilidad, 1)"
+                  :disabled="
+                    puntosDisponibles < 1 ||
+                    habilidad.rangos >= limiteRangosPorHabilidad
+                  "
+                  class="btn btn-secondary h-7 w-7 !p-0"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- Bonificadores Diversos (Editable) -->
+            <div class="col-span-2 text-center">
               <input
                 type="number"
-                v-model.number="habilidad.rangos"
-                @focus="habilidad.rangosAnteriores = habilidad.rangos"
-                @input="validarRangos(habilidad)"
-                class="w-16 text-center bg-white border-2 border-amber-300 rounded-lg px-2 py-2 font-bold text-amber-700 focus:outline-none focus:border-amber-500"
-                min="0"
+                v-model.number="habilidad.bonifDiversos"
+                @change="guardarDatos"
+                class="input-number w-16"
               />
-              <button
-                @click="modificarRangos(habilidad, 1)"
-                :disabled="
-                  puntosDisponibles < 1 ||
-                  habilidad.rangos >= limiteRangosPorHabilidad
-                "
-                class="w-8 h-8 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 disabled:bg-amber-200 disabled:cursor-not-allowed transition-colors"
-              >
-                +
-              </button>
             </div>
-          </div>
 
-          <!-- Bonificadores Diversos (Editable) -->
-          <div class="col-span-2 text-center">
-            <input
-              type="number"
-              v-model.number="habilidad.bonifDiversos"
-              @change="guardarDatos"
-              class="w-20 text-center bg-white border-2 border-amber-300 rounded-lg px-2 py-2 font-bold text-amber-700 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <!-- Total -->
-          <div class="col-span-2 text-center">
-            <div
-              class="inline-flex items-center justify-center bg-amber-600 text-white rounded-lg px-4 py-2 font-bold text-lg min-w-[60px] shadow-md"
-            >
-              {{ calcularTotal(habilidad) >= 0 ? "+" : ""
-              }}{{ calcularTotal(habilidad) }}
+            <!-- Total -->
+            <div class="col-span-2 text-center">
+              <span
+                class="inline-flex min-w-12 items-center justify-center rounded-lg bg-indigo-100 px-3 py-1.5 text-sm font-bold text-indigo-600"
+              >
+                {{ calcularTotal(habilidad) >= 0 ? "+" : ""
+                }}{{ calcularTotal(habilidad) }}
+              </span>
             </div>
           </div>
         </div>
@@ -367,28 +353,28 @@
     </div>
 
     <!-- Leyenda -->
-    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-      <h4 class="font-semibold text-blue-700 mb-2">Leyenda:</h4>
-      <div class="text-sm text-blue-600 space-y-1">
+    <div class="panel">
+      <h4 class="label">Leyenda</h4>
+      <div class="space-y-1 text-sm text-gray-600">
         <div>
-          <span class="font-semibold">Comp.:</span> Indica si tienes competencia
-          en esta habilidad (otorgado por clase/trasfondo)
+          <span class="font-semibold text-gray-800">Comp.:</span> Indica si
+          tienes competencia en esta habilidad (otorgado por clase/trasfondo)
         </div>
         <div>
-          <span class="font-semibold">Mod. Atributo:</span> Modificador del
-          atributo asociado a la habilidad
+          <span class="font-semibold text-gray-800">Mod. Atributo:</span>
+          Modificador del atributo asociado a la habilidad
         </div>
         <div>
-          <span class="font-semibold">Puntos Rangos:</span> Puntos que asignas
-          para mejorar esta habilidad
+          <span class="font-semibold text-gray-800">Rangos:</span> Puntos que
+          asignas para mejorar esta habilidad
         </div>
         <div>
-          <span class="font-semibold">Bonif. Diversos:</span> Bonificadores
-          adicionales de objetos, dotes o efectos temporales
+          <span class="font-semibold text-gray-800">Bonif. Diversos:</span>
+          Bonificadores adicionales de objetos, dotes o efectos temporales
         </div>
         <div>
-          <span class="font-semibold">Total:</span> Suma de todos los
-          modificadores (este es el valor que usarás en tus tiradas)
+          <span class="font-semibold text-gray-800">Total:</span> Suma de
+          todos los modificadores (este es el valor que usarás en tus tiradas)
         </div>
       </div>
     </div>
@@ -406,15 +392,40 @@ interface Habilidad {
   atributo: string;
   activa: boolean;
   origenTrasfondo: boolean;
-  origenOficio: boolean;
+  origenEspecialidad: boolean;
   modAtributo: number;
   rangos: number;
   bonifDiversos: number;
   rangosAnteriores?: number; // Para guardar el valor anterior al validar
 }
 
-const { characterData, loadCharacterData, saveCharacterData } =
+const { characterData, loadCharacterData, saveCharacterData, enSubidaNivel, subidaNivelBase } =
   useCharacterCreation();
+
+// En modo "subir de nivel": rangos y competencias que ya tenía el personaje
+// antes de subir. Los rangos no pueden bajar de aquí y una competencia marcada
+// no se puede desmarcar.
+const baselineHabilidades = computed(() => {
+  const map = new Map<number, { rangos: number; activa: boolean }>();
+  if (!enSubidaNivel.value || !subidaNivelBase.value?.habilidades) return map;
+  try {
+    const arr = JSON.parse(subidaNivelBase.value.habilidades);
+    for (const h of arr)
+      map.set(h.id, { rangos: h.rangos ?? 0, activa: !!h.activa });
+  } catch {
+    /* base sin habilidades guardadas */
+  }
+  return map;
+});
+function rangosMinimos(habilidad: Habilidad): number {
+  return baselineHabilidades.value.get(habilidad.id)?.rangos ?? 0;
+}
+function esActivaBloqueada(habilidad: Habilidad): boolean {
+  return (
+    enSubidaNivel.value &&
+    (baselineHabilidades.value.get(habilidad.id)?.activa ?? false)
+  );
+}
 
 // Puntos máximos y límite de habilidad desde los atributos del personaje
 const puntosMaximos = computed(
@@ -424,11 +435,11 @@ const limiteRangosPorHabilidad = computed(
   () => characterData.value.atributos?.limiteHabilidad || 5,
 );
 
-// Número de habilidades obligatorias (trasfondo + oficio)
+// Número de habilidades obligatorias (trasfondo + especialidad)
 const habilidadesObligatorias = computed(() => {
   const trasfondo = characterData.value.trasfondo_habilidades?.length || 0;
-  const oficio = characterData.value.oficio_habilidades?.length || 0;
-  return trasfondo + oficio;
+  const especialidad = characterData.value.especialidad_habilidades?.length || 0;
+  return trasfondo + especialidad;
 });
 
 // Número de habilidades extras que el usuario puede seleccionar manualmente
@@ -443,12 +454,12 @@ const habilidades = ref<Habilidad[]>([]);
 function inicializarHabilidades() {
   const habilidadesCompetentesTrasfondo =
     characterData.value.trasfondo_habilidades || [];
-  const habilidadesCompetentesOficio =
-    characterData.value.oficio_habilidades || [];
+  const habilidadesCompetentesEspecialidad =
+    characterData.value.especialidad_habilidades || [];
 
   console.log("🔄 Inicializando habilidades");
   console.log("  Trasfondo:", habilidadesCompetentesTrasfondo);
-  console.log("  Oficio:", habilidadesCompetentesOficio);
+  console.log("  Especialidad:", habilidadesCompetentesEspecialidad);
 
   // Cargar datos guardados si existen
   let habilidadesGuardadas: any[] = [];
@@ -462,11 +473,11 @@ function inicializarHabilidades() {
 
   habilidades.value = habilidadesData.habilidades.map((hab) => {
     const esTrasfondo = habilidadesCompetentesTrasfondo.includes(hab.nombre);
-    const esOficio = habilidadesCompetentesOficio.includes(hab.nombre);
+    const esEspecialidad = habilidadesCompetentesEspecialidad.includes(hab.nombre);
     const guardada = habilidadesGuardadas.find((h: any) => h.id === hab.id);
 
-    // Si es de trasfondo u oficio, SIEMPRE debe estar activa
-    const debeEstarActiva = esTrasfondo || esOficio;
+    // Si es de trasfondo u especialidad, SIEMPRE debe estar activa
+    const debeEstarActiva = esTrasfondo || esEspecialidad;
 
     // Calcular modAtributo según el atributo de la habilidad
     let modAtributo = 0;
@@ -485,19 +496,19 @@ function inicializarHabilidades() {
     // Determinar si debe estar activa
     let activa: boolean;
     if (debeEstarActiva) {
-      // Forzar activa para trasfondo/oficio
+      // Forzar activa para trasfondo/especialidad
       activa = true;
     } else if (guardada) {
-      // Si estaba guardada pero YA NO es de trasfondo/oficio, verificar si debe permanecer activa
-      // Si guardada.origenTrasfondo o guardada.origenOficio era true pero ahora no lo es, desmarcar
+      // Si estaba guardada pero YA NO es de trasfondo/especialidad, verificar si debe permanecer activa
+      // Si guardada.origenTrasfondo o guardada.origenEspecialidad era true pero ahora no lo es, desmarcar
       const eraTrasfondoAntes = guardada.origenTrasfondo ?? false;
-      const eraOficioAntes = guardada.origenOficio ?? false;
+      const eraEspecialidadAntes = guardada.origenEspecialidad ?? false;
 
-      if ((eraTrasfondoAntes || eraOficioAntes) && !debeEstarActiva) {
-        // Ya no es de trasfondo/oficio, desmarcar
+      if ((eraTrasfondoAntes || eraEspecialidadAntes) && !debeEstarActiva) {
+        // Ya no es de trasfondo/especialidad, desmarcar
         activa = false;
         console.log(
-          `  ✗ ${hab.nombre} desmarcada (ya no es de Trasfondo/Oficio)`,
+          `  ✗ ${hab.nombre} desmarcada (ya no es de Trasfondo/Especialidad)`,
         );
       } else {
         // Mantener valor guardado
@@ -507,9 +518,9 @@ function inicializarHabilidades() {
       activa = false;
     }
 
-    if (esTrasfondo || esOficio) {
+    if (esTrasfondo || esEspecialidad) {
       console.log(
-        `  ✓ ${hab.nombre} marcada como activa (${esTrasfondo ? "Trasfondo" : "Oficio"})`,
+        `  ✓ ${hab.nombre} marcada como activa (${esTrasfondo ? "Trasfondo" : "Especialidad"})`,
       );
     }
 
@@ -519,14 +530,14 @@ function inicializarHabilidades() {
       atributo: hab.atributo,
       activa: activa,
       origenTrasfondo: esTrasfondo,
-      origenOficio: esOficio,
+      origenEspecialidad: esEspecialidad,
       modAtributo: modAtributo,
       rangos: guardada?.rangos ?? 0,
       bonifDiversos: guardada?.bonifDiversos ?? 0,
     };
   });
 
-  // Guardar inmediatamente después de inicializar para reflejar cambios en trasfondo/oficio/atributos
+  // Guardar inmediatamente después de inicializar para reflejar cambios en trasfondo/especialidad/atributos
   guardarDatos();
 }
 
@@ -557,10 +568,10 @@ const habilidadesSeleccionadas = computed(() => {
   return habilidades.value.filter((h) => h.activa).length;
 });
 
-// Habilidades extras que el usuario ha marcado manualmente (no incluye trasfondo ni oficio)
+// Habilidades extras que el usuario ha marcado manualmente (no incluye trasfondo ni especialidad)
 const habilidadesExtrasMarcadas = computed(() => {
   return habilidades.value.filter(
-    (h) => h.activa && !h.origenTrasfondo && !h.origenOficio,
+    (h) => h.activa && !h.origenTrasfondo && !h.origenEspecialidad,
   ).length;
 });
 
@@ -581,7 +592,11 @@ const habilidadesRecoleccion = computed(() => {
 
 // Verificar si una habilidad está bloqueada (no se puede desmarcar)
 function esHabilidadBloqueada(habilidad: Habilidad): boolean {
-  return habilidad.origenTrasfondo || habilidad.origenOficio;
+  return (
+    habilidad.origenTrasfondo ||
+    habilidad.origenEspecialidad ||
+    esActivaBloqueada(habilidad)
+  );
 }
 
 // Watch para el checkbox de activa
@@ -590,7 +605,7 @@ watch(
   () => {
     // Validar que no se exceda el límite de habilidades extras manuales
     const extrasMarcadas = habilidades.value.filter(
-      (h) => h.activa && !h.origenTrasfondo && !h.origenOficio,
+      (h) => h.activa && !h.origenTrasfondo && !h.origenEspecialidad,
     ).length;
 
     if (extrasMarcadas > habilidadesExtrasDisponibles.value) {
@@ -607,9 +622,9 @@ watch(
   { deep: true },
 );
 
-// Marcar como competente las habilidades seleccionadas en oficio y trasfondo
-onMounted(() => {
-  loadCharacterData();
+// Marcar como competente las habilidades seleccionadas en especialidad y trasfondo
+onMounted(async () => {
+  await loadCharacterData();
   inicializarHabilidades();
 });
 
@@ -623,10 +638,10 @@ watch(
   },
 );
 
-// Actualizar cuando cambien las selecciones de oficio o trasfondo
+// Actualizar cuando cambien las selecciones de especialidad o trasfondo
 watch(
   () => [
-    characterData.value.oficio_habilidades,
+    characterData.value.especialidad_habilidades,
     characterData.value.trasfondo_habilidades,
     characterData.value.atributos,
   ],
@@ -638,7 +653,7 @@ watch(
 
 function calcularTotal(habilidad: Habilidad): number {
   const competenciaBonus =
-    habilidad.origenTrasfondo || habilidad.origenOficio ? 2 : 0;
+    habilidad.origenTrasfondo || habilidad.origenEspecialidad ? 2 : 0;
   return (
     habilidad.modAtributo +
     habilidad.rangos +
@@ -656,7 +671,7 @@ function modificarRangos(habilidad: Habilidad, cantidad: number) {
     habilidad.atributo === "Artesania" || habilidad.atributo === "Recoleccion";
   const costoPorRango = esArtesaniaORecoleccion ? 1 : habilidad.activa ? 1 : 2;
 
-  if (nuevoValor >= 0 && nuevoValor <= limiteRangosPorHabilidad.value) {
+  if (nuevoValor >= rangosMinimos(habilidad) && nuevoValor <= limiteRangosPorHabilidad.value) {
     if (cantidad > 0) {
       // Al aumentar, verificar si hay suficientes puntos disponibles
       const costoAumento = costoPorRango;
@@ -665,7 +680,7 @@ function modificarRangos(habilidad: Habilidad, cantidad: number) {
         guardarDatos();
       }
     } else if (cantidad < 0) {
-      // Al disminuir, siempre permitir
+      // Al disminuir, permitir salvo por debajo del mínimo del nivel anterior
       habilidad.rangos = nuevoValor;
       guardarDatos();
     }
@@ -673,11 +688,12 @@ function modificarRangos(habilidad: Habilidad, cantidad: number) {
 }
 
 function validarRangos(habilidad: Habilidad) {
-  const valorAnterior = habilidad.rangosAnteriores ?? 0;
+  const minRangos = rangosMinimos(habilidad);
+  const valorAnterior = Math.max(habilidad.rangosAnteriores ?? 0, minRangos);
   const nuevoValor = habilidad.rangos;
 
-  // Validar rango básico
-  if (nuevoValor < 0) {
+  // Validar rango básico (no por debajo del mínimo del nivel anterior)
+  if (nuevoValor < minRangos) {
     habilidad.rangos = valorAnterior;
     return;
   }
@@ -724,7 +740,7 @@ function validarRangos(habilidad: Habilidad) {
   guardarDatos();
 }
 
-function guardarDatos() {
+async function guardarDatos() {
   // Guardar habilidades en characterData
   const habilidadesParaGuardar = habilidades.value.map((h) => {
     const total = calcularTotal(h);
@@ -733,7 +749,7 @@ function guardarDatos() {
       nombre: h.nombre,
       activa: h.activa,
       origenTrasfondo: h.origenTrasfondo,
-      origenOficio: h.origenOficio,
+      origenEspecialidad: h.origenEspecialidad,
       rangos: h.rangos,
       bonifDiversos: h.bonifDiversos,
       modAtributo: h.modAtributo,
@@ -746,45 +762,15 @@ function guardarDatos() {
     habilidadesParaGuardar.filter((h) => h.activa).map((h) => h.nombre),
   );
   characterData.value.habilidades = JSON.stringify(habilidadesParaGuardar);
-  saveCharacterData();
+  await saveCharacterData();
 }
 </script>
 <style scoped>
-/* Responsive tablas habilidades */
-.max-h-200 {
-  max-height: 400px;
+/* Permitir scroll horizontal de las tablas en pantallas estrechas */
+.tabla-scroll {
+  overflow-x: auto;
 }
-@media (max-width: 900px) {
-  .bg-blue-50.border-2 {
-    overflow-x: auto !important;
-  }
-  .grid-cols-12 {
-    min-width: 700px !important;
-    display: grid;
-    grid-template-columns: repeat(12, minmax(60px, 1fr));
-  }
-  .divide-y > div {
-    min-width: 700px !important;
-  }
-}
-@media (max-width: 640px) {
-  .bg-blue-50.border-2 {
-    overflow-x: auto !important;
-    padding: 0 !important;
-  }
-  .grid-cols-12 {
-    min-width: 700px !important;
-    font-size: 0.95rem !important;
-  }
-  .divide-y > div {
-    min-width: 700px !important;
-    font-size: 0.95rem !important;
-  }
-  .p-6 {
-    padding: 0.75rem !important;
-  }
-  .text-4xl {
-    font-size: 2rem !important;
-  }
+.tabla-grid {
+  min-width: 760px;
 }
 </style>

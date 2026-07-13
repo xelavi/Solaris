@@ -32,28 +32,28 @@
       "id": 5,
       "nombre": "Movimiento",
       "diminutivo": "M",
-      "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
+      "descripcion": "Mide la velocidad y el desplazamiento del personaje.",
       "tipo": 1
     },
     {
       "id": 6,
       "nombre": "Resistencia",
       "diminutivo": "R",
-      "descripcion": "Mide la velocidad y agilidad en el desplazamiento del personaje.",
+      "descripcion": "Indica la capacidad para resistir daños y efectos perjudiciales.",
       "tipo": 1
     },
     {
       "id": 7,
       "nombre": "HP",
       "diminutivo": "HP",
-      "descripcion": "Indica la resistencia física y la salud general del personaje.",
+      "descripcion": "Indica la salud general del personaje.",
       "tipo": 1
     },
     {
       "id": 8,
       "nombre": "Regeneración",
       "diminutivo": "REG",
-      "descripcion": "Indica la resistencia física y la salud general del personaje.",
+      "descripcion": "Indica la capacidad de recuperarse de daños y efectos perjudiciales.",
       "tipo": 1
     },
     {
@@ -67,63 +67,63 @@
       "id": 10,
       "nombre": "Iniciativa",
       "diminutivo": "INI",
-      "descripcion": "Representa el sentido común, la percepción y la intuición.",
+      "descripcion": "Representa la rapidez y la capacidad de actuar primero en el combate.",
       "tipo": 2
     },
     {
       "id": 11,
       "nombre": "Puntería",
       "diminutivo": "DE",
-      "descripcion": "Mide la habilidad para influir en otros y la presencia personal.",
+      "descripcion": "Indica la precisión y la capacidad para acertar en los ataques.",
       "tipo": 2
     },
     {
       "id": 12,
       "nombre": "Acciones",
       "diminutivo": "ACC",
-      "descripcion": "Indica la concentración y la capacidad de mantener la atención en tareas específicas.",
+      "descripcion": "Indica la cantidad de acciones que puede realizar el personaje en su turno.",
       "tipo": 2
     },
     {
       "id": 13,
       "nombre": "Reacciones",
       "diminutivo": "REAC",
-      "descripcion": "Refleja la fuerza de voluntad y la determinación del personaje.",
+      "descripcion": "Indica la cantidad de reacciones que puede realizar el personaje en su turno.",
       "tipo": 2
     },
     {
       "id": 14,
       "nombre": "Puntos de Habilidad",
       "diminutivo": "H",
-      "descripcion": "Mide la sabiduría, el aprendizaje y la comprensión del entorno.",
+      "descripcion": "Indica la cantidad de puntos de habilidad disponibles para mejorar las características del personaje.",
       "tipo": 3
     },
     {
       "id": 15,
       "nombre": "Voluntad",
       "diminutivo": "WP",
-      "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
+      "descripcion": "Indica la fuerza de voluntad y la determinación del personaje.",
       "tipo": 3
     },
     {
       "id": 16,
       "nombre": "Limite de Habilidad",
       "diminutivo": "CAP",
-      "descripcion": "Refleja la memoria, el razonamiento y la agudeza mental.",
+      "descripcion": "Indica el límite máximo de puntos de habilidad que puede tener el personaje.",
       "tipo": 3
     },
     {
       "id": 17,
       "nombre": "Habilidades extras",
       "diminutivo": "SKILL",
-      "descripcion": "Mide la capacidad de enfoque y atención en tareas complejas.",
+      "descripcion": "Aumenta la cantidad de habilidades disponibles para el personaje.",
       "tipo": 3
     },
     {
       "id": 18,
       "nombre": "Rango de Critico",
       "diminutivo": "IC",
-      "descripcion": "Indica la capacidad para resistir influencias mentales y mantener el control.",
+      "descripcion": "Indica el rango de valores que se consideran críticos para los ataques.",
       "tipo": 0
     }
   ]

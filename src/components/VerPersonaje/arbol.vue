@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full h-[600px] relative" ref="box"></div>
+  <div
+    class="relative h-[600px] w-full overflow-hidden rounded-xl border border-gray-200"
+    ref="box"
+  ></div>
 </template>
 
 <script setup lang="ts">

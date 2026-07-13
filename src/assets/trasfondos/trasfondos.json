@@ -4,80 +4,177 @@
       "nombre": "Hijo de vecino",
       "descripcion": "Has nacido en el seno de una familia de clase media, bien alimentado y con todas las necesidades básicas cubiertas. Puedes tener una mascota doméstica y/o puedes no tenerla. Tu infancia ha sido feliz, o no. No tienes ningún trauma, si no quieres.",
       "atributos": [6, 5],
-      "habilidades": ["30", "6", "8", "3", "4", "14"]
+      "habilidades": ["30", "6", "32", "3", "4", "14"],
+      "equipoInicial": [
+        "Ropa cómoda y una muda.",
+        "Un kit de herramientas a escoger.",
+        "Un lugar al que llamar Hogar."
+      ],
+      "dinero": 100
     },
-
     {
       "nombre": "Noble",
-      "descripcion": "Ya sea en el imperio de Limsa Lomensa o de Lenam, has crecido en una familia acaudalada y llena de privilegios y responsabilidades. Posiblemente seas un antipático, racista y mimado como solo tu sabes.",
+      "descripcion": "Ya sea en el imperio de Limsa Lomensa o de Lenam, has crecido en una familia acaudalada y llena de privilegios y responsabilidades. Te desenvuelves con soltura en los escarceos de la política y la corte. Sabes defenderte decentemente y montar. Sabes leer y escribir en distintos idiomas. Posiblemente seas un antipático, racista y mimado como solo tú sabes.",
       "atributos": [5, 30],
-      "habilidades": ["13", "21", "10", "7", "15", "14"]
+      "habilidades": ["13", "20", "10", "7", "15", "14"],
+      "equipoInicial": [
+        "Ropa elegante y una muda.",
+        "Una montura común a escoger.",
+        "Perfume, colonia o maquillaje.",
+        "Uno o más títulos nobiliarios (Príncipe, Duque, Conde, Barón o Lord; tira dos veces)."
+      ],
+      "dinero": 500
     },
     {
       "nombre": "Desperado",
-      "descripcion": "Ya sea en las bulliciosas calles de Limsa Lomensa, los pulcros salones de las Catedrales de Lenam, las estepas rocosas o los desiertos abrasadores, el Desperado aguarda una distraccion para aprovechar su oportunidad y sacar provecho. Buscavidas de nacimiento, la vida no ha tratado bien al querido Desperado, acostumbrado a tener que tirar pa'lante. Se sabe desenvolver con improvisación y sutileza de las situaciones mas inverosímiles.",
+      "descripcion": "Ya sea en las bulliciosas calles de Limsa Lomensa, los pulcros salones de las Catedrales de Lenam, las estepas rocosas o los desiertos abrasadores, el Desperado aguarda una distracción para aprovechar su oportunidad y sacar provecho. Buscavidas de nacimiento, la vida no ha tratado bien al querido Desperado, acostumbrado a tener que tirar pa'lante. Se sabe desenvolver con improvisación y sutileza de las situaciones mas inverosímiles. Es un lazarillo.",
       "atributos": [7, 12],
-      "habilidades": ["12", "16", "3", "7", "17", "18"]
+      "habilidades": ["12", "16", "3", "17", "13", "18"],
+      "equipoInicial": [
+        "Ropa desaliñada y raída.",
+        "Una navaja oxidada (cuenta como cuchillo con hemorragia 1).",
+        "Una baraja de cartas, o un conjunto de dados.",
+        "Un cartel de \"se busca\" (probablemente con tu cara).",
+        "Información predilecta: documentos robados, el sello de una familia noble, o una Verdad sobre alguien."
+      ],
+      "dinero": 20
     },
     {
       "nombre": "Trotamundos itinerante y ambulante",
       "descripcion": "No te sabes estar quieto y has viajado por gran parte del mundo conocido. Sabes tratar a la gente según tus intereses y conoces canciones de todas partes y has escuchado muchas historias que se ganarían una ronda de cerveza.",
       "atributos": [6, 10],
-      "habilidades": ["30", "5", "8 ", "9", "14", "31"]
+      "habilidades": ["30", "5", "32", "9", "14", "31"],
+      "equipoInicial": [
+        "Ropa cómoda de viaje, y dos mudas.",
+        "Un mapa de la zona en la que empieces la aventura.",
+        "Un diario de viajes.",
+        "Un recuerdo de un lugar exótico: una moneda antigua, un mapa hacia un territorio virgen, o una caja de puzle que no has logrado resolver.",
+        "Una mochila mediana."
+      ],
+      "dinero": 70
     },
     {
       "nombre": "Hijo de la mar",
       "descripcion": "Tu vida ha sido una aventura. Has nacido en un barco y seguramente esperes morir en uno. Te han enseñado las leyes del océano y lo respetas como es debido. Has aprendido a navegar y has visto muchos puertos.",
       "atributos": [19, 15],
-      "habilidades": ["2", "8", "1 ", "9", "17", "6"]
+      "habilidades": ["2", "32", "1", "9", "17", "6"],
+      "equipoInicial": [
+        "Ropa cómoda, y una muda.",
+        "Un kit de navegación.",
+        "Una baraja de cartas, o un conjunto de dados.",
+        "Una caña de pescar.",
+        "El título de un bote o pequeño navío.",
+        "Una navaja (cuenta como cuchillo).",
+        "20 distancias de cuerda."
+      ],
+      "dinero": 70
     },
     {
       "nombre": "Feligrés",
-      "descripcion": "Tu vida ha estado marcada por la fe y la devoción. Has crecido en un entorno religioso y has aprendido a seguir las enseñanzas de tu fe. Tu vida gira en torno a la comunidad y a los rituales que la acompañan.",
+      "descripcion": "Rindes culto a una fe que elijas. Normalmente dicha fe puede ser desde un culto independiente que le reza al tiempo, hasta la religión del Hacedor del Fuego Imperecedero. Has sido adiestrado para respetar, salvaguardar y aprender de las enseñanzas de tus maestros.",
       "atributos": [15, 30],
-      "habilidades": ["12", "7", "10", "4", "14", "8"]
+      "habilidades": ["12", "7", "10", "4", "14", "8"],
+      "equipoInicial": [
+        "Hábito de monje típico de tu fe, y una muda.",
+        "Un símbolo religioso de tu fe.",
+        "Las escrituras religiosas de tu fe.",
+        "Un botiquín de estrato 1.",
+        "Una Verdad secreta sobre el mundo de Solaris.",
+        "(0 monedas en vez de 100 si has hecho un voto de pobreza)"
+      ],
+      "dinero": 100
     },
     {
       "nombre": "Huérfano de Lenam",
-      "descripcion": "Has tenido suerte al haber crecido en el Imperio de Lenam siendo huérfano, pues en el resto del mundo te hubieras tenido q apañar sin ayuda alguna. Se te acogió en un orfanato de los Caballeros del Silencio, en el que te educaron y pasaste diferentes pruebas para llegar a formar parte de la orden. Habiendo fracasado en las pruebas para formar parte de la organización de los Caballeros del Silencio, un huérfano en el reino de Lenam está obligado a contribuir a la sociedad. Entrando como aprendiz de algún oficio artesano o en alguna cadena de producción.",
+      "descripcion": "Has tenido suerte al haber crecido en el Imperio de Lenam siendo huérfano, pues en el resto del mundo te hubieras tenido que apañar sin ayuda alguna. Se te acogió en un orfanato de los Caballeros del Silencio, en el que te educaron y pasaste diferentes pruebas para llegar a formar parte de la orden. Habiendo fracasado en las pruebas para formar parte de la organización de los Caballeros del Silencio, un huérfano en el reino de Lenam está obligado a contribuir a la sociedad. Entrando como aprendiz de algún oficio artesano o en alguna cadena de producción. También puede ser que guardes rencor a aquellos que te examinaron o a lo injustamente desigual que es la sociedad con la gente como tú. En tal caso, también puede ser que te hayas marchado de la ciudad-capital y hayas emprendido un viaje en barco o te hayas aventurado en una de las caravanas que cruzan los desiertos.",
       "atributos": [6, 18],
-      "habilidades": ["12", "7", "10", "4", "14", "8"]
+      "habilidades": ["7", "5", "1", "10", "30", "20"],
+      "equipoInicial": [
+        "Ropa con el tabardo de Lenam, y una muda de ropa cómoda.",
+        "Un kit de artesanía a escoger.",
+        "Insignia de Huérfano de Lenam (permite oficiar cualquier trabajo en un taller de artesanía)."
+      ],
+      "dinero": 100
     },
     {
       "nombre": "Feligrés del Molino",
-      "descripcion": "Una nueva religión en auge en la que rinden culto y pleitesía en demasía al movimiento de las aspas de El Molino. Se suelen congregar en campos de conreo lejos de las grandes urbes urbanas.",
+      "descripcion": "Una nueva religión en auge en la que rinden culto y pleitesía en demasía al movimiento de las aspas de El Molino. Se suelen congregar en campos de conreo lejos de las grandes urbes urbanas. Falta información acerca de sus actividades puesto que sus prácticas suelen ser muy herméticas y no se puede acceder con facilidad a sus ritos y costumbres. No son muy reacios a dar explicaciones a extranjeros.",
       "atributos": [6, 15],
-      "habilidades": ["12", "16", "3", "17", "13", "19"]
+      "habilidades": ["12", "16", "3", "17", "13", "19"],
+      "equipoInicial": [
+        "Hábito de monje de El Molino, y una muda de ropa cómoda.",
+        "Un colgante con el símbolo de El Molino.",
+        "Un cuchillo, machete u hoz."
+      ],
+      "dinero": 0
     },
     {
       "nombre": "Monaguillo de la Cofradía de Bharak",
-      "descripcion": "La congregación religiosa mas importante de Limsa Lomensa, tienen mucha influéncia política, al nivel de que sin ellos el imperio de Mudab Il Nam no habría podido desarrollarse. Tienen conocimientos muy antiguos y valiosos que se remontan a centenares de años. Muchos eruditos y líderes buscan pasar años estudiando en las bibliotecas de sus templos. Guardan muchos secretos y tienen su propia Orden Militar. Los maestros de armas son integrantes en su mayoría de dicha organización.",
+      "descripcion": "La congregación religiosa mas importante de Limsa Lomensa, tienen mucha influencia política, al nivel de que sin ellos el imperio de Mudab Il Nam no habría podido desarrollarse. Tienen conocimientos muy antiguos y valiosos que se remontan a centenares de años. Muchos eruditos y líderes buscan pasar años estudiando en las bibliotecas de sus templos. Guardan muchos secretos y tienen su propia Orden Militar. Los maestros de armas son integrantes en su mayoría de dicha organización.",
       "atributos": [10, 16],
-      "habilidades": ["5", "7", "31", "15", "31", "19"]
+      "habilidades": ["5", "7", "31", "15", "8", "19"],
+      "equipoInicial": [
+        "Hábito de monje de la Cofradía de Bharak, y una muda.",
+        "Dos libros a escoger.",
+        "Un abrecartas particularmente letal (cuchillo).",
+        "Un kit de caligrafía con tinta invisible.",
+        "Una Verdad chunga sobre Solaris.",
+        "Un papiro cifrado de códice desconocido."
+      ],
+      "dinero": 75
     },
     {
       "nombre": "Agojé",
-      "descripcion": "Entrenamiento militar obligatorio que los ciudadanos que viven en Lenam deben realizar. En tiempos de guerra, la población debe realizar otro entrenamiento cada año. Los ciudadanos que completan el entrenamiento reciben la oferta de formar parte de la Armatha, el ejercito del imperio. En caso de no querer formar parte de la Armatha, un ciudadano puede reanudar sus actividades previas, pero recibe un permiso a modo de pasaporte que debe llevar siempre encima para poder ser identificado, esto no se suele cumplir por la mayoría, aunque perderlo conlleva un castigo grave en el que se extirpa una oreja. En la ciudad-capital son muy estrictos con esto, pero en las otras regiones del imperio son mas laxos con la vigilancia.",
+      "descripcion": "Entrenamiento militar obligatorio que los ciudadanos que viven en Lenam deben realizar. En tiempos de guerra, la población debe realizar otro entrenamiento cada año. Los ciudadanos que completan el entrenamiento reciben la oferta de formar parte de la Armatha, el ejército del imperio. En caso de no querer formar parte de la Armatha, un ciudadano puede reanudar sus actividades previas, pero recibe un permiso a modo de pasaporte que debe llevar siempre encima para poder ser identificado; esto no se suele cumplir por la mayoría, aunque perderlo conlleva un castigo grave en el que se extirpa una oreja. En la ciudad-capital son muy estrictos con esto, pero en las otras regiones del imperio son mas laxos con la vigilancia.",
       "atributos": [18, 5],
-      "habilidades": ["1", "2", "15", "30", "9", "7"]
+      "habilidades": ["1", "2", "15", "30", "9", "7"],
+      "equipoInicial": [
+        "Un viejo uniforme militar, y una muda de ropa cómoda.",
+        "Un gladio y una rodela (si no se es Armatha ya).",
+        "Un permiso de libre itinerancia dentro y fuera de Lenam.",
+        "Una medallita por tu servicio."
+      ],
+      "dinero": 50
     },
     {
       "nombre": "Protegido de la espina mortecina",
-      "descripcion": "Miembro de una organización anárquica que quiere ver en llamas la forma de gobierno de Lenam. Viven en las sombras de los lugares mas recónditos del reino y aguardan su venganza. De cara al mundo, son una organización privada de servicios. Suelen ser contratados para vigilar, escoltar, secuestrar y matar. Pero son muy caros comparados con otras organizaciones, aunque estos son letales y tienen la fama de jamás fracasar en sus misiones. Se dice por las tabernas y los barracones que un asesino de la espina mortecina equivale a veinte asesinos al uso.",
+      "descripcion": "Miembro de una organización anárquica que quiere ver en llamas la forma de gobierno de Lenam. Viven en las sombras de los lugares mas recónditos del reino y aguardan su venganza. De cara al mundo, son una organización privada de servicios. Suelen ser contratados para vigilar, escoltar, secuestrar y matar. Pero son muy caros comparados con otras organizaciones, aunque estos son letales y tienen la fama de jamás fracasar en sus misiones. Se dice por las tabernas y los barracones que un asesino de la Espina Mortecina equivale a veinte asesinos al uso.",
       "atributos": [4, 12],
-      "habilidades": ["18", "16", "3", "8", "13", "19"]
+      "habilidades": ["18", "16", "3", "32", "13", "19"],
+      "equipoInicial": [
+        "Mono de infiltración, y una muda de ropa cómoda.",
+        "Una máscara de la Espina Mortecina.",
+        "Un cuchillo y un arco corto.",
+        "Un códice para descifrar mensajes encriptados de la Espina Mortecina.",
+        "Una espina venenosa de un solo uso."
+      ],
+      "dinero": 40
     },
     {
       "nombre": "Hijo de lo desconocido",
-      "descripcion": "Eres el descendiente de un gran explorador, investigador o cazador. Has crecido en Libertha, una ciudad que se ha ido desarrollando en las últimas décadas. Sus líderes son un poderoso gremio de cazadores que organizan grandes búsquedas y expediciones en las zonas más inhóspitas y peligrosas que se conocen. Abanderado por los logros de tus descendientes, siempre has tenido sed de aventuras y grandes descubrimientos, Libertha, aunque no es de los lugares más seguros para vivir, es en el q te ha tocado crecer y ahora tienes los medios para salir y descubrir que te deparará tu destino.",
+      "descripcion": "Eres el descendiente de un gran explorador, investigador o cazador. Has crecido en Libertha, una ciudad que se ha ido desarrollando en las últimas décadas. Sus líderes son un poderoso gremio de cazadores que organizan grandes búsquedas y expediciones en las zonas más inhóspitas y peligrosas que se conocen. Abanderado por los logros de tus descendientes, siempre has tenido sed de aventuras y grandes descubrimientos. Libertha, aunque no es de los lugares más seguros para vivir, es en el que te ha tocado crecer y ahora tienes los medios para salir y descubrir qué te deparará tu destino.",
       "atributos": [6, 15],
-      "habilidades": ["30", "9", "6", "8", "4", "6"]
+      "habilidades": ["30", "9", "6", "32", "4", "6"],
+      "equipoInicial": [
+        "Ropa cómoda de viaje, y una muda.",
+        "Un kit de exploración.",
+        "Un kit de escalada.",
+        "10 distancias de cuerda.",
+        "Una ballesta de mano y 10 virotes.",
+        "Una bagatela relacionada con tus padres."
+      ],
+      "dinero": 50
     },
     {
       "nombre": "Tecnomante de Valanil",
       "descripcion": "La República de Valanil se ha mantenido distante de los conflictos del exterior hasta hace unas décadas. De mentalidad curiosa, expandieron recientemente sus fronteras para conquistar las costas del vasto continente de Ardar. Han formado un pequeño territorio en las estepas rocosas del continente y este, aunque salvaje y brutal, ha cedido ante los ingenios mecánicos y especiales que esta república posee. Ahora el territorio es el centro del comercio con las diferentes civilizaciones autóctonas y están construyendo grandes proyectos arquitectónicos para evitar las constantes incursiones de la vida salvaje de los alrededores.",
       "atributos": [12, 16],
-      "habilidades": ["8", "17", "6", "2", "13", "19"]
+      "habilidades": ["8", "17", "6", "2", "12", "19"],
+      "equipoInicial": [
+        "Ropa cómoda o ropa elegante, y una muda.",
+        "Una pistola de llave de chispa."
+      ],
+      "dinero": 50
     }
   ]
 }

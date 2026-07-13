@@ -228,9 +228,9 @@
     {
       "id": 16,
       "nombre": "Escudo/Rodela",
-      "penetrante": 2,
-      "lacerante": 2,
-      "contundente": 2,
+      "penetrante": 1,
+      "lacerante": 1,
+      "contundente": 1,
       "categoria": "Escudo",
       "ventajas": [],
       "desventajas": [],

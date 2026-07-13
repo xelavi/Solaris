@@ -1,0 +1,186 @@
+{
+  "estados": [
+    {
+      "id": 1,
+      "nombre": "Agarrado/agarrando",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Cuando una criatura está agarrada o agarrando, su movimiento se ve reducido a 1 a menos que tenga el doble o más de poderío que la otra criatura u objeto. Cuando una de las criaturas se mueve, todas las criaturas sujetadas se mueven al unísono. Una criatura Agarrada puede intentar zafarse realizando un ataque con éxito contra la otra criatura, mientras que una criatura agarrando puede decidir terminar la condición de ambas criaturas en cualquier momento, incluso fuera de su turno."
+    },
+    {
+      "id": 2,
+      "nombre": "Enredado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Entre pitos y flautas, ya sea porque hay alguien agarrándote las piernas o porque te han atado los pies, eres incapaz de moverte. Tu Movimiento se ve reducido a 0, y todos los ataques dirigidos contra ti se realizan con Ventaja 1."
+    },
+    {
+      "id": 3,
+      "nombre": "Maniatado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Tienes una, dos o más manos impedidas. Las acciones ejecutadas con esa mano se realizan con Desventaja 3."
+    },
+    {
+      "id": 4,
+      "nombre": "Sometido",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "No puedes realizar acciones físicas que no sean intentar salirte de la sometidura. Todos los ataques realizados contra ti son exitosos."
+    },
+    {
+      "id": 5,
+      "nombre": "Cegado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "No puedes guiarte por tu visión. Todas las acciones o reacciones que dependan de tu visión fallan automáticamente, y todas las acciones o reacciones físicas se realizan con Desventaja 1. Todos los ataques de los que seas víctima se realizan a Ventaja 1."
+    },
+    {
+      "id": 6,
+      "nombre": "Cuerpo a tierra",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "De una manera u otra, estás en una posición horizontal, con el cuerpo pegado al suelo. Tu movimiento se ve reducido a la mitad, tu Esquiva contra ataques cuerpo a cuerpo se reduce a la mitad, y los ataques ejecutados contra ti con armas a distancia a más de tres espacios horizontales se realizan con Desventaja 2. Además, todos los ataques que realices con arcos o armas con un alcance máximo superior a 1 se ejecutan a Desventaja 1."
+    },
+    {
+      "id": 7,
+      "nombre": "Ensordecido",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "No puedes guiarte por tu sentido acústico. Todas las acciones o reacciones que dependan de tu oído fallan automáticamente. Si además de estar Ensordecido estás Cegado, ganas la condición de Aturdido hasta que se termine cualquiera de las dos anteriores."
+    },
+    {
+      "id": 8,
+      "nombre": "Moribundo",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Estás muriéndote. Punto. Una criatura Moribunda sólo puede realizar acciones de movimiento. Las Acciones y el movimiento de una criatura Moribunda están limitados a 1. Todos los ataques realizados contra la criatura son exitosos. Cada golpe recibido en este estado añade Desventaja 1 a las tiradas de salvación contra muerte. Este estado suele implicar Cuerpo a tierra."
+    },
+    {
+      "id": 9,
+      "nombre": "Paralizado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Una criatura Paralizada no puede tomar acciones físicas. Todos los ataques realizados contra esta criatura son exitosos y se consideran ataques sorpresa."
+    },
+    {
+      "id": 10,
+      "nombre": "Ralentizado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Reduce el movimiento a la mitad."
+    },
+    {
+      "id": 11,
+      "nombre": "Inhibido",
+      "categoria": "fisica",
+      "acumulable": true,
+      "descripcion": "Reduce las acciones de la criatura afectada en X."
+    },
+    {
+      "id": 12,
+      "nombre": "Ímpetu",
+      "categoria": "fisica",
+      "acumulable": true,
+      "descripcion": "Aumenta las acciones de la criatura afectada en X."
+    },
+    {
+      "id": 13,
+      "nombre": "Ensangrentado",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Tus puntos de vida actuales son menos de la mitad de tus puntos de vida máximos, pero mayores o iguales a un cuarto de ella."
+    },
+    {
+      "id": 14,
+      "nombre": "Estado crítico",
+      "categoria": "fisica",
+      "acumulable": false,
+      "descripcion": "Tus puntos de vida actuales son menos de un cuarto de tus puntos de vida máximos."
+    },
+    {
+      "id": 15,
+      "nombre": "Sangrado",
+      "categoria": "fisica",
+      "acumulable": true,
+      "descripcion": "Una criatura con contadores de Sangrado está a punto de sangrar a ríos. Ciertas habilidades o armas pueden añadir contadores de Sangrado o detonarlos, causando daño directo por valor de tantos contadores como hayan sido detonados."
+    },
+    {
+      "id": 16,
+      "nombre": "Atemorizado",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Una criatura Atemorizada por otra criatura u objeto no puede acercarse voluntariamente a la fuente de su temor."
+    },
+    {
+      "id": 17,
+      "nombre": "Pánico",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Una criatura con Pánico debe gastar todas sus acciones en alejarse de la fuente de su temor."
+    },
+    {
+      "id": 18,
+      "nombre": "Iracundo",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Una criatura Iracunda debe gastar todas sus acciones en atacar o aproximarse a la fuente de su furia."
+    },
+    {
+      "id": 19,
+      "nombre": "Aturdido",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Impide realizar reacciones. Todas tus acciones se realizan con Desventaja 1."
+    },
+    {
+      "id": 20,
+      "nombre": "Embobado",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Una criatura Embobada sólo puede realizar acciones que repitan la última acción que hizo antes de recibir el estado."
+    },
+    {
+      "id": 21,
+      "nombre": "Inconsciente",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Una criatura Inconsciente no puede tomar acciones ni reacciones. Todos los ataques realizados contra esta criatura son exitosos y se consideran ataques sorpresa. Este estado suele implicar Cuerpo a tierra."
+    },
+    {
+      "id": 22,
+      "nombre": "Mareado",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "En caso de realizar la acción de Movimiento, después de decidir la ruta a seguir, una criatura confusa debe tirar 1d6. La criatura comienza el desplazamiento moviéndose a la casilla colindante determinada por el dado, siendo 1 la casilla en la dirección original, y contando en sentido horario."
+    },
+    {
+      "id": 23,
+      "nombre": "Delirio",
+      "categoria": "mental",
+      "acumulable": false,
+      "descripcion": "Ves a cualquier criatura como enemigo. Debes gastar todas tus acciones en aproximarte y/o atacar a la criatura más próxima a ti."
+    },
+    {
+      "id": 24,
+      "nombre": "Cansado",
+      "categoria": "agotamiento",
+      "acumulable": false,
+      "descripcion": "Una criatura Cansada sufre los siguientes efectos: su Movimiento se reduce un punto; los movimientos de exploración requieren el doble de tiempo, a menos que seas arrastrado o portado; Desventaja 1 a todas las tiradas relacionadas con Voluntad."
+    },
+    {
+      "id": 25,
+      "nombre": "Fatigado",
+      "categoria": "agotamiento",
+      "acumulable": false,
+      "descripcion": "Una criatura Fatigada sufre los siguientes efectos: adquiere el estado Ralentizada; los movimientos de exploración que incluyan a la criatura requieren el doble de tiempo, a menos que sea arrastrada o portada; no puede tomar acciones mentales; Desventaja 1 a todas las tiradas relacionadas con Voluntad; adquiere el estado Aturdida; adquiere el estado Inhibida I."
+    },
+    {
+      "id": 26,
+      "nombre": "Exhausto",
+      "categoria": "agotamiento",
+      "acumulable": false,
+      "descripcion": "En este último estado, la criatura está al límite de sus capacidades físicas y mentales siendo casi un milagro que todavía siga consciente. El movimiento se reduce a 1; los movimientos de exploración que incluyan a la criatura requieren que sea arrastrada o portada; no puede tomar acciones mentales; aplicas Desventaja 1 en todas las tiradas; Desventaja 1 a todas las tiradas relacionadas con Voluntad; adquiere el estado Aturdida; adquiere el estado Inhibida I. Si no mejoras tu condición en los próximos 10 minutos Descansando con mínimo un Descanso Corto, degeneras en el estado Moribundo."
+    }
+  ]
+}

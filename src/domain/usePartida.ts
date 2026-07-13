@@ -1,126 +1,177 @@
-import { ref, computed } from "vue";
-import type { PartidaData, PersonajeInstancia } from "./Partida";
+import { ref } from "vue";
+import type {
+  PartidaData,
+  PersonajeInstancia,
+  EntradaDiario,
+  TokenPartida,
+} from "./Partida";
 import { Character } from "./Character";
-import { calcularIniciativas, type ResultadoIniciativa } from "./Activas";
 import { useMapa } from "./useMapa";
-import { realizarAtaque } from "./Partida";
-import armasData from "../assets/armas.json";
-import armadurasData from "../assets/armaduras.json";
+import { guardarPartida } from "./storage/partidasRepo";
+import type { MapaGuardado } from "./storage/mapasRepo";
+import { calcularCasillas, claveCelda } from "./mapaHex";
+import { obtenerPersonaje } from "./storage/personajesRepo";
+import { obtenerPartida } from "./storage/partidasRepo";
+import { obtenerCriatura } from "./storage/criaturasRepo";
+import { obtenerEstado } from "./EstadosAlterados";
+import type { DesgloseTirada } from "./dados";
+
+// --- Chat enriquecido ---
+// El chat de la partida ya no es texto plano: cada mensaje puede llevar el
+// desglose de una tirada (2d12 + mod, ventaja/desventaja) y/o la descripción de
+// una acción/reacción para mostrarla en un desplegable.
+export interface MensajeChat {
+  id: number;
+  hora: string;
+  autor: string;
+  clase: "texto" | "tirada";
+  texto: string;
+  tirada?: DesgloseTirada;
+  dano?: string; // daño plano de un ataque (p. ej. "8 lacerante")
+  danoColor?: string; // color del daño
+  descripcion?: string; // descripción de la acción/reacción
+  tipoEjecucion?: string; // "accion" | "reaccion" | …
+  color?: string; // color de acento del mensaje
+}
+
+// Carga útil que emite la ficha al usar algo (sin los campos que fija el chat).
+export type PayloadTirada = Omit<MensajeChat, "id" | "hora" | "clase" | "autor">;
 
 // Estado global de la partida (Singleton pattern para este composable)
 const partidaActual = ref<PartidaData | null>(null);
 const personajesCreados = ref<Map<string, Character>>(new Map());
-const ordenTurnos = ref<ResultadoIniciativa[]>([]);
-const turnoActual = ref(0);
-const accionesRestantes = ref(3); // 3 acciones por turno según reglas
+const personajeActivo = ref<PersonajeInstancia | null>(null);
 const logs = ref<string[]>([]);
-const accionPreparada = ref<any | null>(null);
-const turnoEnProceso = ref(false); // Bloqueo de acciones durante transición
+const mensajesChat = ref<MensajeChat[]>([]);
+let _chatSeq = 0;
+
+// Ficha flotante abierta en la escena de juego. Puede provenir de una instancia
+// de la partida (clic en el token 3D) o de un personaje guardado por id (clic en
+// el Diario del panel lateral). La escena la renderiza; cualquier componente
+// puede abrirla/cerrarla a través de este estado compartido.
+// Cada ficha abierta lleva un `uid` (para cerrarla individualmente) y una
+// `clave` de identidad (para no abrir dos ventanas del mismo personaje/criatura).
+type FichaFlotante =
+  | { uid: number; clave: string; tipo: "instancia"; nombre: string; data: PersonajeInstancia }
+  | { uid: number; clave: string; tipo: "guardado"; nombre: string; id: string }
+  | { uid: number; clave: string; tipo: "criatura"; nombre: string; id: string };
+// Varias fichas pueden estar abiertas a la vez sobre la escena de juego.
+const fichasFlotantes = ref<FichaFlotante[]>([]);
+let _fichaSeq = 0;
+
+// Bonos temporales de combate por ficha (ajustes de atributos/armadura/vida que
+// se hacen desde la ficha flotante durante la partida). NO se persisten en
+// localStorage: viven mientras dura la sesión de la partida. Se guardan aquí, a
+// nivel de módulo, para que sobrevivan al cerrar y reabrir la ficha flotante
+// (que destruye el componente). Clave externa = identidad de la ficha
+// (instanciaId o characterId); valor = record de bonos por atributo.
+const bonosPartida = ref<Record<string, Record<string, number>>>({});
 
 export function usePartida() {
   const { generarMapa } = useMapa();
-
-  const personajeActivo = computed(() => {
-    if (ordenTurnos.value.length === 0) return null;
-    return ordenTurnos.value[turnoActual.value].personaje;
-  });
 
   function agregarLog(mensaje: string) {
     logs.value.push(`[${new Date().toLocaleTimeString()}] ${mensaje}`);
   }
 
-  function checkAutoPassTurn() {
-      if (accionesRestantes.value <= 0) {
-          turnoEnProceso.value = true;
-          // Reduced delay to 500ms for snappier feel
-          setTimeout(() => {
-             // Double check in case actions were refunded or changed
-             if (accionesRestantes.value <= 0) {
-                 pasarTurno();
-             } else {
-                 turnoEnProceso.value = false;
-             }
-          }, 500);
-      }
-  }
-
-  function iniciarPartida(partidaId: string) {
+  async function iniciarPartida(partidaId: string) {
     try {
-      const partidaString = localStorage.getItem(partidaId);
-      if (!partidaString) {
+      const partida = await obtenerPartida(partidaId);
+      if (!partida) {
         console.error("❌ No se encontró la partida");
         return;
       }
 
-      partidaActual.value = JSON.parse(partidaString);
+      if (!partida.diario) partida.diario = [];
+      partidaActual.value = partida;
+
+      // Los bonos temporales son propios de cada sesión: se descartan al cargar.
+      bonosPartida.value = {};
 
       // Generar mapa lógico
       generarMapa();
 
-      // Calcular iniciativas
-      if (partidaActual.value) {
-        const todosPersonajes: PersonajeInstancia[] = [];
-        partidaActual.value.equipos.forEach((equipo) => {
-          todosPersonajes.push(...equipo.personajes);
-        });
-        ordenTurnos.value = calcularIniciativas(todosPersonajes);
-        turnoActual.value = 0;
-        accionesRestantes.value = 3;
-        turnoEnProceso.value = false;
+      // Seleccionar el primer personaje por defecto
+      personajeActivo.value =
+        partidaActual.value?.equipos[0]?.personajes[0] ?? null;
 
-        agregarLog("Partida iniciada. Iniciativas calculadas.");
-      }
+      agregarLog("Partida cargada.");
     } catch (error) {
       console.error("❌ Error al cargar la partida:", error);
     }
   }
 
-  function pasarTurno() {
-    if (ordenTurnos.value.length === 0) return;
+  function seleccionarPersonaje(personaje: PersonajeInstancia | null) {
+    personajeActivo.value = personaje;
+  }
 
-    turnoActual.value = (turnoActual.value + 1) % ordenTurnos.value.length;
-    accionesRestantes.value = 3;
-    accionPreparada.value = null; // Reset prepared action on turn end
-    turnoEnProceso.value = false;
-    agregarLog(`Turno de ${personajeActivo.value?.nombre}`);
+  // --- Fichas flotantes ---
+  // Abre una ficha nueva. Si ya hay una del mismo personaje/criatura (misma
+  // `clave`), la trae al frente en vez de duplicarla.
+  function agregarFicha(ficha: FichaFlotante) {
+    const i = fichasFlotantes.value.findIndex((f) => f.clave === ficha.clave);
+    if (i >= 0) {
+      const [ya] = fichasFlotantes.value.splice(i, 1);
+      if (ya) fichasFlotantes.value.push(ya);
+      return;
+    }
+    fichasFlotantes.value.push(ficha);
+  }
+
+  function abrirFichaInstancia(personaje: PersonajeInstancia) {
+    agregarFicha({
+      uid: ++_fichaSeq,
+      clave: `instancia:${personaje.instanciaId}`,
+      tipo: "instancia",
+      nombre: personaje.nombre,
+      data: personaje,
+    });
+  }
+
+  function abrirFichaGuardado(id: string, nombre: string) {
+    agregarFicha({
+      uid: ++_fichaSeq,
+      clave: `guardado:${id}`,
+      tipo: "guardado",
+      nombre,
+      id,
+    });
+  }
+
+  function abrirFichaCriatura(id: string, nombre: string) {
+    agregarFicha({
+      uid: ++_fichaSeq,
+      clave: `criatura:${id}`,
+      tipo: "criatura",
+      nombre,
+      id,
+    });
+  }
+
+  // Cierra una ficha concreta por su uid.
+  function cerrarFicha(uid: number) {
+    fichasFlotantes.value = fichasFlotantes.value.filter((f) => f.uid !== uid);
+  }
+
+  // Devuelve (creándolo si hace falta) el record reactivo de bonos temporales de
+  // una ficha. La ficha flotante muta este mismo objeto, de modo que los ajustes
+  // persisten aunque se cierre y se reabra la ventana durante la partida.
+  function bonosDeFicha(clave: string): Record<string, number> {
+    if (!bonosPartida.value[clave]) bonosPartida.value[clave] = {};
+    return bonosPartida.value[clave];
   }
 
   async function moverPersonajeActivo(destino: { x: number; z: number }) {
-    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
-
     const personaje = personajeActivo.value;
-    if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
+    if (!personaje) return { exito: false, mensaje: "No hay personaje seleccionado" };
 
-    if (accionesRestantes.value <= 0) {
-      return { exito: false, mensaje: "No quedan acciones" };
-    }
-
-    const currentPos = { x: personaje.posicion.x, z: personaje.posicion.z };
-    const dx = destino.x - currentPos.x;
-    const dz = destino.z - currentPos.z;
-    const distance = Math.sqrt(dx * dx + dz * dz);
-
-    const movimientoMax = personaje.atributos.movimiento;
-
-    // Allow some margin for pathfinding deviations (1.1x)
-    if (distance > movimientoMax * 1.1) {
-      return {
-        exito: false,
-        mensaje: `Fuera de rango (Max: ${movimientoMax}, Necesario: ${distance.toFixed(1)})`,
-      };
-    }
-
-    // Ejecutar movimiento (actualizar estado)
     personaje.posicion.x = destino.x;
     personaje.posicion.z = destino.z;
 
-    // Consumir acción
-    accionesRestantes.value--;
     agregarLog(
-      `${personaje.nombre} se movió a (${destino.x.toFixed(1)}, ${destino.z.toFixed(1)}). Acciones restantes: ${accionesRestantes.value}`,
+      `${personaje.nombre} se movió a (${destino.x.toFixed(1)}, ${destino.z.toFixed(1)}).`,
     );
 
-    checkAutoPassTurn();
     return { exito: true, camino: [destino] };
   }
 
@@ -133,245 +184,279 @@ export function usePartida() {
     return personajesCreados.value.get(id);
   }
 
-  function setAccionPreparada(accion: any | null) {
-    accionPreparada.value = accion;
+  // Persiste la partida actual en el backend (a través del repositorio). Es
+  // "fire-and-forget": los llamantes (mutaciones disparadas por la UI) no
+  // necesitan esperar; los errores se registran aquí para no dejar promesas
+  // rechazadas sin capturar.
+  async function guardarPartidaActual() {
+    if (!partidaActual.value) return;
+    try {
+      await guardarPartida(partidaActual.value);
+    } catch (error) {
+      console.error("❌ Error al guardar la partida:", error);
+    }
   }
 
-  function usarActiva(instanciaId: string, nombreActiva: string, objetivoId?: string) {
-    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
-
-    const personaje = personajeActivo.value;
-    if (!personaje || personaje.instanciaId !== instanciaId) {
-      return { exito: false, mensaje: "No es tu turno" };
-    }
-
-    if (accionesRestantes.value <= 0) {
-      return { exito: false, mensaje: "No quedan acciones" };
-    }
-
-    // Lógica específica para "Carga"
-    if (nombreActiva === "Carga") {
-        if (accionesRestantes.value < 2) {
-             agregarLog("No tienes suficientes acciones para Carga (Necesitas 2).");
-             return { exito: false, mensaje: "Necesitas 2 acciones" };
-        }
-
-        if (!objetivoId) {
-             return { exito: false, mensaje: "Necesitas un objetivo" };
-        }
-
-        // Ejecutar Carga
-        const res = ejecutarCarga(personaje, objetivoId);
-        if (res.exito) {
-            accionesRestantes.value -= 2;
-            checkAutoPassTurn();
-            return { exito: true };
-        } else {
-            agregarLog(`Fallo al cargar: ${res.mensaje}`);
-            return res;
-        }
-    }
-
-    accionesRestantes.value--;
-    agregarLog(`${personaje.nombre} usa ${nombreActiva}.`);
-
-    checkAutoPassTurn();
-    return { exito: true };
+  // --- Chat ---
+  // Un mensaje escrito a mano por el jugador.
+  function enviarMensajeChat(texto: string) {
+    const mensaje = texto.trim();
+    if (!mensaje) return;
+    mensajesChat.value.push({
+      id: ++_chatSeq,
+      hora: new Date().toLocaleTimeString(),
+      autor: "",
+      clase: "texto",
+      texto: mensaje,
+    });
   }
 
-  function ejecutarCarga(atacante: PersonajeInstancia, defensorId: string) {
-      // 1. Encontrar defensor
-      let defensor: PersonajeInstancia | undefined;
-      if (!partidaActual.value) return { exito: false, mensaje: "No hay partida" };
-
-      for(const equipo of partidaActual.value.equipos) {
-          const found = equipo.personajes.find(p => p.nombre === defensorId || p.instanciaId === defensorId);
-          if (found) {
-              defensor = found;
-              break;
-          }
-      }
-      if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
-
-      // 2. Determinar rango del arma para saber dónde detenerse
-      let range = 1.5; // Default Melee
-      if (atacante.armaEquipada) {
-          const a = armasData.armas.find((w: any) => w.id === atacante.armaEquipada);
-          if (a && a.distancia_max) range = a.distancia_max;
-      }
-
-      // 3. Moverse hacia el enemigo
-      const dirX = defensor.posicion.x - atacante.posicion.x;
-      const dirZ = defensor.posicion.z - atacante.posicion.z;
-      const len = Math.sqrt(dirX*dirX + dirZ*dirZ);
-
-      // Validar si el objetivo está alcanzable con movimiento (1x movimiento)
-      // Distancia a recorrer = Distancia Total - Rango Arma
-      const distTravel = Math.max(0, len - range);
-
-      if (distTravel > atacante.atributos.movimiento) {
-           return { exito: false, mensaje: `Objetivo demasiado lejos (Necesitas: ${distTravel.toFixed(1)}m, Movimiento: ${atacante.atributos.movimiento}m)` };
-      }
-
-      if (len > range) {
-          const destX = atacante.posicion.x + (dirX / len) * distTravel;
-          const destZ = atacante.posicion.z + (dirZ / len) * distTravel;
-
-          atacante.posicion.x = destX;
-          atacante.posicion.z = destZ;
-
-          agregarLog(`${atacante.nombre} carga hacia ${defensor.nombre}!`);
-      }
-
-      // 4. Atacar
-      // Reutilizamos la lógica de ataque pero sin gastar acción extra (ya gastamos 2 en usarActiva)
-      // Llamamos a realizarAtaque interno
-      const resultado = calcularAtaqueInterno(atacante, defensor);
-
-      defensor.vidaActual = resultado.vidaRestante;
-      agregarLog(resultado.mensaje);
-
-      return { exito: true };
+  // Vuelca al chat una tirada o el uso de una acción/reacción desde la ficha.
+  function enviarTiradaChat(autor: string, payload: PayloadTirada) {
+    mensajesChat.value.push({
+      id: ++_chatSeq,
+      hora: new Date().toLocaleTimeString(),
+      autor,
+      clase: "tirada",
+      ...payload,
+    });
   }
 
-  function calcularAtaqueInterno(personaje: PersonajeInstancia, defensor: PersonajeInstancia) {
-      // Buscar datos del arma equipada
-        let armaData = null;
-        if (personaje.armaEquipada) {
-            armaData = armasData.armas.find((a: any) => a.id === personaje.armaEquipada) || null;
-        }
+  // --- Diario ---
+  function agregarAlDiario(
+    tipo: EntradaDiario["tipo"],
+    refId: string,
+    nombre: string,
+  ) {
+    if (!partidaActual.value) return;
+    if (!partidaActual.value.diario) partidaActual.value.diario = [];
+    // Evita duplicar la misma referencia en el diario.
+    if (partidaActual.value.diario.some((e) => e.refId === refId)) return;
 
-        // Calcular defensa del defensor
-        const defensa = { lacerante: 0, penetrante: 0, contundente: 0 };
-        const resistencia = defensor.atributos.resistencia || 0;
-        defensa.lacerante = resistencia;
-        defensa.penetrante = resistencia;
-        defensa.contundente = resistencia;
-
-        if (defensor.armaduras && defensor.armaduras.length > 0) {
-            defensor.armaduras.forEach(id => {
-                const arm = armadurasData.armaduras.find((a: any) => a.id === id);
-                if (arm) {
-                    defensa.lacerante += arm.lacerante || 0;
-                    defensa.penetrante += arm.penetrante || 0;
-                    defensa.contundente += arm.contundente || 0;
-                }
-            });
-        }
-
-        return realizarAtaque(personaje, defensor, armaData, defensa);
+    partidaActual.value.diario.push({
+      id: `diario_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      refId,
+      tipo,
+      nombre,
+    });
+    guardarPartidaActual();
+    agregarLog(`📖 ${nombre} añadido al diario.`);
   }
 
-  function ejecutarAtaque(atacanteId: string, defensorId: string) {
-    if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
-
-    const personaje = personajeActivo.value;
-    if (!personaje || personaje.instanciaId !== atacanteId) {
-      return { exito: false, mensaje: "No es tu turno" };
-    }
-
-    if (accionesRestantes.value <= 0) {
-      return { exito: false, mensaje: "No quedan acciones" };
-    }
-
-    // Buscar defensor en partidaActual
-    if (!partidaActual.value) return { exito: false, mensaje: "No hay partida" };
-    let defensor: PersonajeInstancia | undefined;
-
-    for(const equipo of partidaActual.value.equipos) {
-        const found = equipo.personajes.find(p => p.nombre === defensorId || p.instanciaId === defensorId);
-        if (found) {
-            defensor = found;
-            break;
-        }
-    }
-
-    if (!defensor) return { exito: false, mensaje: "Defensor no encontrado" };
-
-    // Validar Rango
-    const dist = Math.sqrt(
-        (personaje.posicion.x - defensor.posicion.x)**2 +
-        (personaje.posicion.z - defensor.posicion.z)**2
+  function quitarDelDiario(entradaId: string) {
+    if (!partidaActual.value?.diario) return;
+    partidaActual.value.diario = partidaActual.value.diario.filter(
+      (e) => e.id !== entradaId,
     );
-
-    let minRange = 0;
-    let maxRange = 1.5;
-    if (personaje.armaEquipada) {
-         const a = armasData.armas.find((w: any) => w.id === personaje.armaEquipada);
-         if (a) {
-             if (a.distancia_min) minRange = a.distancia_min;
-             if (a.distancia_max) maxRange = a.distancia_max;
-         }
-    }
-
-    if (dist < minRange || dist > maxRange) {
-        const msg = `Fuera de rango (Dist: ${dist.toFixed(1)}m, Rango: ${minRange}-${maxRange}m)`;
-        agregarLog(msg);
-        return { exito: false, mensaje: msg };
-    }
-
-    const resultado = calcularAtaqueInterno(personaje, defensor);
-
-    // Apply results (Mutate state)
-    defensor.vidaActual = resultado.vidaRestante;
-
-    accionesRestantes.value--;
-
-    // Log detailed result
-    agregarLog(resultado.mensaje);
-
-    checkAutoPassTurn();
-    return { exito: true, resultado };
+    guardarPartidaActual();
   }
 
-  function cambiarArmaActivo(nuevaArmaId: number | null) {
-      if (turnoEnProceso.value) return { exito: false, mensaje: "Turno finalizando..." };
+  // --- Mapa activo ---
+  // Marca un mapa del catálogo como activo de esta partida. Copia el MapaHex
+  // a `mapa` (inline) para no romper a los consumidores que lo leen así.
+  function seleccionarMapa(mapaGuardado: MapaGuardado) {
+    if (!partidaActual.value) return;
+    partidaActual.value.mapaActivoId = mapaGuardado.id;
+    partidaActual.value.mapa = mapaGuardado.mapa;
+    guardarPartidaActual();
+    agregarLog(`🗺️ Mapa activo: ${mapaGuardado.nombre}`);
+  }
 
-      const personaje = personajeActivo.value;
-      if (!personaje) return { exito: false, mensaje: "No hay personaje activo" };
+  function quitarMapaActivo() {
+    if (!partidaActual.value) return;
+    partidaActual.value.mapaActivoId = undefined;
+    partidaActual.value.mapa = undefined;
+    guardarPartidaActual();
+  }
 
-      if (accionesRestantes.value <= 0) {
-          return { exito: false, mensaje: "No quedan acciones" };
-      }
+  // --- Tokens sobre el mapa ---
+  // Vida máxima del personaje/criatura de origen de un token.
+  async function vidaMaximaDe(
+    entrada: Pick<EntradaDiario, "refId" | "tipo">,
+  ): Promise<number> {
+    const guardado =
+      entrada.tipo === "criatura"
+        ? await obtenerCriatura(entrada.refId)
+        : await obtenerPersonaje(entrada.refId);
+    return guardado?.atributos?.hp ?? 10;
+  }
 
-      // Check ownership
-      if (nuevaArmaId !== null && !personaje.armas.includes(nuevaArmaId)) {
-          return { exito: false, mensaje: "No tienes esa arma" };
-      }
+  // Coloca un token de una entrada del diario. Si se pasa `posDestino` (p. ej.
+  // al arrastrar y soltar sobre un hexágono), se usa esa posición; si no, se
+  // busca la primera casilla libre del mapa hexagonal activo.
+  async function colocarToken(
+    entrada: Pick<EntradaDiario, "refId" | "tipo" | "nombre">,
+    posDestino?: { col: number; row: number; nivel: number },
+  ) {
+    const p = partidaActual.value;
+    if (!p) return;
+    if (!p.tokens) p.tokens = [];
 
-      const prevArmaId = personaje.armaEquipada;
-      personaje.armaEquipada = nuevaArmaId;
+    let pos = posDestino ?? { col: 0, row: 0, nivel: 0 };
+    if (!posDestino && p.mapa) {
+      const ocupadas = new Set(
+        p.tokens.map((t) => claveCelda(t.pos.col, t.pos.row, t.pos.nivel)),
+      );
+      const casillas = calcularCasillas(p.mapa);
+      const libre =
+        casillas.find(
+          (c) => !ocupadas.has(claveCelda(c.col, c.row, c.y)),
+        ) ?? casillas[0];
+      if (libre) pos = { col: libre.col, row: libre.row, nivel: libre.y };
+    }
 
-      let nombreArma = "Manos vacías";
-      if (nuevaArmaId) {
-          const a = armasData.armas.find((w: any) => w.id === nuevaArmaId);
-          if (a) nombreArma = a.nombre;
-      }
+    const max = await vidaMaximaDe(entrada);
+    p.tokens.push({
+      id: `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      refId: entrada.refId,
+      tipo: entrada.tipo,
+      nombre: entrada.nombre,
+      pos,
+      vida: { actual: max, max },
+      estados: [],
+    });
+    guardarPartidaActual();
+    agregarLog(`📍 ${entrada.nombre} colocado en el mapa.`);
+  }
 
-      accionesRestantes.value--;
-      agregarLog(`${personaje.nombre} equipó ${nombreArma}.`);
-      checkAutoPassTurn();
+  // --- Vida de un token ---
+  // Asegura que el token tenga el objeto vida inicializado (tokens antiguos no
+  // lo tenían) y devuelve su vida máxima.
+  async function asegurarVida(
+    token: TokenPartida,
+  ): Promise<{ actual: number; max: number }> {
+    if (!token.vida) {
+      const max = await vidaMaximaDe(token);
+      token.vida = { actual: max, max };
+    }
+    return token.vida;
+  }
 
-      return { exito: true };
+  // Fija la vida actual del token (se limita entre 0 y el máximo).
+  async function establecerVidaToken(tokenId: string, actual: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const vida = await asegurarVida(token);
+    const n = Number.isFinite(actual) ? Math.round(actual) : vida.actual;
+    vida.actual = Math.max(0, Math.min(vida.max, n));
+    guardarPartidaActual();
+  }
+
+  // Suma (o resta) puntos a la vida actual del token.
+  async function ajustarVidaToken(tokenId: string, delta: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const vida = await asegurarVida(token);
+    await establecerVidaToken(tokenId, vida.actual + delta);
+  }
+
+  // --- Estados alterados sobre un token ---
+  // Aplica un estado al token. Los acumulables (Sangrado, Inhibido, Ímpetu…)
+  // suman `valor` sobre el existente; el resto no se duplican.
+  function agregarEstadoToken(
+    tokenId: string,
+    estadoId: number,
+    valor?: number,
+  ) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    if (!token.estados) token.estados = [];
+    const def = obtenerEstado(estadoId);
+    const existente = token.estados.find((e) => e.estadoId === estadoId);
+    if (def?.acumulable) {
+      const suma = valor ?? 1;
+      if (existente) existente.valor = (existente.valor ?? 0) + suma;
+      else token.estados.push({ estadoId, valor: suma });
+    } else if (!existente) {
+      token.estados.push({ estadoId });
+    }
+    guardarPartidaActual();
+    agregarLog(`✨ ${token.nombre} gana el estado ${def?.nombre ?? estadoId}.`);
+  }
+
+  // Fija el valor X de un estado acumulable (Sangrado, Inhibido, Ímpetu…) a
+  // `valor` exacto, creándolo si no existe. A diferencia de agregarEstadoToken,
+  // no suma sobre el existente: lo reemplaza. Si `valor` <= 0 se retira.
+  function establecerValorEstadoToken(
+    tokenId: string,
+    estadoId: number,
+    valor: number,
+  ) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    if (!token.estados) token.estados = [];
+    const def = obtenerEstado(estadoId);
+    const nuevo = Math.max(0, Math.floor(valor));
+    const existente = token.estados.find((e) => e.estadoId === estadoId);
+    if (nuevo <= 0) {
+      token.estados = token.estados.filter((e) => e.estadoId !== estadoId);
+    } else if (existente) {
+      existente.valor = nuevo;
+    } else {
+      token.estados.push({ estadoId, valor: nuevo });
+    }
+    guardarPartidaActual();
+    agregarLog(
+      `✨ ${token.nombre}: ${def?.nombre ?? estadoId} = ${nuevo}.`,
+    );
+  }
+
+  function quitarEstadoToken(tokenId: string, estadoId: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token?.estados) return;
+    token.estados = token.estados.filter((e) => e.estadoId !== estadoId);
+    guardarPartidaActual();
+  }
+
+  function moverToken(
+    id: string,
+    pos: { col: number; row: number; nivel: number },
+  ) {
+    const p = partidaActual.value;
+    const token = p?.tokens?.find((t) => t.id === id);
+    if (!token) return;
+    token.pos = pos;
+    guardarPartidaActual();
+  }
+
+  function quitarToken(id: string) {
+    const p = partidaActual.value;
+    if (!p?.tokens) return;
+    p.tokens = p.tokens.filter((t) => t.id !== id);
+    guardarPartidaActual();
   }
 
   return {
     partidaActual,
-    ordenTurnos,
-    turnoActual,
-    accionesRestantes,
     personajeActivo,
     logs,
-    accionPreparada,
-    turnoEnProceso,
-    setAccionPreparada,
-    usarActiva,
-    ejecutarAtaque,
-    cambiarArmaActivo,
+    mensajesChat,
+    fichasFlotantes,
+    abrirFichaInstancia,
+    abrirFichaGuardado,
+    abrirFichaCriatura,
+    cerrarFicha,
+    bonosDeFicha,
+    agregarLog,
     iniciarPartida,
-    pasarTurno,
+    seleccionarPersonaje,
     moverPersonajeActivo,
     addCharacter,
     getCharacter,
+    guardarPartidaActual,
+    enviarMensajeChat,
+    enviarTiradaChat,
+    agregarAlDiario,
+    quitarDelDiario,
+    seleccionarMapa,
+    quitarMapaActivo,
+    colocarToken,
+    moverToken,
+    quitarToken,
+    establecerVidaToken,
+    ajustarVidaToken,
+    agregarEstadoToken,
+    establecerValorEstadoToken,
+    quitarEstadoToken,
   };
 }

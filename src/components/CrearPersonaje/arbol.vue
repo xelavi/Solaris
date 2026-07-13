@@ -1,47 +1,51 @@
 <template>
   <div class="flex gap-4 arbol-responsive-container">
-    <div ref="box" class="w-250 h-150 relative arbol-canvas"></div>
+    <div
+      ref="box"
+      class="w-250 h-150 relative arbol-canvas overflow-hidden rounded-xl border border-gray-200"
+    ></div>
     <div class="flex flex-col gap-4 arbol-paneles">
       <!-- Panel de Nodos Seleccionados -->
-      <div
-        class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg"
-      >
-        <h3 class="text-lg font-bold mb-3">Nodos Seleccionados</h3>
-        <div class="mb-4">
-          <p class="text-sm">
-            <span class="font-medium">Nivel de Personaje: </span>
-            <span class="font-bold">{{ characterLevel }}</span>
+      <div class="panel w-64">
+        <h3 class="section-title mb-3 text-sm">Nodos seleccionados</h3>
+        <div class="mb-3 space-y-1.5 text-sm">
+          <p class="flex justify-between text-gray-600">
+            <span>Nivel de personaje</span>
+            <span class="font-bold text-gray-900">{{ characterLevel }}</span>
           </p>
-        </div>
-        <div class="mb-4">
-          <p class="text-sm">
-            <span class="font-semibold">Puntos disponibles: </span>
+          <p class="flex justify-between text-gray-600">
+            <span>Puntos disponibles</span>
             <span
-              :class="remainingNodes < 0 ? 'text-red-600' : 'text-green-600'"
+              :class="[
+                'font-bold',
+                remainingNodes < 0 ? 'text-red-600' : 'text-emerald-600',
+              ]"
             >
               {{ remainingNodes }}
             </span>
           </p>
         </div>
-        <div class="max-h-60 overflow-y-auto">
+        <div class="max-h-60 space-y-2 overflow-y-auto">
           <div
             v-for="node in selectedNodes"
             :key="node.nodeId"
             :class="[
-              'mb-2 p-2 rounded text-sm',
+              'rounded-lg border p-2 text-sm',
               node.isTrasfondo
-                ? 'bg-blue-100 border-2 border-blue-400'
-                : 'bg-gray-100',
+                ? 'border-indigo-300 bg-indigo-50'
+                : 'border-gray-200 bg-white',
             ]"
           >
-            <div class="font-semibold">
+            <div class="font-semibold text-gray-900">
               {{ node.skillName }}
-              <span v-if="node.isTrasfondo" class="text-xs text-blue-600 ml-1"
+              <span
+                v-if="node.isTrasfondo"
+                class="ml-1 text-xs font-medium text-indigo-600"
                 >(Trasfondo)</span
               >
             </div>
-            <div class="text-xs text-gray-600">
-              {{ node.type === "circle" ? "Atributo" : "Activa" }} - Layer
+            <div class="text-xs text-gray-500">
+              {{ node.type === "circle" ? "Atributo" : "Activa" }} · Capa
               {{ node.layer }}
             </div>
           </div>
@@ -49,90 +53,86 @@
       </div>
 
       <!-- Panel de Atributos Calculados -->
-      <div
-        class="w-64 bg-white border border-gray-300 rounded-lg p-4 shadow-lg"
-      >
-        <h3 class="text-lg font-bold mb-3">Atributos</h3>
-        <div class="space-y-2 text-sm">
+      <div class="panel w-64">
+        <h3 class="section-title mb-3 text-sm">Atributos</h3>
+        <div class="space-y-1.5 text-sm text-gray-600">
           <!-- Atributos principales -->
-          <div class="font-semibold text-blue-700 mb-2">Principales</div>
+          <div class="label mt-1 mb-1">Principales</div>
           <div class="flex justify-between">
-            <span>Cuerpo:</span>
-            <span class="font-bold">{{ cuerpo }}</span>
+            <span>Cuerpo</span>
+            <span class="font-bold text-gray-900">{{ cuerpo }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Agilidad:</span>
-            <span class="font-bold">{{ agilidad }}</span>
+            <span>Agilidad</span>
+            <span class="font-bold text-gray-900">{{ agilidad }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Mente:</span>
-            <span class="font-bold">{{ mente }}</span>
+            <span>Mente</span>
+            <span class="font-bold text-gray-900">{{ mente }}</span>
           </div>
 
           <!-- Atributos derivados (+3 por nodo) -->
-          <div class="font-semibold text-green-700 mt-3 mb-2">
-            Derivados (×3)
+          <div class="label mt-3 mb-1">Derivados (×3)</div>
+          <div class="flex justify-between">
+            <span>HP</span>
+            <span class="font-bold text-gray-900">{{ hp }}</span>
           </div>
           <div class="flex justify-between">
-            <span>HP:</span>
-            <span class="font-bold">{{ hp }}</span>
+            <span>Poderío</span>
+            <span class="font-bold text-gray-900">{{ poderio }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Poderío:</span>
-            <span class="font-bold">{{ poderio }}</span>
+            <span>Movimiento</span>
+            <span class="font-bold text-gray-900">{{ movimiento }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Movimiento:</span>
-            <span class="font-bold">{{ movimiento }}</span>
+            <span>Resistencia</span>
+            <span class="font-bold text-gray-900">{{ resistencia }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Resistencia:</span>
-            <span class="font-bold">{{ resistencia }}</span>
+            <span>Regeneración</span>
+            <span class="font-bold text-gray-900">{{ regeneracion }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Regeneración:</span>
-            <span class="font-bold">{{ regeneracion }}</span>
+            <span>Evasión</span>
+            <span class="font-bold text-gray-900">{{ evasion }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Evasión:</span>
-            <span class="font-bold">{{ evasion }}</span>
+            <span>Iniciativa</span>
+            <span class="font-bold text-gray-900">{{ iniciativa }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Iniciativa:</span>
-            <span class="font-bold">{{ iniciativa }}</span>
+            <span>Puntería</span>
+            <span class="font-bold text-gray-900">{{ punteria }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Puntería:</span>
-            <span class="font-bold">{{ punteria }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Pts Habilidad:</span>
-            <span class="font-bold">{{ puntosHabilidad }}</span>
+            <span>Pts Habilidad</span>
+            <span class="font-bold text-gray-900">{{ puntosHabilidad }}</span>
           </div>
 
           <!-- Atributos simples (+1 por nodo) -->
-          <div class="font-semibold text-purple-700 mt-3 mb-2">
-            Especiales (×1)
+          <div class="label mt-3 mb-1">Especiales (×1)</div>
+          <div class="flex justify-between">
+            <span>Rango Crítico</span>
+            <span class="font-bold text-gray-900">{{ rangoCritico }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Rango Crítico:</span>
-            <span class="font-bold">{{ rangoCritico }}</span>
+            <span>Habilidades Extra</span>
+            <span class="font-bold text-gray-900">{{
+              habilidadesExtra
+            }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Habilidades Extra:</span>
-            <span class="font-bold">{{ habilidadesExtra }}</span>
+            <span>Límite Habilidad</span>
+            <span class="font-bold text-gray-900">{{ limiteHabilidad }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Límite Habilidad:</span>
-            <span class="font-bold">{{ limiteHabilidad }}</span>
+            <span>Acciones</span>
+            <span class="font-bold text-gray-900">{{ acciones }}</span>
           </div>
           <div class="flex justify-between">
-            <span>Acciones:</span>
-            <span class="font-bold">{{ acciones }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Reacciones:</span>
-            <span class="font-bold">{{ reacciones }}</span>
+            <span>Reacciones</span>
+            <span class="font-bold text-gray-900">{{ reacciones }}</span>
           </div>
         </div>
       </div>
@@ -184,7 +184,21 @@ const mouse = new THREE.Vector2();
 let tooltip: HTMLElement | null = null;
 
 // Use character creation composable
-const { characterData, loadCharacterData } = useCharacterCreation();
+const { characterData, loadCharacterData, enSubidaNivel, subidaNivelBase } =
+  useCharacterCreation();
+
+// En modo "subir de nivel": ids de nodos que ya estaban puestos antes de subir.
+// No se pueden quitar; solo se pueden añadir nodos nuevos.
+const baselineNodeIds = computed(() => {
+  if (!enSubidaNivel.value || !subidaNivelBase.value?.arbol) return new Set<number>();
+  try {
+    return new Set<number>(
+      (JSON.parse(subidaNivelBase.value.arbol) as ArbolNode[]).map((n) => n.nodeId),
+    );
+  } catch {
+    return new Set<number>();
+  }
+});
 
 // Character level from characterData
 const characterLevel = computed({
@@ -760,7 +774,7 @@ function init() {
         destino.layer,
         destino.position,
         connectionType,
-        0x000000,
+        0x475569,
       );
     }
   });
@@ -843,6 +857,11 @@ function onClick(event: MouseEvent) {
     if (object.userData.isSelected) {
       // Prevent deselecting trasfondo nodes
       if (isTrasfondoNode) {
+        return;
+      }
+
+      // Al subir de nivel no se pueden quitar nodos ya colocados en niveles previos
+      if (baselineNodeIds.value.has(object.userData.nodeId)) {
         return;
       }
 
@@ -1122,12 +1141,12 @@ function updateTrasfondoVisuals() {
   });
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (box.value) {
     console.log("Mounted arbol.vue");
 
     // Load character data
-    loadCharacterData();
+    await loadCharacterData();
 
     // If trasfondo exists, ensure nodes are added
     if (characterData.value.trasfondo) {

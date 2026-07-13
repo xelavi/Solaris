@@ -2,124 +2,95 @@
   <div class="space-y-8">
     <!-- Tabla de Armas -->
     <div>
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-2xl font-bold text-blue-700">Armas</h3>
-        <div class="text-sm text-blue-600">
-          Seleccionadas:
-          <span class="font-bold">{{ armasSeleccionadas.length }}</span>
-        </div>
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="section-title">Armas</h3>
+        <span class="badge badge-muted">
+          Seleccionadas: {{ armasSeleccionadas.length }}
+        </span>
       </div>
 
-      <div
-        class="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden"
-      >
-        <!-- Header de la tabla de armas -->
-        <div
-          class="bg-blue-600 text-white grid grid-cols-12 gap-3 px-4 py-3 font-semibold text-sm"
-        >
-          <div class="col-span-1 text-center">Sel.</div>
-          <div class="col-span-2">Arma</div>
-          <div class="col-span-1 text-center">Pen.</div>
-          <div class="col-span-1 text-center">Lac.</div>
-          <div class="col-span-1 text-center">Con.</div>
-          <div class="col-span-3">Categoría</div>
-          <div class="col-span-1 text-center">Crítico</div>
-          <div class="col-span-1 text-center">Rango Crít.</div>
-          <div class="col-span-1 text-center">Distancia</div>
-        </div>
-        <!-- Filas de armas -->
-        <div class="divide-y divide-blue-200 max-h-96 overflow-y-auto">
-          <div
-            v-for="arma in armas"
-            :key="arma.id"
-            @click="toggleArma(arma.id)"
-            :class="[
-              'grid grid-cols-12 gap-3 px-4 py-3 items-center cursor-pointer transition-colors',
-              armasSeleccionadas.includes(arma.id)
-                ? 'bg-blue-200 hover:bg-blue-250'
-                : 'bg-white hover:bg-blue-100',
-            ]"
-          >
-            <!-- Checkbox -->
-            <div class="col-span-1 flex justify-center">
-              <div
-                :class="[
-                  'w-6 h-6 rounded border-2 flex items-center justify-center transition-colors',
-                  armasSeleccionadas.includes(arma.id)
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white border-blue-300',
-                ]"
-              >
-                <span
-                  v-if="armasSeleccionadas.includes(arma.id)"
-                  class="text-white text-sm font-bold"
-                  >✓</span
+      <div class="data-table">
+        <div class="tabla-scroll max-h-96 overflow-y-auto">
+          <!-- Header de la tabla de armas -->
+          <div class="data-table-head tabla-grid grid-cols-12">
+            <div class="col-span-1 text-center">Sel.</div>
+            <div class="col-span-2">Arma</div>
+            <div class="col-span-1 text-center">Pen.</div>
+            <div class="col-span-1 text-center">Lac.</div>
+            <div class="col-span-1 text-center">Con.</div>
+            <div class="col-span-3">Categoría</div>
+            <div class="col-span-1 text-center">Crítico</div>
+            <div class="col-span-1 text-center">Rango Crít.</div>
+            <div class="col-span-1 text-center">Distancia</div>
+          </div>
+          <!-- Filas de armas -->
+          <div class="divide-y divide-gray-200">
+            <div
+              v-for="arma in armas"
+              :key="arma.id"
+              @click="toggleArma(arma.id)"
+              :class="[
+                'data-table-row tabla-grid grid-cols-12 cursor-pointer',
+                armasSeleccionadas.includes(arma.id)
+                  ? 'bg-indigo-50 hover:bg-indigo-100'
+                  : '',
+              ]"
+            >
+              <!-- Checkbox -->
+              <div class="col-span-1 flex justify-center">
+                <div
+                  :class="[
+                    'option-check',
+                    armasSeleccionadas.includes(arma.id)
+                      ? 'option-check-on'
+                      : '',
+                  ]"
                 >
+                  <span v-if="armasSeleccionadas.includes(arma.id)">✓</span>
+                </div>
               </div>
-            </div>
 
-            <!-- Nombre -->
-            <div class="col-span-2">
-              <div class="font-semibold text-blue-700">{{ arma.nombre }}</div>
-            </div>
+              <!-- Nombre -->
+              <div class="col-span-2">
+                <div class="text-sm font-semibold text-gray-900">
+                  {{ arma.nombre }}
+                </div>
+              </div>
 
-            <!-- Daño Penetrante -->
-            <div class="col-span-1 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]"
-              >
+              <!-- Daño Penetrante -->
+              <div class="col-span-1 text-center text-sm text-gray-700">
                 {{ arma.penetrante }}
               </div>
-            </div>
 
-            <!-- Daño Lacerante -->
-            <div class="col-span-1 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]"
-              >
+              <!-- Daño Lacerante -->
+              <div class="col-span-1 text-center text-sm text-gray-700">
                 {{ arma.lacerante }}
               </div>
-            </div>
 
-            <!-- Daño Contundente -->
-            <div class="col-span-1 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm min-w-[40px]"
-              >
+              <!-- Daño Contundente -->
+              <div class="col-span-1 text-center text-sm text-gray-700">
                 {{ arma.contundente }}
               </div>
-            </div>
 
-            <!-- Categoría -->
-            <div class="col-span-3">
-              <div class="text-sm text-blue-700">
+              <!-- Categoría -->
+              <div class="col-span-3 text-sm text-gray-600">
                 {{ arma.categoria }}
               </div>
-            </div>
 
-            <!-- Crítico -->
-            <div class="col-span-1 text-center">
+              <!-- Crítico -->
               <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-bold text-sm"
+                class="col-span-1 text-center text-sm font-semibold text-gray-800"
               >
                 {{ arma.critico }}
               </div>
-            </div>
 
-            <!-- Rango Crítico -->
-            <div class="col-span-1 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm"
-              >
+              <!-- Rango Crítico -->
+              <div class="col-span-1 text-center text-sm text-gray-700">
                 {{ formatRangoCritico(arma.rango_critico) }}
               </div>
-            </div>
 
-            <!-- Distancia -->
-            <div class="col-span-1 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-2 py-1 text-blue-700 font-medium text-sm"
-              >
+              <!-- Distancia -->
+              <div class="col-span-1 text-center text-sm text-gray-700">
                 {{ formatDistancia(arma.distancia_min, arma.distancia_max) }}
               </div>
             </div>
@@ -130,97 +101,78 @@
 
     <!-- Tabla de Armaduras -->
     <div>
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-2xl font-bold text-blue-700">Armaduras</h3>
-        <div class="text-sm text-blue-600">
-          Seleccionadas:
-          <span class="font-bold">{{ armadurasSeleccionadas.length }}</span>
-        </div>
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="section-title">Armaduras</h3>
+        <span class="badge badge-muted">
+          Seleccionadas: {{ armadurasSeleccionadas.length }}
+        </span>
       </div>
 
-      <div
-        class="bg-blue-50 border-2 border-blue-200 rounded-lg overflow-hidden"
-      >
-        <!-- Header de la tabla de armaduras -->
-        <div
-          class="bg-blue-600 text-white grid grid-cols-12 gap-3 px-4 py-3 font-semibold text-sm"
-        >
-          <div class="col-span-1 text-center">Sel.</div>
-          <div class="col-span-3">Armadura</div>
-          <div class="col-span-2 text-center">Pen.</div>
-          <div class="col-span-2 text-center">Lac.</div>
-          <div class="col-span-2 text-center">Con.</div>
-          <div class="col-span-2">Categoría</div>
-        </div>
+      <div class="data-table">
+        <div class="tabla-scroll max-h-96 overflow-y-auto">
+          <!-- Header de la tabla de armaduras -->
+          <div class="data-table-head tabla-grid grid-cols-12">
+            <div class="col-span-1 text-center">Sel.</div>
+            <div class="col-span-3">Armadura</div>
+            <div class="col-span-2 text-center">Pen.</div>
+            <div class="col-span-2 text-center">Lac.</div>
+            <div class="col-span-2 text-center">Con.</div>
+            <div class="col-span-2">Categoría</div>
+          </div>
 
-        <!-- Filas de armaduras -->
-        <div class="divide-y divide-blue-200 max-h-96 overflow-y-auto">
-          <div
-            v-for="armadura in armaduras"
-            :key="armadura.id"
-            @click="toggleArmadura(armadura.id)"
-            :class="[
-              'grid grid-cols-12 gap-3 px-4 py-3 items-center cursor-pointer transition-colors',
-              armadurasSeleccionadas.includes(armadura.id)
-                ? 'bg-blue-200 hover:bg-blue-250'
-                : 'bg-white hover:bg-blue-100',
-            ]"
-          >
-            <!-- Checkbox -->
-            <div class="col-span-1 flex justify-center">
-              <div
-                :class="[
-                  'w-6 h-6 rounded border-2 flex items-center justify-center transition-colors',
-                  armadurasSeleccionadas.includes(armadura.id)
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white border-blue-300',
-                ]"
-              >
-                <span
-                  v-if="armadurasSeleccionadas.includes(armadura.id)"
-                  class="text-white text-sm font-bold"
-                  >✓</span
+          <!-- Filas de armaduras -->
+          <div class="divide-y divide-gray-200">
+            <div
+              v-for="armadura in armaduras"
+              :key="armadura.id"
+              @click="toggleArmadura(armadura.id)"
+              :class="[
+                'data-table-row tabla-grid grid-cols-12 cursor-pointer',
+                armadurasSeleccionadas.includes(armadura.id)
+                  ? 'bg-indigo-50 hover:bg-indigo-100'
+                  : '',
+              ]"
+            >
+              <!-- Checkbox -->
+              <div class="col-span-1 flex justify-center">
+                <div
+                  :class="[
+                    'option-check',
+                    armadurasSeleccionadas.includes(armadura.id)
+                      ? 'option-check-on'
+                      : '',
+                  ]"
                 >
+                  <span v-if="armadurasSeleccionadas.includes(armadura.id)"
+                    >✓</span
+                  >
+                </div>
               </div>
-            </div>
 
-            <!-- Nombre -->
-            <div class="col-span-3">
-              <div class="font-semibold text-blue-700">
-                {{ armadura.nombre }}
+              <!-- Nombre -->
+              <div class="col-span-3">
+                <div class="text-sm font-semibold text-gray-900">
+                  {{ armadura.nombre }}
+                </div>
               </div>
-            </div>
 
-            <!-- Daño Penetrante -->
-            <div class="col-span-2 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]"
-              >
+              <!-- Daño Penetrante -->
+              <div class="col-span-2 text-center text-sm text-gray-700">
                 {{ armadura.penetrante }}
               </div>
-            </div>
 
-            <!-- Daño Lacerante -->
-            <div class="col-span-2 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]"
-              >
+              <!-- Daño Lacerante -->
+              <div class="col-span-2 text-center text-sm text-gray-700">
                 {{ armadura.lacerante }}
               </div>
-            </div>
 
-            <!-- Daño Contundente -->
-            <div class="col-span-2 text-center">
-              <div
-                class="inline-flex items-center justify-center bg-white border border-blue-300 rounded px-3 py-1 text-blue-700 font-medium text-sm min-w-[50px]"
-              >
+              <!-- Daño Contundente -->
+              <div class="col-span-2 text-center text-sm text-gray-700">
                 {{ armadura.contundente }}
               </div>
-            </div>
 
-            <!-- Categoría -->
-            <div class="col-span-2">
-              <div class="text-sm text-blue-700">
+              <!-- Categoría -->
+              <div class="col-span-2 text-sm text-gray-600">
                 {{ armadura.categoria }}
               </div>
             </div>
@@ -248,8 +200,8 @@ const armasSeleccionadas = ref<number[]>([]);
 const armadurasSeleccionadas = ref<number[]>([]);
 
 // Load character data on mount
-onMounted(() => {
-  loadCharacterData();
+onMounted(async () => {
+  await loadCharacterData();
   // Initialize local refs with characterData values
   armasSeleccionadas.value = [...characterData.value.armas];
   armadurasSeleccionadas.value = [...characterData.value.armaduras];
@@ -313,40 +265,11 @@ function toggleArmadura(armaduraId: number) {
 }
 </script>
 <style scoped>
-/* Responsive tablas equipo */
-@media (max-width: 900px) {
-  .bg-blue-50.border-2 {
-    overflow-x: auto !important;
-  }
-  .grid-cols-12 {
-    min-width: 700px !important;
-    display: grid;
-    grid-template-columns: repeat(12, minmax(60px, 1fr));
-  }
-  .divide-y > div {
-    min-width: 700px !important;
-  }
+/* Permitir scroll horizontal de las tablas en pantallas estrechas */
+.tabla-scroll {
+  overflow-x: auto;
 }
-@media (max-width: 640px) {
-  .bg-blue-50.border-2 {
-    overflow-x: auto !important;
-    padding: 0 !important;
-  }
-  .grid-cols-12 {
-    min-width: 700px !important;
-    font-size: 0.95rem !important;
-  }
-  .divide-y > div {
-    min-width: 700px !important;
-    font-size: 0.95rem !important;
-  }
-  .p-4,
-  .px-4,
-  .py-3 {
-    padding: 0.75rem !important;
-  }
-  .text-2xl {
-    font-size: 1.3rem !important;
-  }
+.tabla-grid {
+  min-width: 760px;
 }
 </style>

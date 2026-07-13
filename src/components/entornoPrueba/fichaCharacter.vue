@@ -1,7 +1,6 @@
 <template>
-  <div
-    class="bg-gray-900/95 backdrop-blur-md rounded-xl shadow-2xl p-5 w-80 max-h-[85vh] overflow-y-auto border border-gray-700 transition-all duration-300 text-gray-100"
-  >
+  <div class="w-full p-5 text-gray-100">
+
     <!-- Header -->
     <div class="mb-4 pb-3 border-b border-gray-700 flex justify-between items-start">
       <div>
@@ -67,8 +66,8 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 gap-2 mb-5 text-xs">
        <div class="bg-gray-800/50 p-2 rounded border border-gray-700">
-          <div class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Oficio</div>
-          <div class="text-gray-200 truncate" :title="personaje.oficio">{{ personaje.oficio }}</div>
+          <div class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Especialidad</div>
+          <div class="text-gray-200 truncate" :title="personaje.especialidad">{{ personaje.especialidad }}</div>
        </div>
        <div class="bg-gray-800/50 p-2 rounded border border-gray-700">
           <div class="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Estilo</div>

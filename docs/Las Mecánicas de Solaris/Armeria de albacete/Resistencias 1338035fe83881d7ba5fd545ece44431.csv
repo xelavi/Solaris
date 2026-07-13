@@ -1,0 +1,21 @@
+﻿Title,Penetrante,Lacerante,Aporreo,Categoria,Condiciones,Limitaciones
+Armadura de pieles,,,1,Ligera,,
+Armadura de cuero,,1,1,Ligera,,
+Armadura de cuero tachonado,1,1,1,Ligera,,
+Armadura de anillas,2,2,1,Media,Desventaja 1 sigilo,
+Cota brigantina,2,2,2,Media,Desventaja 1 sigilo,1 R
+Lorica musculata,2,2,2,Media,Desventaja 1 sigilo,1 DL
+Lorica segmentata,2,3,4,Pesada,Desventaja 2 Sigilo,2 DL
+Armadura laminar,2,3,4,Pesada,Desventaja 2 Sigilo,1 DL
+Cota de malla,2,4,3,Media,Desventaja 1 sigilo,1 DL
+Cota de escamas,2,4,3,Media,Desventaja 1 sigilo,1 DL
+Baluarte del silencio,5,5,6,Pesada,Desventaja 3 sigilo,2 DL / 1R
+Custodio del silencio,5,6,5,Pesada,Desventaja 3 sigilo,2 DL / 2R
+Túnica del tejesombras,2,2,2,Ligera,Ventaja 1 sigilo,1 DE / 1 DODGE
+Armadura de espinas de ébano,3,4,5,Media,Desventaja 1 sigilo,"2 DE / 2 DODGE "
+Armadura espinal,5,7,6,Pesada,Ventaja 1 sigilo,1 DL /1DE /1DODGE
+Escudo/Rodela,1,1,1,,,
+Escudo de torre,4,4,4,,,1 DL
+Escudo Afilado,2,2,2,,,
+Cestus,1,1,2,,,
+Baluarte,5,5,5,,,2DL / 2R

@@ -1,32 +1,18 @@
+import type { ArbolAttributes } from "./Personaje";
+
 export type Vec3 = { x: number; y: number; z: number };
 
-export interface ArbolAttributes {
-  cuerpo: number;
-  agilidad: number;
-  mente: number;
-  rangoCritico: number;
-  habilidadesExtra: number;
-  limiteHabilidad: number;
-  acciones: number;
-  reacciones: number;
-  hp: number;
-  poderio: number;
-  movimiento: number;
-  resistencia: number;
-  regeneracion: number;
-  evasion: number;
-  iniciativa: number;
-  punteria: number;
-  puntosHabilidad: number;
-}
+// La definición canónica vive en Personaje.ts; se re-exporta para no romper
+// los imports existentes.
+export type { ArbolAttributes } from "./Personaje";
 
 export class Character {
   id: string;
   name: string;
   posicion: string = "";
-  oficio: string = "";
-  oficio_habilidades: string[] = [];
-  oficio_dotes: number[] = [];
+  especialidad: string = "";
+  especialidad_habilidades: string[] = [];
+  especialidad_dotes: number[] = [];
   nivel: number = 1;
   estilo_marcial: string = "";
   estilo_marcial_dotes: string[] = [];

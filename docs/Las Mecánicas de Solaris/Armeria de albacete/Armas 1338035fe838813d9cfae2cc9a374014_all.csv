@@ -1,0 +1,39 @@
+﻿Título,Categoria,Crítico,Daño,Distancia ( Min | Max),Matriz de daño,Penetrasao de armadura,Rango de crítico
+Jabalina,"Arma enastada, Arrojadiza",,4/0/3,,Piercing,,
+Hacha de batalla,"A dos manos, Hacha, Pesada",,0/7/2,,slashing,,23/24
+Maza,Arma contundente,,0/0/5,,Contundente,,
+Escudo afilado,"Cuchillo, Escudo",,3/2/1,,"Piercing, Contundente",,
+Arco largo,"A Distancia, A dos manos, Pesada",,7,( 3 | 24),Piercing,,
+Pico de guerra,"Hacha, Pesada",,4/0/4,,Piercing,2,
+Champion’s Grip,Ligera,,2/3/1,,Contundente,,
+Hacha de mano,"Arrojadiza, Hacha",,0/4/1,,slashing,,
+Escudo de torre,"Arma contundente, Escudo, Pesada",,2,,Contundente,,
+Lanza,"Arma enastada, Versátil",,6/2/3,,"Piercing,Contundente",,
+Falcata,"Arma contundente, Espada corta, Pesada",,3/5/1,,"Piercing slashing ",,
+Espada bastarda,"Espada larga, Versátil",,4/6/1,,Piercing slashing,,
+Cestus/arma de puño,Ligera,,1/0/1,,Contundente,,
+Espada corta,Espada corta,,3/5/1,,Piercing slashing,,
+Ballesta,"A Distancia, A dos manos, Recarga",X3,8,,Piercing,,
+Daga,"Arrojadiza, Cuchillo, Ligera",X4,3/2/1,,"Piercing, slashing",,23/24
+Escudo/Rodela,"Arma contundente, Escudo",,1,,Contundente,,
+Guadaña,"A dos manos, Arma enastada, Pesada",X3,4/5/4,,slashing,,
+Maza de guerra,"A dos manos, Arma contundente, Pesada",,0/0/8,,Contundente,,23/24
+Hoz,"Arma contundente, Ligera",,1/3/1,,slashing,,
+Ballesta de mano,"A Distancia, Ligera, Recarga",,3,,Piercing,,
+Arco Escorpión,"A Distancia, A dos manos, Arma contundente, Pesada",,16,( 2 |  10),"Piercing, Contundente",,23/24
+Alabarda,"A dos manos, Arma enastada, Hacha, Pesada",,6/7/5,,"Piercing, slashing, Contundente",,23/24
+Lanza-espada,"A dos manos, Arma enastada, Glande, Pesada",,-/-/-,,Piercing slashing,,23/24
+Ballesta de repetición,"A Distancia, Ligera, Recarga, Versátil",X1.5,4/virote max 6 capacidad,,Piercing,,
+Pica longa,"A dos manos, Arma enastada, Glande, Pesada",,6/2/3,,Piercing,,23/24
+Espadón,"A dos manos, Glande, Pesada",,4/8/2,,Piercing slashing,,
+Ballesta pesada,"A Distancia, A dos manos, Pesada, Recarga",X3,10,,Piercing,,
+Arco compuesto,"A Distancia, A dos manos, Ligera",,9,,Piercing,,
+Bastón,"Arma contundente, Versátil",,0/0/3,,Aporreo,,
+Mangual doble,"A dos manos, Arma contundente, Cadena, Pesada",,3/0/7,,Contundente,,23/24
+Gladius,Espada corta,,4/4/1,,"Piercing, slashing",,
+Arco,"A Distancia, A dos manos, Ligera",,5,( 3 | 12),Piercing,,
+Honda,"A Distancia, Ligera",,3,,Contundente,,
+Mangual,"Arma contundente, Cadena, Pesada",,2/0/5,,Contundente,,
+Guja Naginata,"Arma enastada, Versátil",,2/6/3,,"Slashing, piercing",,
+Estilete,"Espada corta, Ligera",X3,4/2/1,,Piercing,,23/24
+,,,,,,,

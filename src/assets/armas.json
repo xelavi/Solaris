@@ -8,9 +8,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 6,
-      "lacerante": 7,
-      "contundente": 2,
+      "penetrante": 4,
+      "lacerante": 4,
+      "contundente": 1,
       "descripcion": "Espada corta romana, perfecta para combate cercano y ataques precisos."
     },
     {
@@ -21,9 +21,9 @@
       "rango_critico": null,
       "distancia_min": 2,
       "distancia_max": 2,
-      "penetrante": 8,
+      "penetrante": 6,
       "lacerante": 2,
-      "contundente": 2,
+      "contundente": 3,
       "descripcion": "Arma enastada versátil, ideal para mantener distancia con enemigos."
     },
     {
@@ -34,9 +34,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 3,
-      "lacerante": 7,
-      "contundente": 4,
+      "penetrante": 0,
+      "lacerante": 4,
+      "contundente": 1,
       "descripcion": "Hacha ligera y equilibrada, puede ser lanzada o usada en combate cuerpo a cuerpo."
     },
     {
@@ -47,9 +47,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 1,
-      "lacerante": 1,
-      "contundente": 8,
+      "penetrante": 0,
+      "lacerante": 0,
+      "contundente": 5,
       "descripcion": "Arma contundente simple pero efectiva, causa gran daño por impacto."
     },
     {
@@ -60,9 +60,9 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 1,
-      "lacerante": 1,
-      "contundente": 10,
+      "penetrante": 0,
+      "lacerante": 0,
+      "contundente": 8,
       "descripcion": "Maza pesada a dos manos, capaz de aplastar armaduras con golpes devastadores."
     },
     {
@@ -73,9 +73,9 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 3,
-      "lacerante": 8,
-      "contundente": 5,
+      "penetrante": 0,
+      "lacerante": 7,
+      "contundente": 2,
       "descripcion": "Hacha de guerra pesada, inflige cortes profundos y letales."
     },
     {
@@ -87,8 +87,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 4,
-      "lacerante": 9,
-      "contundente": 4,
+      "lacerante": 8,
+      "contundente": 2,
       "descripcion": "Espada grande a dos manos, excelente alcance y poder de corte."
     },
     {
@@ -99,9 +99,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 5,
-      "lacerante": 8,
-      "contundente": 4,
+      "penetrante": 4,
+      "lacerante": 6,
+      "contundente": 1,
       "descripcion": "Espada versátil que puede usarse a una o dos manos según la situación."
     },
     {
@@ -112,9 +112,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 6,
-      "lacerante": 6,
-      "contundente": 2,
+      "penetrante": 3,
+      "lacerante": 5,
+      "contundente": 1,
       "descripcion": "Espada de hoja corta, ágil y equilibrada para combate rápido."
     },
     {
@@ -125,9 +125,9 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 9,
+      "penetrante": 6,
       "lacerante": 2,
-      "contundente": 2,
+      "contundente": 3,
       "descripcion": "Lanza larga de gran alcance, perfecta para formaciones y mantener enemigos a distancia."
     },
     {
@@ -138,8 +138,8 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 5,
-      "lacerante": 8,
+      "penetrante": 2,
+      "lacerante": 6,
       "contundente": 3,
       "descripcion": "Arma enastada con hoja curva, combina alcance con poder de corte."
     },
@@ -151,9 +151,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 9,
-      "lacerante": 1,
-      "contundente": 5,
+      "penetrante": 4,
+      "lacerante": 0,
+      "contundente": 4,
       "descripcion": "Arma especializada en perforar armaduras con su punta afilada."
     },
     {
@@ -164,9 +164,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 2,
-      "lacerante": 8,
-      "contundente": 3,
+      "penetrante": 4,
+      "lacerante": 5,
+      "contundente": 4,
       "descripcion": "Hoja curva montada en asta larga, mortal con ataques en barrido."
     },
     {
@@ -177,9 +177,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 2,
-      "lacerante": 6,
-      "contundente": 2,
+      "penetrante": 1,
+      "lacerante": 3,
+      "contundente": 1,
       "descripcion": "Herramienta agrícola adaptada como arma ligera de corte curvo."
     },
     {
@@ -190,9 +190,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 8,
-      "lacerante": 2,
-      "contundente": 2,
+      "penetrante": 4,
+      "lacerante": 0,
+      "contundente": 3,
       "descripcion": "Lanza ligera diseñada específicamente para ser arrojada."
     },
     {
@@ -229,9 +229,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 1,
-      "lacerante": 2,
-      "contundente": 8,
+      "penetrante": 2,
+      "lacerante": 0,
+      "contundente": 5,
       "descripcion": "Cadena con peso en el extremo, difícil de bloquear y devastador al impactar."
     },
     {
@@ -242,9 +242,9 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 1,
-      "lacerante": 2,
-      "contundente": 9,
+      "penetrante": 3,
+      "lacerante": 0,
+      "contundente": 7,
       "descripcion": "Mangual con dos cabezas de cadena, ataque imparable y demoledor."
     },
     {
@@ -255,8 +255,8 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 8,
-      "lacerante": 4,
+      "penetrante": 3,
+      "lacerante": 2,
       "contundente": 1,
       "descripcion": "Cuchillo pequeño y letal, perfecto para ataques furtivos y críticos devastadores."
     },
@@ -268,9 +268,9 @@
       "rango_critico": "23-24",
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 10,
-      "lacerante": 1,
-      "contundente": 0,
+      "penetrante": 4,
+      "lacerante": 2,
+      "contundente": 1,
       "descripcion": "Hoja fina y puntiaguda, diseñada exclusivamente para perforar con precisión mortal."
     },
     {
@@ -282,8 +282,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 3,
-      "lacerante": 9,
-      "contundente": 3,
+      "lacerante": 5,
+      "contundente": 1,
       "descripcion": "Espada ibérica de hoja curva, cortes devastadores con el peso concentrado en la punta."
     },
     {
@@ -294,9 +294,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 1,
-      "lacerante": 2,
-      "contundente": 5,
+      "penetrante": 0,
+      "lacerante": 0,
+      "contundente": 1,
       "descripcion": "Escudo redondo que puede ser usado para golpear además de defender."
     },
     {
@@ -308,8 +308,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 0,
-      "lacerante": 1,
-      "contundente": 6,
+      "lacerante": 0,
+      "contundente": 2,
       "descripcion": "Escudo grande y pesado que ofrece máxima protección y puede usarse para embestir."
     },
     {
@@ -321,8 +321,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 1,
-      "lacerante": 1,
-      "contundente": 4,
+      "lacerante": 0,
+      "contundente": 1,
       "descripcion": "Guante reforzado con metal para potenciar golpes de puño."
     },
     {
@@ -333,9 +333,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 2,
-      "lacerante": 6,
-      "contundente": 5,
+      "penetrante": 3,
+      "lacerante": 2,
+      "contundente": 1,
       "descripcion": "Escudo con bordes afilados, combina defensa con capacidad de corte."
     },
     {
@@ -347,8 +347,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 2,
-      "lacerante": 2,
-      "contundente": 5,
+      "lacerante": 3,
+      "contundente": 1,
       "descripcion": "Arma de puño especializada usada por luchadores de arena."
     },
     {
@@ -359,9 +359,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 3,
-      "lacerante": 1,
-      "contundente": 6,
+      "penetrante": 0,
+      "lacerante": 0,
+      "contundente": 3,
       "descripcion": "Arma a distancia simple pero efectiva que lanza proyectiles contundentes."
     },
     {
@@ -372,9 +372,9 @@
       "rango_critico": null,
       "distancia_min": 3,
       "distancia_max": 12,
-      "penetrante": 7,
-      "lacerante": 1,
-      "contundente": 1,
+      "penetrante": 5,
+      "lacerante": 0,
+      "contundente": 0,
       "descripcion": "Arco estándar, equilibrio perfecto entre alcance y precisión."
     },
     {
@@ -385,9 +385,9 @@
       "rango_critico": null,
       "distancia_min": 3,
       "distancia_max": 24,
-      "penetrante": 8,
-      "lacerante": 1,
-      "contundente": 1,
+      "penetrante": 7,
+      "lacerante": 0,
+      "contundente": 0,
       "descripcion": "Arco de guerra de gran tamaño, alcance y poder excepcionales."
     },
     {
@@ -399,8 +399,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 9,
-      "lacerante": 1,
-      "contundente": 1,
+      "lacerante": 0,
+      "contundente": 0,
       "descripcion": "Arco reforzado con múltiples materiales, máxima potencia de penetración."
     },
     {
@@ -411,9 +411,9 @@
       "rango_critico": "23-24",
       "distancia_min": 2,
       "distancia_max": 10,
-      "penetrante": 10,
+      "penetrante": 16,
       "lacerante": 0,
-      "contundente": 1,
+      "contundente": 0,
       "descripcion": "Balista portátil de enorme poder, dispara proyectiles devastadores."
     },
     {
@@ -424,9 +424,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 9,
+      "penetrante": 8,
       "lacerante": 0,
-      "contundente": 1,
+      "contundente": 0,
       "descripcion": "Arma mecánica de gran precisión, requiere recarga pero es muy letal."
     },
     {
@@ -437,9 +437,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 7,
+      "penetrante": 4,
       "lacerante": 0,
-      "contundente": 1,
+      "contundente": 0,
       "descripcion": "Ballesta con mecanismo de disparo múltiple, sacrifica potencia por velocidad de ataque."
     },
     {
@@ -450,9 +450,9 @@
       "rango_critico": null,
       "distancia_min": null,
       "distancia_max": null,
-      "penetrante": 6,
+      "penetrante": 3,
       "lacerante": 0,
-      "contundente": 1,
+      "contundente": 0,
       "descripcion": "Ballesta compacta de una mano, fácil de ocultar y usar."
     },
     {
@@ -465,7 +465,7 @@
       "distancia_max": null,
       "penetrante": 10,
       "lacerante": 0,
-      "contundente": 2,
+      "contundente": 0,
       "descripcion": "Ballesta de máxima potencia, capaz de atravesar las armaduras más gruesas."
     },
     {
@@ -477,8 +477,8 @@
       "distancia_min": null,
       "distancia_max": null,
       "penetrante": 0,
-      "lacerante": 1,
-      "contundente": 5,
+      "lacerante": 0,
+      "contundente": 3,
       "descripcion": "Vara de madera simple pero efectiva, útil para defensa y ataques contundentes."
     }
   ]

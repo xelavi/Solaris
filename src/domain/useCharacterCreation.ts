@@ -1,333 +1,187 @@
 // src/domain/useCharacterCreation.ts
+// Estado del asistente de creación de personaje. Es un singleton de módulo:
+// todos los pasos del asistente (general, trasfondo, especialidad, árbol...) editan
+// el mismo objeto reactivo, y un único watcher lo persiste en el repositorio
+// con debounce en cuanto el personaje tiene nombre.
+
 import { ref, watch, computed } from "vue";
-import { usePartida } from "./usePartida";
 import { useArbolAttributes, type ArbolNode } from "./useArbolAttributes";
+import { crearPersonajeVacio, type PersonajeGuardado } from "./Personaje";
+import {
+  obtenerPersonaje,
+  guardarPersonaje,
+  obtenerIdEnCreacion,
+  obtenerOCrearIdEnCreacion,
+  establecerIdEnCreacion,
+} from "./storage/personajesRepo";
 import trasfondosData from "../assets/trasfondos/trasfondos.json";
 
-const CURRENT_CHARACTER_ID = "character-in-creation";
+const characterData = ref<PersonajeGuardado>(crearPersonajeVacio());
 
-export function useCharacterCreation() {
-  const { addCharacter, getCharacter } = usePartida();
+// Copia del personaje ANTES de subir de nivel. Mientras no sea null estamos en
+// modo "subir de nivel": los pasos del asistente (dotes, árbol, habilidades)
+// bloquean quitar lo ya asignado y solo dejan añadir sobre esta base.
+const subidaNivelBase = ref<PersonajeGuardado | null>(null);
+const enSubidaNivel = computed(() => subidaNivelBase.value !== null);
 
-  // Estado reactivo para los datos del personaje
-  const characterData = ref({
-    nombre: "",
-    nivel: 1,
-    oficio: "",
-    oficio_habilidades: [] as string[],
-    oficio_dotes: [] as number[],
-    estilo_marcial: "",
-    estilo_marcial_dotes: [] as string[],
-    trasfondo: "",
-    trasfondo_habilidades: [] as string[],
-    raza: "",
-    arbol: "",
-    habilidades: "", // JSON string de habilidades con rangos asignados
-    armas: [] as number[], // IDs de las armas seleccionadas
-    armaduras: [] as number[], // IDs de las armaduras seleccionadas
-    // Atributos del árbol
-    atributos: {
-      cuerpo: 0,
-      agilidad: 0,
-      mente: 0,
-      rangoCritico: 0,
-      habilidadesExtra: 0,
-      limiteHabilidad: 0,
-      acciones: 0,
-      reacciones: 0,
-      poderio: 0,
-      movimiento: 3,
-      resistencia: 0,
-      regeneracion: 2,
-      evasion: 12,
-      iniciativa: 0,
-      punteria: 0,
-      puntosHabilidad: 10,
-      hp: 10,
-    },
-  });
+// ID de creación con el que está sincronizado el estado en memoria.
+// `undefined` = aún no se ha cargado nada en esta sesión.
+let idCargado: string | null | undefined = undefined;
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // Función para obtener o crear el personaje en creación
-  function getCurrentCharacter() {
-    let character = getCharacter(CURRENT_CHARACTER_ID);
-    if (!character) {
-      addCharacter(CURRENT_CHARACTER_ID, "");
-      character = getCharacter(CURRENT_CHARACTER_ID);
-    }
-    return character;
+/**
+ * Carga el personaje en creación desde el repositorio. Es seguro llamarla
+ * al montar cada paso del asistente: solo recarga cuando cambia el ID en
+ * creación (personaje nuevo o reanudado), nunca pisa ediciones en curso.
+ */
+async function loadCharacterData() {
+  const id = obtenerIdEnCreacion();
+  if (idCargado !== undefined && id === idCargado) return;
+
+  characterData.value =
+    (id ? await obtenerPersonaje(id) : null) ?? crearPersonajeVacio(id ?? "");
+  idCargado = id;
+  recalcularAtributos();
+}
+
+/** Persiste el estado actual inmediatamente (si ya tiene nombre). */
+async function saveCharacterData() {
+  if (!characterData.value.nombre) return;
+  const id = obtenerOCrearIdEnCreacion();
+  if (characterData.value.id !== id) characterData.value.id = id;
+  idCargado = id;
+  try {
+    await guardarPersonaje(characterData.value);
+  } catch (error) {
+    console.error("Error al guardar el personaje:", error);
   }
+}
 
-  // Función para cargar datos del personaje al estado local
-  function loadCharacterData() {
-    const character = getCurrentCharacter();
-    if (character) {
-      characterData.value.nombre = character.name || "";
-      characterData.value.nivel = character.nivel || 1;
-      characterData.value.oficio = character.oficio || "";
-      characterData.value.oficio_habilidades =
-        character.oficio_habilidades || [];
-      characterData.value.oficio_dotes = character.oficio_dotes || [];
-      characterData.value.estilo_marcial = character.estilo_marcial || "";
-      characterData.value.estilo_marcial_dotes =
-        character.estilo_marcial_dotes || [];
-      characterData.value.trasfondo = character.trasfondo || "";
-      characterData.value.trasfondo_habilidades =
-        character.trasfondo_habilidades || [];
-      characterData.value.raza = character.raza || "";
-      characterData.value.arbol = character.arbol || "";
-      characterData.value.habilidades = character.habilidades || "";
-      characterData.value.armas = character.armas || [];
-      characterData.value.armaduras = character.armaduras || [];
-      characterData.value.atributos = character.atributos || {
-        cuerpo: 0,
-        agilidad: 0,
-        mente: 0,
-        rangoCritico: 24,
-        habilidadesExtra: 0,
-        limiteHabilidad: 5,
-        acciones: 0,
-        reacciones: 0,
-        poderio: 0,
-        movimiento: 3,
-        resistencia: 0,
-        regeneracion: 2,
-        evasion: 12,
-        iniciativa: 0,
-        punteria: 0,
-        puntosHabilidad: 10,
-        hp: 10,
-      };
-    }
-    // Calcular atributos después de cargar
-    recalcularAtributos();
-  }
+/** Vacía el estado en memoria (p. ej. tras descartar un personaje). */
+function resetCharacterData() {
+  characterData.value = crearPersonajeVacio();
+  idCargado = undefined;
+}
 
-  // Función para guardar datos del estado local al personaje
-  function saveCharacterData() {
-    const character = getCurrentCharacter();
-    if (character) {
-      character.name = characterData.value.nombre;
-      character.nivel = characterData.value.nivel;
-      character.oficio = characterData.value.oficio;
-      character.oficio_habilidades = characterData.value.oficio_habilidades;
-      character.oficio_dotes = characterData.value.oficio_dotes;
-      character.estilo_marcial = characterData.value.estilo_marcial;
-      character.estilo_marcial_dotes = characterData.value.estilo_marcial_dotes;
-      character.trasfondo = characterData.value.trasfondo;
-      character.trasfondo_habilidades =
-        characterData.value.trasfondo_habilidades;
-      character.raza = characterData.value.raza;
-      character.arbol = characterData.value.arbol;
-      character.habilidades = characterData.value.habilidades;
-      character.armas = characterData.value.armas;
-      character.armaduras = characterData.value.armaduras;
-      character.atributos = characterData.value.atributos;
-    }
-  }
+/**
+ * Adopta un personaje ya guardado para editarlo con este mismo estado (y con
+ * los pasos del asistente, que leen de aquí). Apunta el puntero "en creación"
+ * al id indicado y fuerza la recarga en memoria, ignorando el caché de idCargado.
+ */
+async function editarPersonajeExistente(id: string) {
+  establecerIdEnCreacion(id);
+  characterData.value = (await obtenerPersonaje(id)) ?? crearPersonajeVacio(id);
+  idCargado = id;
+  recalcularAtributos();
+}
 
-  // Función para recalcular los atributos basándose en los nodos del árbol
-  function recalcularAtributos() {
+/**
+ * Entra en modo "subir de nivel": adopta el personaje guardado, guarda una
+ * copia de su estado actual como base bloqueada y sube su nivel en 1 (lo que
+ * amplía automáticamente los topes de dotes, nodos del árbol y puntos de
+ * habilidad). Los pasos del asistente comparan contra `subidaNivelBase` para
+ * impedir quitar lo que ya estaba asignado.
+ */
+async function iniciarSubidaNivel(id: string) {
+  establecerIdEnCreacion(id);
+  const original = (await obtenerPersonaje(id)) ?? crearPersonajeVacio(id);
+  characterData.value = original;
+  idCargado = id;
+  subidaNivelBase.value = JSON.parse(JSON.stringify(original));
+  characterData.value.nivel = (characterData.value.nivel || 1) + 1;
+  recalcularAtributos();
+}
+
+/** Confirma la subida de nivel: persiste los cambios y sale del modo. */
+async function finalizarSubidaNivel() {
+  await saveCharacterData();
+  subidaNivelBase.value = null;
+}
+
+/** Cancela la subida de nivel: restaura el estado previo y lo persiste. */
+async function cancelarSubidaNivel() {
+  if (subidaNivelBase.value) {
+    characterData.value = JSON.parse(JSON.stringify(subidaNivelBase.value));
     try {
-      // Parsear los nodos del árbol
-      let selectedNodes: ArbolNode[] = characterData.value.arbol
-        ? JSON.parse(characterData.value.arbol)
-        : [];
+      await guardarPersonaje(characterData.value);
+    } catch (error) {
+      console.error("Error al guardar el personaje:", error);
+    }
+  }
+  subidaNivelBase.value = null;
+}
 
-      // Agregar nodos del trasfondo si existen
-      if (characterData.value.trasfondo) {
-        const trasfondo = trasfondosData.trasfondos.find(
-          (t) => t.nombre === characterData.value.trasfondo,
-        );
+/** Recalcula los atributos a partir del árbol, el trasfondo y el nivel. */
+function recalcularAtributos() {
+  try {
+    const selectedNodes: ArbolNode[] = characterData.value.arbol
+      ? JSON.parse(characterData.value.arbol)
+      : [];
 
-        if (trasfondo && trasfondo.atributos) {
-          // Agregar cada nodo del trasfondo si no está ya en selectedNodes
-          trasfondo.atributos.forEach((nodeId: number) => {
-            if (!selectedNodes.find((n) => n.nodeId === nodeId)) {
-              selectedNodes.push({
-                nodeId: nodeId,
-                skillName: "",
-                type: "circle",
-                layer: 0,
-                index: 0,
-                description: "",
-                isTrasfondo: true,
-              });
-            }
+    // Los trasfondos aportan nodos de árbol propios.
+    if (characterData.value.trasfondo) {
+      const trasfondo = trasfondosData.trasfondos.find(
+        (t) => t.nombre === characterData.value.trasfondo,
+      );
+      trasfondo?.atributos?.forEach((nodeId: number) => {
+        if (!selectedNodes.find((n) => n.nodeId === nodeId)) {
+          selectedNodes.push({
+            nodeId,
+            skillName: "",
+            type: "circle",
+            layer: 0,
+            index: 0,
+            description: "",
+            isTrasfondo: true,
           });
         }
-      }
-
-      // Crear computed ref para los nodos
-      const nodosComputed = computed(() => selectedNodes);
-      const nivelComputed = computed(() => characterData.value.nivel);
-
-      // Calcular atributos usando useArbolAttributes
-      const { attributes } = useArbolAttributes(nodosComputed, nivelComputed);
-
-      // Actualizar los atributos en characterData
-      characterData.value.atributos = { ...attributes.value };
-    } catch (error) {
-      console.error("Error recalculando atributos:", error);
+      });
     }
+
+    const { attributes } = useArbolAttributes(
+      computed(() => selectedNodes),
+      computed(() => characterData.value.nivel),
+    );
+    characterData.value.atributos = { ...attributes.value };
+  } catch (error) {
+    console.error("Error recalculando atributos:", error);
   }
+}
 
-  // Watchers para sincronización automática
-  watch(
-    () => characterData.value.nombre,
-    () => saveCharacterData(),
-  );
-  watch(
-    () => characterData.value.nivel,
-    () => {
-      recalcularAtributos();
-      saveCharacterData();
-    },
-  );
-  watch(
-    () => characterData.value.oficio,
-    () => saveCharacterData(),
-  );
-  watch(
-    () => characterData.value.oficio_habilidades,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.oficio_dotes,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.estilo_marcial,
-    () => saveCharacterData(),
-  );
-  watch(
-    () => characterData.value.estilo_marcial_dotes,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.trasfondo,
-    () => {
-      recalcularAtributos();
-      saveCharacterData();
-    },
-  );
-  watch(
-    () => characterData.value.trasfondo_habilidades,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.raza,
-    () => saveCharacterData(),
-  );
-  watch(
-    () => characterData.value.arbol,
-    () => {
-      recalcularAtributos();
-      saveCharacterData();
-    },
-  );
-  watch(
-    () => characterData.value.armas,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.armaduras,
-    () => saveCharacterData(),
-    { deep: true },
-  );
-  watch(
-    () => characterData.value.atributos,
-    () => saveCharacterData(),
-    { deep: true },
-  );
+// Los atributos dependen de nivel, trasfondo y árbol.
+watch(
+  () => [
+    characterData.value.nivel,
+    characterData.value.trasfondo,
+    characterData.value.arbol,
+  ],
+  () => recalcularAtributos(),
+);
 
-  // Función para resetear todos los datos del personaje
-  function resetCharacterData() {
-    characterData.value = {
-      nombre: "",
-      nivel: 1,
-      oficio: "",
-      oficio_habilidades: [],
-      oficio_dotes: [],
-      estilo_marcial: "",
-      estilo_marcial_dotes: [],
-      trasfondo: "",
-      trasfondo_habilidades: [],
-      raza: "",
-      arbol: "",
-      habilidades: "",
-      armas: [],
-      armaduras: [],
-      atributos: {
-        cuerpo: 0,
-        agilidad: 0,
-        mente: 0,
-        rangoCritico: 0,
-        habilidadesExtra: 0,
-        limiteHabilidad: 0,
-        acciones: 0,
-        reacciones: 0,
-        poderio: 0,
-        movimiento: 3,
-        resistencia: 0,
-        regeneracion: 2,
-        evasion: 12,
-        iniciativa: 0,
-        punteria: 0,
-        puntosHabilidad: 10,
-        hp: 10,
-      },
-    };
+// Guardado automático: cualquier cambio persiste a los 500 ms.
+watch(
+  characterData,
+  () => {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      void saveCharacterData();
+    }, 500);
+  },
+  { deep: true },
+);
 
-    // También resetear el personaje en la partida
-    const character = getCurrentCharacter();
-    if (character) {
-      character.name = "";
-      character.nivel = 1;
-      character.oficio = "";
-      character.oficio_habilidades = [];
-      character.oficio_dotes = [];
-      character.estilo_marcial = "";
-      character.estilo_marcial_dotes = [];
-      character.trasfondo = "";
-      character.trasfondo_habilidades = [];
-      character.raza = "";
-      character.arbol = "";
-      character.habilidades = "";
-      character.armas = [];
-      character.armaduras = [];
-      character.atributos = {
-        cuerpo: 0,
-        agilidad: 0,
-        mente: 0,
-        rangoCritico: 0,
-        habilidadesExtra: 0,
-        limiteHabilidad: 0,
-        acciones: 0,
-        reacciones: 0,
-        poderio: 0,
-        movimiento: 3,
-        resistencia: 0,
-        regeneracion: 2,
-        evasion: 12,
-        iniciativa: 0,
-        punteria: 0,
-        puntosHabilidad: 10,
-        hp: 10,
-      };
-    }
-  }
-
+export function useCharacterCreation() {
   return {
     characterData,
-    getCurrentCharacter,
     loadCharacterData,
     saveCharacterData,
-    recalcularAtributos,
     resetCharacterData,
+    recalcularAtributos,
+    editarPersonajeExistente,
+    subidaNivelBase,
+    enSubidaNivel,
+    iniciarSubidaNivel,
+    finalizarSubidaNivel,
+    cancelarSubidaNivel,
   };
 }

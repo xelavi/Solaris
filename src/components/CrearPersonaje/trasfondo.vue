@@ -1,12 +1,7 @@
 <template>
   <div>
-    <label class="block text-sm font-semibold text-blue-700 mb-2">
-      Selecciona tu Trasfondo
-    </label>
-    <select
-      v-model="selectedTrasfondo"
-      class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg text-blue-900"
-    >
+    <label class="label">Selecciona tu trasfondo</label>
+    <select v-model="selectedTrasfondo" class="input">
       <option value="">Elige un trasfondo...</option>
       <option
         v-for="t in trasfondosDetallados"
@@ -16,73 +11,71 @@
         {{ t.nombre }}
       </option>
     </select>
-
-    <p v-if="selectedTrasfondo" style="margin-top: 8px">
-      Seleccionaste: <strong>{{ selectedTrasfondo }}</strong>
-    </p>
   </div>
 
-  <div
-    v-if="trasfondoActual"
-    class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 space-y-6"
-  >
+  <div v-if="trasfondoActual" class="panel space-y-6 p-6">
     <div>
-      <h3 class="text-xl font-bold text-blue-700 mb-3">
+      <h3 class="section-title mb-2">
         {{ trasfondoActual.nombre }}
       </h3>
-      <p class="text-blue-600 leading-relaxed">
+      <p class="text-sm leading-relaxed text-gray-600">
         {{ trasfondoActual.descripcion }}
       </p>
     </div>
 
+    <div v-if="trasfondoActual.equipoInicial?.length">
+      <h4 class="label mb-2">Objetos iniciales y dinero</h4>
+      <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
+        <li v-for="(item, idx) in trasfondoActual.equipoInicial" :key="idx">
+          {{ item }}
+        </li>
+        <li v-if="trasfondoActual.dinero !== undefined">
+          {{ trasfondoActual.dinero }} monedas
+        </li>
+      </ul>
+    </div>
+
     <div>
-      <h4 class="text-lg font-semibold text-blue-700 mb-3">
-        Bonificaciones de Atributos
-      </h4>
-      <div class="flex gap-3">
+      <h4 class="label">Bonificaciones de atributos</h4>
+      <div class="flex flex-wrap gap-3">
         <div
           v-for="atributoId in trasfondoActual.atributos"
           :key="atributoId"
-          class="flex-1 bg-white border-2 border-blue-300 rounded-lg p-4 text-center"
+          class="stat-tile min-w-32 flex-1"
         >
-          <div class="text-2xl font-bold text-blue-600">
+          <div class="text-lg font-bold text-indigo-600">
             {{ getNombreAtributo(atributoId) }}
           </div>
-          <div class="text-sm text-blue-500 font-medium">Nodo del árbol</div>
+          <div class="stat-label mt-1">Nodo del árbol</div>
         </div>
       </div>
 
       <!-- Mostrar atributos calculados del personaje -->
-      <div
-        v-if="characterData.atributos"
-        class="mt-4 p-4 bg-white border-2 border-blue-200 rounded-lg"
-      >
-        <h5 class="text-sm font-semibold text-blue-700 mb-2">
-          Atributos actuales del personaje:
-        </h5>
-        <div class="grid grid-cols-3 gap-2 text-sm">
-          <div class="text-blue-600">
-            <span class="font-semibold">Cuerpo:</span>
+      <div v-if="characterData.atributos" class="panel mt-4">
+        <h5 class="label">Atributos actuales del personaje</h5>
+        <div class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">Cuerpo:</span>
             {{ characterData.atributos.cuerpo }}
           </div>
-          <div class="text-blue-600">
-            <span class="font-semibold">Agilidad:</span>
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">Agilidad:</span>
             {{ characterData.atributos.agilidad }}
           </div>
-          <div class="text-blue-600">
-            <span class="font-semibold">Mente:</span>
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">Mente:</span>
             {{ characterData.atributos.mente }}
           </div>
-          <div class="text-blue-600">
-            <span class="font-semibold">HP:</span>
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">HP:</span>
             {{ characterData.atributos.hp }}
           </div>
-          <div class="text-blue-600">
-            <span class="font-semibold">Puntos Hab:</span>
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">Puntos Hab:</span>
             {{ characterData.atributos.puntosHabilidad }}
           </div>
-          <div class="text-blue-600">
-            <span class="font-semibold">Límite Hab:</span>
+          <div class="text-gray-600">
+            <span class="font-semibold text-gray-800">Límite Hab:</span>
             {{ characterData.atributos.limiteHabilidad }}
           </div>
         </div>
@@ -90,37 +83,38 @@
     </div>
 
     <div>
-      <h4 class="text-lg font-semibold text-blue-700 mb-3">
-        Habilidades Disponibles (Elige 3)
-      </h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="mb-3 flex items-center justify-between">
+        <h4 class="label mb-0">Habilidades disponibles (elige 3)</h4>
+        <span class="badge badge-muted">
+          {{ habilidadesSeleccionadas.length }} / 3
+        </span>
+      </div>
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <button
           v-for="habilidad in trasfondoActual.habilidades"
           :key="habilidad"
           @click="toggleHabilidad(habilidad)"
           :class="[
-            'text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2',
+            'option-tile',
             habilidadesSeleccionadas.includes(habilidad)
-              ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
-              : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50',
+              ? 'option-tile-selected'
+              : '',
           ]"
           :disabled="
             !habilidadesSeleccionadas.includes(habilidad) &&
             habilidadesSeleccionadas.length >= 3
           "
         >
-          <span class="flex items-center gap-2">
+          <span class="flex items-center gap-2.5">
             <span
               :class="[
-                'flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0',
+                'option-check',
                 habilidadesSeleccionadas.includes(habilidad)
-                  ? 'bg-white border-white'
-                  : 'bg-transparent border-blue-300',
+                  ? 'option-check-on'
+                  : '',
               ]"
             >
-              <span
-                v-if="habilidadesSeleccionadas.includes(habilidad)"
-                class="text-blue-500 text-xs"
+              <span v-if="habilidadesSeleccionadas.includes(habilidad)"
                 >✓</span
               >
             </span>
@@ -128,9 +122,6 @@
           </span>
         </button>
       </div>
-      <p class="text-sm text-blue-600 mt-3">
-        Seleccionadas: {{ habilidadesSeleccionadas.length }} / 3
-      </p>
     </div>
   </div>
 </template>
@@ -200,8 +191,8 @@ function getNombreAtributo(nodeId) {
 const LIMITE = 3;
 
 // Cargar datos al montar el componente
-onMounted(() => {
-  loadCharacterData();
+onMounted(async () => {
+  await loadCharacterData();
   selectedTrasfondo.value = characterData.value.trasfondo || "";
   habilidadesSeleccionadas.value =
     characterData.value.trasfondo_habilidades || [];
@@ -241,34 +232,4 @@ function toggleHabilidad(habilidad) {
   }
 }
 </script>
-<style scoped>
-@media (max-width: 640px) {
-  .p-6 {
-    padding: 0.75rem !important;
-  }
-  .rounded-lg {
-    border-radius: 0.75rem !important;
-  }
-  .text-xl,
-  .text-lg {
-    font-size: 1.1rem !important;
-  }
-  .flex,
-  .gap-3 {
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-  }
-  .grid-cols-3 {
-    grid-template-columns: 1fr !important;
-  }
-  .p-4 {
-    padding: 0.75rem !important;
-  }
-  .space-y-6 > * + * {
-    margin-top: 1rem !important;
-  }
-  .w-full {
-    width: 100% !important;
-  }
-}
-</style>
+<style scoped></style>

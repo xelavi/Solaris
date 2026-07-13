@@ -14,39 +14,25 @@ export interface ArbolNode {
   isTrasfondo?: boolean;
 }
 
-export interface ArbolAttributes {
-  // Atributos principales (cuentan nodos)
-  cuerpo: number;
-  agilidad: number;
-  mente: number;
-
-  // Atributos que suman 1 por nodo
-  rangoCritico: number;
-  habilidadesExtra: number;
-  limiteHabilidad: number;
-  acciones: number;
-  reacciones: number;
-
-  // Atributos que suman 3 por nodo + 3 por atributo principal según su tipo
-  hp: number;
-  poderio: number;
-  movimiento: number;
-  resistencia: number;
-  regeneracion: number;
-  evasion: number;
-  iniciativa: number;
-  punteria: number;
-  puntosHabilidad: number;
-}
+// La definición canónica vive en Personaje.ts; se re-exporta para no romper
+// los imports existentes.
+import type { ArbolAttributes } from "./Personaje";
+export type { ArbolAttributes } from "./Personaje";
 
 export function useArbolAttributes(
   selectedNodes: ComputedRef<ArbolNode[]>,
   nivel: ComputedRef<number> = computed(() => 1),
 ) {
-  // Función para obtener el atributo ID de un nodo
+  // Función para obtener el atributo ID de un nodo.
+  // IMPORTANTE: solo los nodos con shape "circle" representan características
+  // secundarias (su `atributo` es el id en caracteristicasSecundarias). Los
+  // nodos "square" son activas y su `atributo` es el id de la activa, que NO
+  // debe contarse como característica (colisiona con Cuerpo/Agilidad/Mente,
+  // p. ej. Carga=1, Tensión=2, Adrenalina=3).
   function getNodeAttributeId(nodeId: number): number | null {
     const nodo = arbolData.arbol.nodos.find((n) => n.id === nodeId);
     if (!nodo) return null;
+    if (nodo.shape !== "circle") return null;
     return typeof nodo.atributo === "string"
       ? parseInt(nodo.atributo)
       : nodo.atributo;
@@ -128,9 +114,9 @@ export function useArbolAttributes(
   const hp = computed(() =>
     calculateAttributeWithMultiplier(7, 10, 2 * nivel.value, 1, 3),
   ); // ID 7 = HP (base = nivel, tipo 1 = Cuerpo)
-  const poderio = computed(() => calculateAttributeWithMultiplier(4)); // ID 4 = Poderío (tipo 1 = Cuerpo)
+  const poderio = computed(() => calculateAttributeWithMultiplier(4, 0, 1, 0, 2)); // ID 4 = Poderío: +1 por nodo de Cuerpo, +2 por nodo de DL/Poderío
   const movimiento = computed(() => calculateAttributeWithMultiplier(5, 3, 1)); // ID 5 = Movimiento (tipo 1 = Cuerpo)
-  const resistencia = computed(() => calculateAttributeWithMultiplier(6)); // ID 6 = Resistencia (tipo 1 = Cuerpo)
+  const resistencia = computed(() => calculateAttributeWithMultiplier(6, 0, 1, 0, 1)); // ID 6 = Resistencia: +1 por nodo de Cuerpo, +1 por nodo de Resistencia
   const regeneracion = computed(() =>
     calculateAttributeWithMultiplier(8, 2, 1),
   ); // ID 8 = Regeneración (tipo 1 = Cuerpo)

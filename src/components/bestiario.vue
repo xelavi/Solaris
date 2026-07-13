@@ -1,83 +1,94 @@
 <template>
-  <div
-    class="bg-gradient-to-br from-gray-50 via-white to-gray-50 min-h-screen p-6"
-  >
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center mb-8">
-        <h1
-          class="text-4xl md:text-5xl font-bold text-gray-600 mb-2 drop-shadow-lg"
-        >
-          Bestiario
-        </h1>
-      </div>
-
-      <!-- Barra superior con botones -->
-      <div class="flex justify-center gap-4 mb-8">
-        <button
-          @click="volver"
-          class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-gray-500 text-white hover:bg-gray-600 hover:shadow-lg flex items-center gap-3 text-lg"
-        >
-          ← Volver
-        </button>
-        <button
-          @click="crearNuevaCriatura"
-          class="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30 flex items-center gap-3 text-lg"
-        >
-          <span>Crear Nueva Criatura</span>
+  <div class="page">
+    <div class="page-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Bestiario</h1>
+          <p class="page-subtitle">
+            Catálogo de criaturas para tus encuentros.
+          </p>
+        </div>
+        <button @click="crearNuevaCriatura" class="btn btn-primary">
+          <svg
+            class="h-4 w-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"
+            />
+          </svg>
+          Nueva criatura
         </button>
       </div>
 
       <div
         v-if="criaturas.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
       >
         <div
           v-for="criatura in criaturas"
           :key="criatura.id"
-          class="bg-white backdrop-blur-sm border-2 border-gray-200 rounded-xl p-6 shadow-lg hover:shadow-xl hover:border-emerald-400 transition-all duration-300 cursor-pointer transform hover:-translate-y-1 relative"
+          class="card card-hover group relative cursor-pointer p-5"
+          @click="verFicha(criatura.id)"
         >
           <!-- Botón eliminar -->
           <button
             @click.stop="eliminarCriatura(criatura.id)"
-            class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all duration-200 shadow-md hover:shadow-lg z-10"
+            class="btn-icon absolute top-3 right-3 opacity-0 transition-opacity group-hover:opacity-100"
             title="Eliminar criatura"
           >
-            ✕
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482 41.03 41.03 0 0 0-2.365-.298V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4Z"
+                clip-rule="evenodd"
+              />
+            </svg>
           </button>
 
-          <div @click="verFicha(criatura.id)">
-            <h2
-              class="text-2xl font-bold text-gray-700 mb-3 border-b border-gray-200 pb-2 pr-8"
-            >
+          <div>
+            <h2 class="pr-8 text-base font-semibold text-gray-900">
               {{ criatura.nombre }}
             </h2>
-            <div class="flex flex-wrap gap-1 mb-3">
+            <div class="mt-2 mb-3 flex flex-wrap gap-1">
               <span
                 v-for="etiqueta in criatura.etiquetas"
                 :key="etiqueta"
-                class="px-2 py-0.5 bg-emerald-500 text-white text-xs font-semibold rounded-full"
+                :class="['badge', clasesEtiqueta(etiqueta, catalogoEtiquetas)]"
               >
                 {{ etiqueta }}
               </span>
             </div>
-            <div class="space-y-2 text-gray-600">
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-emerald-600">Dificultad:</span>
-                <span class="font-bold text-lg">{{ criatura.dificultad }}</span>
+            <dl class="space-y-2 border-t border-gray-200 pt-3 text-sm">
+              <div class="flex items-center justify-between">
+                <dt class="text-gray-500">Dificultad</dt>
+                <dd class="font-semibold text-gray-800">
+                  {{ criatura.dificultad }}
+                </dd>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-emerald-600">Experiencia:</span>
-                <span class="font-medium">{{ criatura.experiencia }} XP</span>
+              <div class="flex items-center justify-between">
+                <dt class="text-gray-500">Experiencia</dt>
+                <dd class="font-medium text-gray-800">
+                  {{ criatura.experiencia }} XP
+                </dd>
               </div>
-            </div>
+            </dl>
           </div>
         </div>
       </div>
-      <div v-else class="text-center py-16">
-        <p class="text-xl text-gray-500">
-          No tienes criaturas guardadas todavía.
-        </p>
-        <p class="text-gray-400 mt-2">¡Crea la primera del bestiario!</p>
+      <div v-else class="empty-state">
+        <p class="empty-title">No tienes criaturas guardadas todavía</p>
+        <p class="empty-hint">¡Crea la primera del bestiario!</p>
+        <button @click="crearNuevaCriatura" class="btn btn-primary mt-6">
+          Crear criatura
+        </button>
       </div>
     </div>
   </div>
@@ -85,6 +96,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, inject } from "vue";
+import {
+  cargarCatalogoEtiquetas,
+  clasesEtiqueta,
+  type Etiqueta,
+} from "../domain/Etiquetas";
+import {
+  listarCriaturas,
+  eliminarCriatura as eliminarCriaturaGuardada,
+  limpiarIdEnCreacion,
+} from "../domain/storage/criaturasRepo";
+
+const catalogoEtiquetas = ref<Etiqueta[]>([]);
 
 interface CriaturaInfo {
   id: string;
@@ -100,72 +123,40 @@ const navigateToFichaCriatura = inject<(id: string) => void>(
   "navigateToFichaCriatura",
 );
 const navigateToCrearCriatura = inject<() => void>("navigateToCrearCriatura");
-const navigateToCharacters = inject<() => void>("navigateToCharacters");
 
-function volver() {
-  if (navigateToCharacters) navigateToCharacters();
-}
-
-function cargarCriaturas() {
-  try {
-    const listaString = localStorage.getItem("lista_criaturas");
-    if (!listaString) return;
-
-    const listaIds: string[] = JSON.parse(listaString);
-    const cargadas: CriaturaInfo[] = [];
-
-    listaIds.forEach((id) => {
-      const criaturaString = localStorage.getItem(id);
-      if (criaturaString) {
-        const datos = JSON.parse(criaturaString);
-        if (datos.nombre) {
-          cargadas.push({
-            id: datos.id,
-            nombre: datos.nombre,
-            dificultad: datos.dificultad ?? 0,
-            experiencia: datos.experiencia ?? 0,
-            etiquetas: datos.etiquetas ?? [],
-          });
-        }
-      }
-    });
-
-    criaturas.value = cargadas;
-  } catch (error) {
-    console.error("Error al cargar las criaturas:", error);
-  }
+async function cargarCriaturas() {
+  const lista = await listarCriaturas();
+  criaturas.value = lista
+    .filter((c) => c.nombre)
+    .map((c) => ({
+      id: c.id,
+      nombre: c.nombre,
+      dificultad: c.dificultad ?? 0,
+      experiencia: c.experiencia ?? 0,
+      etiquetas: c.etiquetas ?? [],
+    }));
 }
 
 function verFicha(id: string) {
-  if (navigateToFichaCriatura) navigateToFichaCriatura(id);
+  navigateToFichaCriatura?.(id);
 }
 
 function crearNuevaCriatura() {
-  localStorage.removeItem("criatura_en_creacion_id");
-  if (navigateToCrearCriatura) navigateToCrearCriatura();
+  limpiarIdEnCreacion();
+  navigateToCrearCriatura?.();
 }
 
-function eliminarCriatura(id: string) {
+async function eliminarCriatura(id: string) {
   if (!confirm("¿Estás seguro de que quieres eliminar esta criatura?")) return;
 
-  try {
-    localStorage.removeItem(id);
-    const listaString = localStorage.getItem("lista_criaturas");
-    if (listaString) {
-      const lista: string[] = JSON.parse(listaString);
-      localStorage.setItem(
-        "lista_criaturas",
-        JSON.stringify(lista.filter((cid) => cid !== id)),
-      );
-    }
-    criaturas.value = criaturas.value.filter((c) => c.id !== id);
-  } catch (error) {
-    console.error("Error al eliminar criatura:", error);
-    alert("Error al eliminar la criatura. Inténtalo de nuevo.");
-  }
+  await eliminarCriaturaGuardada(id);
+  criaturas.value = criaturas.value.filter((c) => c.id !== id);
 }
 
-onMounted(cargarCriaturas);
+onMounted(async () => {
+  catalogoEtiquetas.value = await cargarCatalogoEtiquetas();
+  await cargarCriaturas();
+});
 </script>
 
 <style scoped></style>

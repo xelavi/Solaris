@@ -1,43 +1,74 @@
 <template>
   <div>
-    <label class="block text-sm font-semibold text-blue-700 mb-2">
-      Selecciona tu EstiloMarcial
-    </label>
-    <select
-      v-model="selectedEstiloMarcial"
-      class="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg text-blue-900"
-    >
-      <option value="">Elige un estiloMarcial...</option>
+    <label class="label">Selecciona tu estilo marcial</label>
+    <select v-model="selectedEstiloMarcial" class="input" :disabled="enSubidaNivel">
+      <option value="">Elige un estilo marcial...</option>
       <option v-for="t in estiloMarcials" :key="t.nombre" :value="t.nombre">
         {{ t.nombre }}
       </option>
     </select>
-
-    <p v-if="selectedEstiloMarcial" style="margin-top: 8px"></p>
   </div>
 
-  <div v-if="estiloMarcialActual && datosCompletosCargados" class="space-y-8">
+  <div v-if="estiloMarcialActual && datosCompletosCargados" class="space-y-6">
     <!-- Descripción -->
-    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-      <h3 class="text-xl font-bold text-blue-700 mb-3">
+    <div class="panel p-6">
+      <h3 class="section-title mb-2">
         {{ estiloMarcialActual.nombre }}
       </h3>
-      <p class="text-blue-600 leading-relaxed">
+      <p class="text-sm leading-relaxed text-gray-600">
         {{ estiloMarcialActual.descripcion }}
       </p>
     </div>
 
-    <!-- Habilidades -->
+    <!-- Equipo inicial y Competencias -->
+    <div
+      v-if="
+        estiloMarcialActual.equipoInicial.length ||
+        estiloMarcialActual.competencias
+      "
+      class="panel p-6"
+    >
+      <div v-if="estiloMarcialActual.equipoInicial.length" class="mb-4">
+        <h4 class="label mb-2">Equipo inicial</h4>
+        <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
+          <li v-for="(item, idx) in estiloMarcialActual.equipoInicial" :key="idx">
+            {{ item }}
+          </li>
+        </ul>
+      </div>
+      <div v-if="estiloMarcialActual.competencias">
+        <h4 class="label mb-2">Competencias con armas y armaduras</h4>
+        <p class="text-sm leading-relaxed text-gray-600">
+          {{ estiloMarcialActual.competencias }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Innatas -->
+    <div v-if="estiloMarcialActual.innatas.length" class="panel p-6">
+      <h4 class="label mb-4">Innatas</h4>
+      <div class="space-y-4">
+        <div v-for="(innata, idx) in estiloMarcialActual.innatas" :key="idx">
+          <div class="mb-1 font-semibold text-gray-900">
+            {{ innata.nombre }}
+          </div>
+          <p class="text-sm leading-relaxed text-gray-600">
+            {{ innata.descripcion }}
+          </p>
+        </div>
+      </div>
+    </div>
 
     <!-- Dotes -->
-    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-      <h4 class="text-lg font-semibold text-blue-700 mb-4">
-        Dotes de Clase (Elige {{ estiloMarcialActual.numDotes }})
-      </h4>
-      <p class="text-sm text-blue-600 mb-6">
-        Seleccionadas: {{ dotesSeleccionadas.length }} /
-        {{ estiloMarcialActual.numDotes }}
-      </p>
+    <div class="panel p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <h4 class="label mb-0">
+          Dotes de clase (elige {{ estiloMarcialActual.numDotes }})
+        </h4>
+        <span class="badge badge-muted">
+          {{ dotesSeleccionadas.length }} / {{ estiloMarcialActual.numDotes }}
+        </span>
+      </div>
 
       <!-- Dotes Normales -->
       <div class="space-y-6">
@@ -47,7 +78,7 @@
           class="space-y-4"
         >
           <h5
-            class="text-md font-semibold text-blue-700 uppercase tracking-wide border-b border-blue-300 pb-2"
+            class="border-b border-gray-200 pb-2 text-xs font-semibold tracking-wider text-gray-600 uppercase"
           >
             {{ grupo.categoria }}
           </h5>
@@ -55,11 +86,11 @@
           <div class="space-y-3">
             <div v-for="dote in grupo.dotes" :key="dote.id" class="ml-0">
               <!-- Línea de conexión para requisitos -->
-              <div v-if="dote.requiere" class="flex items-start mb-2">
+              <div v-if="dote.requiere" class="mb-2 flex items-start">
                 <div
-                  class="w-8 border-l-2 border-blue-300 h-4 border-b-2 rounded-bl-lg mr-2"
+                  class="mr-2 h-4 w-8 rounded-bl-lg border-b border-l border-gray-300"
                 ></div>
-                <span class="text-xs text-blue-500 italic"
+                <span class="text-xs text-gray-500 italic"
                   >Requiere: {{ getNombreDote(dote.requiere) }}</span
                 >
               </div>
@@ -67,53 +98,61 @@
               <button
                 @click="toggleDote(dote)"
                 :disabled="
+                  esDoteBloqueada(dote.id) ||
                   (!estaDoteSeleccionada(dote.id) &&
                     dotesSeleccionadas.length >=
                       estiloMarcialActual.numDotes) ||
                   !puedeSeleccionarDote(dote)
                 "
                 :class="[
-                  'w-full text-left p-4 rounded-lg transition-all duration-200 border-2',
-                  estaDoteSeleccionada(dote.id)
-                    ? 'bg-blue-500 text-white border-blue-500 shadow-lg'
-                    : puedeSeleccionarDote(dote)
-                      ? 'bg-white text-blue-700 border-blue-200 hover:border-blue-400 hover:shadow-md'
-                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50',
-                  dote.requiere ? 'ml-8' : '',
+                  'option-tile p-4',
+                  estaDoteSeleccionada(dote.id) ? 'option-tile-selected' : '',
+                  dote.requiere ? 'ml-8 w-[calc(100%-2rem)]' : '',
                 ]"
               >
                 <div class="flex items-start gap-3">
                   <span
                     :class="[
-                      'flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5',
-                      estaDoteSeleccionada(dote.id)
-                        ? 'bg-white border-white'
-                        : 'bg-transparent border-blue-300',
+                      'option-check mt-0.5',
+                      estaDoteSeleccionada(dote.id) ? 'option-check-on' : '',
                     ]"
                   >
-                    <span
-                      v-if="estaDoteSeleccionada(dote.id)"
-                      class="text-blue-500 text-xs"
-                      >✓</span
-                    >
+                    <span v-if="estaDoteSeleccionada(dote.id)">✓</span>
                   </span>
                   <div class="flex-1">
-                    <div class="font-semibold mb-1 flex items-center gap-2">
+                    <div
+                      class="mb-1 flex items-center gap-2 font-semibold text-gray-900"
+                    >
                       {{ dote.nombre }}
                       <span
-                        v-if="dote.activaId"
-                        class="text-xs px-2 py-0.5 bg-blue-600 text-white rounded-full"
-                        >ACTIVA</span
+                        v-if="esDoteBloqueada(dote.id)"
+                        class="badge badge-muted"
+                        title="Dote de un nivel anterior"
+                        >🔒 Bloqueada</span
+                      >
+                      <span
+                        v-if="dote.tipoEjecucion"
+                        :class="[
+                          'badge',
+                          dote.tipoEjecucion === 'accion'
+                            ? 'badge-accent'
+                            : 'badge-muted',
+                        ]"
+                        >{{
+                          dote.tipoEjecucion === "accion" ? "Acción" : "Pasiva"
+                        }}</span
+                      >
+                      <span
+                        v-if="
+                          dote.tipoEjecucion === 'accion' && dote.tipoAccion
+                        "
+                        class="badge badge-muted"
+                        >{{
+                          dote.tipoAccion === "fisica" ? "Física" : "Mental"
+                        }}</span
                       >
                     </div>
-                    <p
-                      :class="[
-                        'text-sm',
-                        dotesSeleccionadas.includes(dote.id)
-                          ? 'text-blue-100'
-                          : 'text-blue-600',
-                      ]"
-                    >
+                    <p class="text-sm text-gray-600">
                       {{ dote.descripcion }}
                     </p>
                   </div>
@@ -133,8 +172,17 @@ import estiloMarcialData from "../../assets/estiloMarcial/estiloMarcial.json";
 import activasData from "../../assets/activas.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 
-const { characterData, loadCharacterData, saveCharacterData } =
+const { characterData, loadCharacterData, saveCharacterData, enSubidaNivel, subidaNivelBase } =
   useCharacterCreation();
+
+// En modo "subir de nivel": dotes que ya estaban asignadas antes de subir.
+// No se pueden quitar; solo se pueden añadir nuevas.
+const dotesBloqueadas = computed(
+  () => new Set(subidaNivelBase.value?.estilo_marcial_dotes ?? []),
+);
+function esDoteBloqueada(doteId) {
+  return enSubidaNivel.value && dotesBloqueadas.value.has(doteId);
+}
 
 const selectedEstiloMarcial = ref("");
 const dotesSeleccionadas = ref([]);
@@ -188,7 +236,7 @@ watch(selectedEstiloMarcial, (newValue, oldValue) => {
     dotesSeleccionadas.value = [];
     characterData.value.estilo_marcial_dotes = [];
   }
-  saveCharacterData();
+  void saveCharacterData();
   console.log("Guardado estilo marcial:", newValue);
 });
 
@@ -199,7 +247,7 @@ watch(
     if (estaCargandoDatos.value) return; // No guardar durante la carga inicial
     console.log("Dotes seleccionadas cambiaron:", newValue);
     characterData.value.estilo_marcial_dotes = [...newValue];
-    saveCharacterData();
+    void saveCharacterData();
     console.log("Guardado dotes:", newValue);
   },
   { deep: true },
@@ -240,6 +288,8 @@ const estiloMarcialActual = computed(() => {
           ? `${estilo.nombre}_${d.requisito_dote}`
           : null,
         activaId: d.activa,
+        tipoEjecucion: d.tipoEjecucion,
+        tipoAccion: d.tipoAccion,
       })),
     });
   }
@@ -256,6 +306,8 @@ const estiloMarcialActual = computed(() => {
           ? `${estilo.nombre}_${d.requisito_dote}`
           : null,
         activaId: d.activa,
+        tipoEjecucion: d.tipoEjecucion,
+        tipoAccion: d.tipoAccion,
       })),
     });
   });
@@ -263,6 +315,9 @@ const estiloMarcialActual = computed(() => {
   return {
     nombre: estilo.nombre,
     descripcion: estilo.descripcion,
+    equipoInicial: estilo.equipoInicial || [],
+    competencias: estilo.competencias || "",
+    innatas: estilo.innatas || [],
     numDotes: characterData.value.nivel || 1,
     gruposDotes,
   };
@@ -284,6 +339,8 @@ function toggleHabilidad(habilidad) {
 function toggleDote(dote) {
   const idx = dotesSeleccionadas.value.indexOf(dote.id);
   if (idx !== -1) {
+    // Al subir de nivel no se pueden quitar dotes que ya estaban asignadas
+    if (esDoteBloqueada(dote.id)) return;
     // Quitar y remover dependientes
     dotesSeleccionadas.value.splice(idx, 1);
     removerDotesDependientes(dote);
