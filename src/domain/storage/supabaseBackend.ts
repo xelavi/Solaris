@@ -9,7 +9,7 @@
 // (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY). Si no, la app sigue usando
 // localStorage.
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { BackendAlmacen } from "./almacen";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -18,7 +18,18 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 /** true si hay credenciales de Supabase configuradas. */
 export const supabaseConfigurado = Boolean(url && anonKey);
 
-const TABLA = "kv";
+export const TABLA = "kv";
+
+// Cliente Supabase compartido (singleton). Se reutiliza tanto para el backend
+// de almacenamiento como para las suscripciones en tiempo real (Realtime).
+let cliente: SupabaseClient | null = null;
+
+/** Devuelve el cliente Supabase compartido, o null si no está configurado. */
+export function obtenerClienteSupabase(): SupabaseClient | null {
+  if (!supabaseConfigurado) return null;
+  if (!cliente) cliente = createClient(url!, anonKey!);
+  return cliente;
+}
 
 /**
  * Crea el backend de Supabase. Llamar solo cuando `supabaseConfigurado` es true.
@@ -26,7 +37,7 @@ const TABLA = "kv";
  * a string para respetar el contrato de BackendAlmacen.
  */
 export function crearBackendSupabase(): BackendAlmacen {
-  const sb = createClient(url!, anonKey!);
+  const sb = obtenerClienteSupabase()!;
 
   return {
     async getItem(clave) {

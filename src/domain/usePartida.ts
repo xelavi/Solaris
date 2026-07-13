@@ -15,6 +15,8 @@ import { obtenerPartida } from "./storage/partidasRepo";
 import { obtenerCriatura } from "./storage/criaturasRepo";
 import { obtenerEstado } from "./EstadosAlterados";
 import type { DesgloseTirada } from "./dados";
+import { obtenerClienteSupabase, TABLA } from "./storage/supabaseBackend";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // --- Chat enriquecido ---
 // El chat de la partida ya no es texto plano: cada mensaje puede llevar el
@@ -39,6 +41,46 @@ export type PayloadTirada = Omit<MensajeChat, "id" | "hora" | "clase" | "autor">
 
 // Estado global de la partida (Singleton pattern para este composable)
 const partidaActual = ref<PartidaData | null>(null);
+
+// --- Tiempo real (Supabase Realtime) ---
+// Suscripción a la fila `kv` de la partida activa: cuando OTRO cliente la
+// guarda, recibimos el JSON nuevo y actualizamos `partidaActual` sin recargar.
+// En modo localStorage (sin Supabase) no hay suscripción y todo sigue igual.
+let canalPartida: RealtimeChannel | null = null;
+// Guardados propios "en vuelo": Realtime también nos notifica lo que NOSOTROS
+// escribimos, así que contamos cada guardado para ignorar su propio eco.
+let guardadosPropiosPendientes = 0;
+
+function suscribirseRealtimePartida(id: string) {
+  const sb = obtenerClienteSupabase();
+  if (!sb) return; // modo localStorage: sin tiempo real
+  detenerRealtimePartida();
+  guardadosPropiosPendientes = 0;
+  canalPartida = sb
+    .channel(`partida:${id}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: TABLA, filter: `key=eq.${id}` },
+      (payload) => {
+        // Ignora el eco de nuestros propios guardados (last-write-wins).
+        if (guardadosPropiosPendientes > 0) {
+          guardadosPropiosPendientes--;
+          return;
+        }
+        const nuevo = (payload.new as { value?: PartidaData } | null)?.value;
+        if (nuevo) partidaActual.value = nuevo;
+      },
+    )
+    .subscribe();
+}
+
+/** Cierra la suscripción en tiempo real (llamar al salir de la partida). */
+function detenerRealtimePartida() {
+  if (!canalPartida) return;
+  obtenerClienteSupabase()?.removeChannel(canalPartida);
+  canalPartida = null;
+  guardadosPropiosPendientes = 0;
+}
 const personajesCreados = ref<Map<string, Character>>(new Map());
 const personajeActivo = ref<PersonajeInstancia | null>(null);
 const logs = ref<string[]>([]);
@@ -84,6 +126,10 @@ export function usePartida() {
 
       if (!partida.diario) partida.diario = [];
       partidaActual.value = partida;
+
+      // Escucha en tiempo real los cambios de esta partida hechos desde otros
+      // dispositivos (no hace nada en modo localStorage).
+      suscribirseRealtimePartida(partidaId);
 
       // Los bonos temporales son propios de cada sesión: se descartan al cargar.
       bonosPartida.value = {};
@@ -190,9 +236,13 @@ export function usePartida() {
   // rechazadas sin capturar.
   async function guardarPartidaActual() {
     if (!partidaActual.value) return;
+    // Cuenta este guardado ANTES de escribir para poder ignorar su eco de
+    // Realtime cuando vuelva (solo si hay suscripción activa).
+    if (canalPartida) guardadosPropiosPendientes++;
     try {
       await guardarPartida(partidaActual.value);
     } catch (error) {
+      if (canalPartida) guardadosPropiosPendientes--;
       console.error("❌ Error al guardar la partida:", error);
     }
   }
@@ -439,6 +489,7 @@ export function usePartida() {
     bonosDeFicha,
     agregarLog,
     iniciarPartida,
+    detenerRealtimePartida,
     seleccionarPersonaje,
     moverPersonajeActivo,
     addCharacter,

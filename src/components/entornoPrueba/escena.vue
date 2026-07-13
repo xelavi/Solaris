@@ -387,6 +387,7 @@ const {
   personajeActivo,
   seleccionarPersonaje,
   iniciarPartida,
+  detenerRealtimePartida,
   moverPersonajeActivo,
   colocarToken,
   moverToken,
@@ -2252,5 +2253,7 @@ onBeforeUnmount(() => {
   if (renderer) {
     renderer.dispose();
   }
+  // Cierra la suscripción en tiempo real de la partida.
+  detenerRealtimePartida();
 });
 </script>
