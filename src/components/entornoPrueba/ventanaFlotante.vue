@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onBeforeUnmount } from "vue";
+import { reactive, computed, onMounted, onBeforeUnmount } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -58,6 +58,8 @@ defineEmits<{ (e: "close"): void }>();
 
 const ANCHO_MIN = 220;
 const ALTO_MIN = 160;
+// Margen mínimo con los bordes de la pantalla (para que nunca toque el borde).
+const MARGEN = 12;
 
 // Estado de la ventana. Se centra en pantalla al montar (con un pequeño
 // escalonado por `desplazamiento` para las ventanas que se apilan).
@@ -70,6 +72,29 @@ const estado = reactive({
   w: props.ancho,
   h: props.alto,
 });
+
+// Mantiene la ventana SIEMPRE dentro del viewport (tamaño y posición) para que
+// la barra de título —y su botón de cerrar— nunca queden fuera de la pantalla,
+// aunque la ficha se abra en un portátil pequeño o se redimensione la ventana.
+function ajustarAlViewport() {
+  estado.w = Math.max(
+    ANCHO_MIN,
+    Math.min(estado.w, window.innerWidth - MARGEN),
+  );
+  estado.h = Math.max(
+    ALTO_MIN,
+    Math.min(estado.h, window.innerHeight - MARGEN),
+  );
+  estado.x = Math.min(
+    Math.max(0, estado.x),
+    Math.max(0, window.innerWidth - estado.w),
+  );
+  estado.y = Math.min(
+    Math.max(0, estado.y),
+    Math.max(0, window.innerHeight - estado.h),
+  );
+}
+ajustarAlViewport();
 
 const estilo = computed(() => ({
   left: `${estado.x}px`,
@@ -112,8 +137,15 @@ function iniciarRedim(e: MouseEvent) {
 
 function moverRedim(e: MouseEvent) {
   if (!redim) return;
-  estado.w = Math.max(ANCHO_MIN, redim.w + (e.clientX - redim.x));
-  estado.h = Math.max(ALTO_MIN, redim.h + (e.clientY - redim.y));
+  // No dejar crecer la ventana más allá del borde de la pantalla.
+  estado.w = Math.min(
+    Math.max(ANCHO_MIN, redim.w + (e.clientX - redim.x)),
+    window.innerWidth - estado.x,
+  );
+  estado.h = Math.min(
+    Math.max(ALTO_MIN, redim.h + (e.clientY - redim.y)),
+    window.innerHeight - estado.y,
+  );
 }
 
 function finRedim() {
@@ -122,8 +154,11 @@ function finRedim() {
   window.removeEventListener("mouseup", finRedim);
 }
 
+onMounted(() => window.addEventListener("resize", ajustarAlViewport));
+
 onBeforeUnmount(() => {
   finArrastre();
   finRedim();
+  window.removeEventListener("resize", ajustarAlViewport);
 });
 </script>
