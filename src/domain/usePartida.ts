@@ -1,9 +1,10 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type {
   PartidaData,
   PersonajeInstancia,
   EntradaDiario,
   TokenPartida,
+  MensajeChat,
 } from "./Partida";
 import { Character } from "./Character";
 import { useMapa } from "./useMapa";
@@ -14,27 +15,12 @@ import { obtenerPersonaje } from "./storage/personajesRepo";
 import { obtenerPartida } from "./storage/partidasRepo";
 import { obtenerCriatura } from "./storage/criaturasRepo";
 import { obtenerEstado } from "./EstadosAlterados";
-import type { DesgloseTirada } from "./dados";
 import { obtenerClienteSupabase, TABLA } from "./storage/supabaseBackend";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-// --- Chat enriquecido ---
-// El chat de la partida ya no es texto plano: cada mensaje puede llevar el
-// desglose de una tirada (2d12 + mod, ventaja/desventaja) y/o la descripción de
-// una acción/reacción para mostrarla en un desplegable.
-export interface MensajeChat {
-  id: number;
-  hora: string;
-  autor: string;
-  clase: "texto" | "tirada";
-  texto: string;
-  tirada?: DesgloseTirada;
-  dano?: string; // daño plano de un ataque (p. ej. "8 lacerante")
-  danoColor?: string; // color del daño
-  descripcion?: string; // descripción de la acción/reacción
-  tipoEjecucion?: string; // "accion" | "reaccion" | …
-  color?: string; // color de acento del mensaje
-}
+// El chat vive DENTRO de la partida (MensajeChat en Partida.ts) para que se
+// comparta en tiempo real y persista como el resto del estado.
+export type { MensajeChat };
 
 // Carga útil que emite la ficha al usar algo (sin los campos que fija el chat).
 export type PayloadTirada = Omit<MensajeChat, "id" | "hora" | "clase" | "autor">;
@@ -84,8 +70,19 @@ function detenerRealtimePartida() {
 const personajesCreados = ref<Map<string, Character>>(new Map());
 const personajeActivo = ref<PersonajeInstancia | null>(null);
 const logs = ref<string[]>([]);
-const mensajesChat = ref<MensajeChat[]>([]);
+// El chat es una vista de solo lectura del chat guardado en la partida activa;
+// se comparte y persiste con ella (los mensajes se añaden vía enviarMensajeChat/
+// enviarTiradaChat, nunca mutando este computed directamente).
+const mensajesChat = computed<MensajeChat[]>(
+  () => partidaActual.value?.mensajesChat ?? [],
+);
 let _chatSeq = 0;
+
+// id de mensaje único incluso entre dispositivos: evita colisiones de `:key`
+// al mezclarse los chats de varios clientes por el sync en tiempo real.
+function nuevoIdMensaje(): number {
+  return Date.now() * 1000 + (_chatSeq++ % 1000);
+}
 
 // Ficha flotante abierta en la escena de juego. Puede provenir de una instancia
 // de la partida (clic en el token 3D) o de un personaje guardado por id (clic en
@@ -248,12 +245,21 @@ export function usePartida() {
   }
 
   // --- Chat ---
+  // Añade un mensaje al chat de la partida y lo persiste (se comparte en tiempo
+  // real como el resto del estado). Sin partida activa no hay chat.
+  function agregarMensajeChat(mensaje: MensajeChat) {
+    if (!partidaActual.value) return;
+    if (!partidaActual.value.mensajesChat) partidaActual.value.mensajesChat = [];
+    partidaActual.value.mensajesChat.push(mensaje);
+    guardarPartidaActual();
+  }
+
   // Un mensaje escrito a mano por el jugador.
   function enviarMensajeChat(texto: string) {
     const mensaje = texto.trim();
     if (!mensaje) return;
-    mensajesChat.value.push({
-      id: ++_chatSeq,
+    agregarMensajeChat({
+      id: nuevoIdMensaje(),
       hora: new Date().toLocaleTimeString(),
       autor: "",
       clase: "texto",
@@ -263,8 +269,8 @@ export function usePartida() {
 
   // Vuelca al chat una tirada o el uso de una acción/reacción desde la ficha.
   function enviarTiradaChat(autor: string, payload: PayloadTirada) {
-    mensajesChat.value.push({
-      id: ++_chatSeq,
+    agregarMensajeChat({
+      id: nuevoIdMensaje(),
       hora: new Date().toLocaleTimeString(),
       autor,
       clase: "tirada",
@@ -308,6 +314,10 @@ export function usePartida() {
     if (!partidaActual.value) return;
     partidaActual.value.mapaActivoId = mapaGuardado.id;
     partidaActual.value.mapa = mapaGuardado.mapa;
+    // Al poner un mapa nuevo se vacía el tablero: los personajes/criaturas del
+    // diario no aparecen hasta colocarlos a mano (evita que queden en casillas
+    // del mapa anterior que quizá ya no existen).
+    partidaActual.value.tokens = [];
     guardarPartidaActual();
     agregarLog(`🗺️ Mapa activo: ${mapaGuardado.nombre}`);
   }

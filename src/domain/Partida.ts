@@ -2,6 +2,7 @@
 import { Character } from "./Character";
 import type { MapaHex } from "./mapaHex";
 import type { EstadoAplicado } from "./EstadosAlterados";
+import type { DesgloseTirada } from "./dados";
 
 // Tipos para el sistema de gestión de partidas
 export interface PersonajeInstancia {
@@ -92,6 +93,25 @@ export interface TokenPartida {
   estados?: EstadoAplicado[];
 }
 
+/**
+ * Mensaje del chat de la partida. Puede ser texto plano o el desglose de una
+ * tirada (2d12 + mod) y/o una acción/reacción. Se guarda DENTRO de la partida
+ * para que se comparta (tiempo real) y persista como el resto del estado.
+ */
+export interface MensajeChat {
+  id: number;
+  hora: string;
+  autor: string;
+  clase: "texto" | "tirada";
+  texto: string;
+  tirada?: DesgloseTirada;
+  dano?: string; // daño plano de un ataque (p. ej. "8 lacerante")
+  danoColor?: string; // color del daño
+  descripcion?: string; // descripción de la acción/reacción
+  tipoEjecucion?: string; // "accion" | "reaccion" | …
+  color?: string; // color de acento del mensaje
+}
+
 export interface PartidaData {
   id: string;
   nombre: string;
@@ -109,6 +129,9 @@ export interface PartidaData {
   mapaActivoId?: string;
   // Tokens colocados sobre el mapa. Opcional (partidas antiguas no lo tienen).
   tokens?: TokenPartida[];
+  // Chat de la partida (texto y tiradas). Se comparte y persiste como el resto
+  // del estado. Opcional (partidas antiguas no lo tienen).
+  mensajesChat?: MensajeChat[];
   // Campos heredados del antiguo sistema de combate.
   // Se mantienen para no romper las partidas ya guardadas en localStorage.
   combateActivo: boolean;
