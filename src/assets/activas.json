@@ -76,7 +76,7 @@
       "id": 7,
       "nombre": "Apuntar",
       "diminutivo": "APU",
-      "descripcion": "2 Acciones sumar Deadeye ToHit (Concentración)",
+      "descripcion": "2 Acciones sumar Punteria ToHit (Concentración)",
       "atributo": "Agilidad",
       "tipoEjecucion": "accion",
       "tipoAccion": "mental",

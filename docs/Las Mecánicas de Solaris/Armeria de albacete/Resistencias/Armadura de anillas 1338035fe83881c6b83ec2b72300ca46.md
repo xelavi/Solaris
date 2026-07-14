@@ -1,6 +1,6 @@
 # Armadura de anillas
 
-Penetrante: 2
+Perforante: 2
 Lacerante: 2
 Aporreo: 1
 Categoria: Media

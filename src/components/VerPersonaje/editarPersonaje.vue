@@ -124,7 +124,7 @@
             <span class="ed-item-tag">{{ arma.categoria }}</span>
             <span class="ed-dmg">
               <span class="ed-dchip l">{{ arma.lacerante }}</span>
-              <span class="ed-dchip p">{{ arma.penetrante }}</span>
+              <span class="ed-dchip p">{{ arma.perforante }}</span>
               <span class="ed-dchip c">{{ arma.contundente }}</span>
             </span>
           </button>
@@ -147,7 +147,7 @@
             <span class="ed-item-tag">{{ arm.categoria }}</span>
             <span class="ed-dmg">
               <span class="ed-dchip l">{{ arm.lacerante }}</span>
-              <span class="ed-dchip p">{{ arm.penetrante }}</span>
+              <span class="ed-dchip p">{{ arm.perforante }}</span>
               <span class="ed-dchip c">{{ arm.contundente }}</span>
             </span>
           </button>

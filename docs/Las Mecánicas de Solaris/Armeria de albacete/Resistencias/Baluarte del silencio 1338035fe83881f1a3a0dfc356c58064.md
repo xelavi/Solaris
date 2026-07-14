@@ -1,6 +1,6 @@
 # Baluarte del silencio
 
-Penetrante: 5
+Perforante: 5
 Lacerante: 5
 Aporreo: 6
 Categoria: Pesada

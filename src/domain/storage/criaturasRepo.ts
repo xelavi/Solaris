@@ -38,6 +38,7 @@ export async function obtenerCriatura(
     ...criatura,
     estiloMarcial: criatura.estiloMarcial ?? 0,
     tecnicas: (criatura.tecnicas ?? []).map(normalizarTecnica),
+    habilidades: criatura.habilidades ?? [],
   };
 }
 
@@ -74,4 +75,10 @@ export function obtenerOCrearIdEnCreacion(): string {
 
 export function limpiarIdEnCreacion(): void {
   eliminarPunteroLocal(CLAVE_EN_CREACION);
+}
+
+/** Apunta el puntero "en creación" a una criatura ya existente, para editarla
+ * reutilizando la pantalla de creación. */
+export function editarCriaturaExistente(id: string): void {
+  guardarPunteroLocal(CLAVE_EN_CREACION, id);
 }

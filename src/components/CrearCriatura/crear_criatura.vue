@@ -5,9 +5,15 @@
         <button @click="volver" class="btn btn-ghost btn-sm -ml-2">
           ← Volver al bestiario
         </button>
-        <h1 class="page-title mt-1">Creación de criatura</h1>
+        <h1 class="page-title mt-1">
+          {{ esEdicion ? "Edición de criatura" : "Creación de criatura" }}
+        </h1>
         <p class="page-subtitle">
-          Define los atributos y técnicas de una nueva criatura del bestiario.
+          {{
+            esEdicion
+              ? "Modifica los atributos y técnicas de esta criatura del bestiario."
+              : "Define los atributos y técnicas de una nueva criatura del bestiario."
+          }}
         </p>
       </div>
 
@@ -196,6 +202,35 @@
           </div>
         </section>
 
+        <!-- Habilidades -->
+        <section>
+          <div class="section-heading">
+            <h2 class="section-title">Habilidades</h2>
+          </div>
+          <div
+            class="max-h-72 divide-y divide-gray-100 overflow-y-auto rounded-lg border border-gray-200"
+          >
+            <div
+              v-for="habilidad in habilidadesForm"
+              :key="habilidad.id"
+              class="flex items-center justify-between gap-3 px-3 py-1.5"
+            >
+              <div class="min-w-0 leading-tight">
+                <div class="truncate text-sm font-semibold text-gray-900">
+                  {{ habilidad.nombre }}
+                </div>
+                <div class="text-xs text-gray-500">{{ habilidad.atributo }}</div>
+              </div>
+              <input
+                type="number"
+                v-model.number="habilidad.valor"
+                @change="sincronizarHabilidades"
+                class="input-number w-16 shrink-0"
+              />
+            </div>
+          </div>
+        </section>
+
         <!-- Técnicas -->
         <section>
           <div class="section-heading">
@@ -313,6 +348,37 @@
                 ></textarea>
               </div>
 
+              <div class="mb-3 grid max-w-lg grid-cols-3 gap-4">
+                <div>
+                  <label class="label">Alcance (ecsas)</label>
+                  <input
+                    v-model.number="tecnica.alcance"
+                    type="number"
+                    min="0"
+                    class="input-number w-full"
+                  />
+                </div>
+                <div>
+                  <label class="label">Rango de crítico</label>
+                  <input
+                    v-model.number="tecnica.rangoCritico"
+                    type="number"
+                    min="2"
+                    max="24"
+                    class="input-number w-full"
+                  />
+                </div>
+                <div>
+                  <label class="label">Multiplicador de crítico</label>
+                  <input
+                    v-model.number="tecnica.multiplicadorCritico"
+                    type="number"
+                    min="1"
+                    class="input-number w-full"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label class="label">Daño</label>
                 <div class="grid max-w-md grid-cols-3 gap-4">
@@ -369,6 +435,7 @@ import {
   obtenerOCrearIdEnCreacion,
   limpiarIdEnCreacion,
 } from "../../domain/storage/criaturasRepo";
+import habilidadesData from "../../assets/habilidades.json";
 
 interface GrupoAtributos {
   titulo: string;
@@ -403,7 +470,7 @@ const gruposAtributos: GrupoAtributos[] = [
     },
     campos: [
       { key: "poderio", label: "Poderío" },
-      { key: "punteria", label: "Deadeye" },
+      { key: "punteria", label: "Punteria" },
       { key: "evasion", label: "Esquiva" },
       { key: "iniciativa", label: "Iniciativa" },
     ],
@@ -426,7 +493,7 @@ const gruposAtributos: GrupoAtributos[] = [
 
 const tiposDano: Array<{ key: keyof DanoPorTipo; label: string }> = [
   { key: "lacerante", label: "Lacerante" },
-  { key: "penetrante", label: "Penetrante" },
+  { key: "perforante", label: "Perforante" },
   { key: "contundente", label: "Contundente" },
 ];
 
@@ -457,6 +524,7 @@ const navigateToFichaCriatura = inject<(id: string) => void>(
 
 const criaturaId = obtenerOCrearIdEnCreacion();
 const criatura = ref<CriaturaData>(crearCriaturaVacia(criaturaId));
+const esEdicion = ref(false);
 
 const catalogoEtiquetas = ref<Etiqueta[]>([]);
 const busquedaEtiqueta = ref("");
@@ -512,6 +580,33 @@ function eliminarTecnica(index: number) {
   criatura.value.tecnicas.splice(index, 1);
 }
 
+// --- Habilidades: valor final editable directamente, sin sumar atributos ---
+interface HabilidadForm {
+  id: number;
+  nombre: string;
+  atributo: string;
+  valor: number;
+}
+const habilidadesForm = ref<HabilidadForm[]>([]);
+
+function construirHabilidadesForm() {
+  habilidadesForm.value = habilidadesData.habilidades.map((h) => {
+    const guardada = criatura.value.habilidades.find((x) => x.id === h.id);
+    return {
+      id: h.id,
+      nombre: h.nombre,
+      atributo: h.atributo,
+      valor: guardada?.rangos ?? 0,
+    };
+  });
+}
+
+function sincronizarHabilidades() {
+  criatura.value.habilidades = habilidadesForm.value
+    .filter((h) => h.valor !== 0)
+    .map((h) => ({ id: h.id, rangos: h.valor }));
+}
+
 function volver() {
   if (navigateToBestiario) navigateToBestiario();
 }
@@ -546,7 +641,10 @@ onMounted(async () => {
   if (guardada) {
     criatura.value = guardada;
     criatura.value.etiquetas ??= [];
+    criatura.value.habilidades ??= [];
+    esEdicion.value = true;
   }
+  construirHabilidadesForm();
 });
 </script>
 

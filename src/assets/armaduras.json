@@ -3,7 +3,7 @@
     {
       "id": 1,
       "nombre": "Armadura de pieles",
-      "penetrante": 0,
+      "perforante": 0,
       "lacerante": 0,
       "contundente": 1,
       "categoria": "Ligera",
@@ -14,7 +14,7 @@
     {
       "id": 2,
       "nombre": "Armadura de cuero",
-      "penetrante": 0,
+      "perforante": 0,
       "lacerante": 1,
       "contundente": 1,
       "categoria": "Ligera",
@@ -25,7 +25,7 @@
     {
       "id": 3,
       "nombre": "Armadura de cuero tachonado",
-      "penetrante": 1,
+      "perforante": 1,
       "lacerante": 1,
       "contundente": 1,
       "categoria": "Ligera",
@@ -36,7 +36,7 @@
     {
       "id": 4,
       "nombre": "Armadura de anillas",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 2,
       "contundente": 1,
       "categoria": "Media",
@@ -52,7 +52,7 @@
     {
       "id": 5,
       "nombre": "Cota brigantina",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 2,
       "contundente": 2,
       "categoria": "Media",
@@ -68,7 +68,7 @@
     {
       "id": 6,
       "nombre": "Lorica musculata",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 2,
       "contundente": 2,
       "categoria": "Media",
@@ -84,7 +84,7 @@
     {
       "id": 7,
       "nombre": "Lorica segmentata",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 3,
       "contundente": 4,
       "categoria": "Pesada",
@@ -100,7 +100,7 @@
     {
       "id": 8,
       "nombre": "Armadura laminar",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 3,
       "contundente": 4,
       "categoria": "Pesada",
@@ -116,7 +116,7 @@
     {
       "id": 9,
       "nombre": "Cota de malla",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 4,
       "contundente": 3,
       "categoria": "Media",
@@ -132,7 +132,7 @@
     {
       "id": 10,
       "nombre": "Cota de escamas",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 4,
       "contundente": 3,
       "categoria": "Media",
@@ -148,7 +148,7 @@
     {
       "id": 11,
       "nombre": "Baluarte del silencio",
-      "penetrante": 5,
+      "perforante": 5,
       "lacerante": 5,
       "contundente": 6,
       "categoria": "Pesada",
@@ -164,7 +164,7 @@
     {
       "id": 12,
       "nombre": "Custodio del silencio",
-      "penetrante": 5,
+      "perforante": 5,
       "lacerante": 6,
       "contundente": 5,
       "categoria": "Pesada",
@@ -180,7 +180,7 @@
     {
       "id": 13,
       "nombre": "Túnica del tejesombras",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 2,
       "contundente": 2,
       "categoria": "Ligera",
@@ -196,7 +196,7 @@
     {
       "id": 14,
       "nombre": "Armadura de espinas de ébano",
-      "penetrante": 3,
+      "perforante": 3,
       "lacerante": 4,
       "contundente": 5,
       "categoria": "Media",
@@ -212,7 +212,7 @@
     {
       "id": 15,
       "nombre": "Armadura espinal",
-      "penetrante": 5,
+      "perforante": 5,
       "lacerante": 7,
       "contundente": 6,
       "categoria": "Pesada",
@@ -228,7 +228,7 @@
     {
       "id": 16,
       "nombre": "Escudo/Rodela",
-      "penetrante": 1,
+      "perforante": 1,
       "lacerante": 1,
       "contundente": 1,
       "categoria": "Escudo",
@@ -239,7 +239,7 @@
     {
       "id": 17,
       "nombre": "Escudo de torre",
-      "penetrante": 4,
+      "perforante": 4,
       "lacerante": 4,
       "contundente": 4,
       "categoria": "Escudo",
@@ -250,7 +250,7 @@
     {
       "id": 18,
       "nombre": "Escudo Afilado",
-      "penetrante": 2,
+      "perforante": 2,
       "lacerante": 2,
       "contundente": 2,
       "categoria": "Escudo",
@@ -261,7 +261,7 @@
     {
       "id": 19,
       "nombre": "Cestus",
-      "penetrante": 1,
+      "perforante": 1,
       "lacerante": 1,
       "contundente": 2,
       "categoria": "Guante",
@@ -272,7 +272,7 @@
     {
       "id": 20,
       "nombre": "Baluarte",
-      "penetrante": 5,
+      "perforante": 5,
       "lacerante": 5,
       "contundente": 5,
       "categoria": "Escudo",

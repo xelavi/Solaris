@@ -10,6 +10,7 @@ import type {
 import type { FormaMarca } from "./MarcasMapa";
 import { Character } from "./Character";
 import { useMapa } from "./useMapa";
+import { useHerramientas } from "./useHerramientas";
 import { guardarPartida } from "./storage/partidasRepo";
 import type { MapaGuardado } from "./storage/mapasRepo";
 import { calcularCasillas, claveCelda } from "./mapaHex";
@@ -159,6 +160,7 @@ export function usePartida() {
   // Abre una ficha nueva. Si ya hay una del mismo personaje/criatura (misma
   // `clave`), la trae al frente en vez de duplicarla.
   function agregarFicha(ficha: FichaFlotante) {
+    useHerramientas().desactivar();
     const i = fichasFlotantes.value.findIndex((f) => f.clave === ficha.clave);
     if (i >= 0) {
       const [ya] = fichasFlotantes.value.splice(i, 1);

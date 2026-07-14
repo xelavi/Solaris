@@ -57,9 +57,9 @@
                 </div>
               </div>
 
-              <!-- Daño Penetrante -->
+              <!-- Daño Perforante -->
               <div class="col-span-1 text-center text-sm text-gray-700">
-                {{ arma.penetrante }}
+                {{ arma.perforante }}
               </div>
 
               <!-- Daño Lacerante -->
@@ -156,9 +156,9 @@
                 </div>
               </div>
 
-              <!-- Daño Penetrante -->
+              <!-- Daño Perforante -->
               <div class="col-span-2 text-center text-sm text-gray-700">
-                {{ armadura.penetrante }}
+                {{ armadura.perforante }}
               </div>
 
               <!-- Daño Lacerante -->

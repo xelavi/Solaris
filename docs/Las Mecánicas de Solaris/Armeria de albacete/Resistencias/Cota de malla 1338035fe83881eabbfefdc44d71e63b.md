@@ -1,6 +1,6 @@
 # Cota de malla
 
-Penetrante: 2
+Perforante: 2
 Lacerante: 4
 Aporreo: 3
 Categoria: Media

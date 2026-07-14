@@ -102,7 +102,7 @@ Tienes **Ventaja** al tirar por percepción
 
 **Tipo**: acción de ataque
 
-**Requisito**: un arma de daño penetrante en la mano 
+**Requisito**: un arma de daño perforante en la mano 
 
  Si terminas tu turno apuntando tu arma hacia tu enemigo, obtienes V**entaja 2** al esquivar a tu enemigo, pudiendo realizar tanto un **Demasiado Lento** como un **Poco Rápido** a placer.
 

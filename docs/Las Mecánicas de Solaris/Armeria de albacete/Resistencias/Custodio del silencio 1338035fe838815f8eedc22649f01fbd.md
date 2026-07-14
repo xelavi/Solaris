@@ -1,6 +1,6 @@
 # Custodio del silencio
 
-Penetrante: 5
+Perforante: 5
 Lacerante: 6
 Aporreo: 5
 Categoria: Pesada

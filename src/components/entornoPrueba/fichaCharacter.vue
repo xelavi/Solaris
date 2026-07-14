@@ -136,8 +136,8 @@
        </div>
        <div class="flex rounded overflow-hidden border border-gray-700 text-center text-xs bg-gray-800">
           <div class="flex-1 p-2 border-r border-gray-700 hover:bg-gray-700 transition-colors">
-            <div class="font-bold text-white text-lg font-mono">{{ armaduraTotal.penetrante }}</div>
-            <div class="text-gray-500 text-[8px] uppercase tracking-tighter">Penetrante</div>
+            <div class="font-bold text-white text-lg font-mono">{{ armaduraTotal.perforante }}</div>
+            <div class="text-gray-500 text-[8px] uppercase tracking-tighter">Perforante</div>
           </div>
           <div class="flex-1 p-2 border-r border-gray-700 hover:bg-gray-700 transition-colors">
             <div class="font-bold text-white text-lg font-mono">{{ armaduraTotal.lacerante }}</div>
@@ -177,7 +177,7 @@
 
             <div class="flex justify-between items-end">
                <div class="text-[10px] text-gray-400 font-mono">
-                 P:<span class="text-gray-300">{{ arma.penetrante }}</span> L:<span class="text-gray-300">{{ arma.lacerante }}</span> C:<span class="text-gray-300">{{ arma.contundente }}</span>
+                 P:<span class="text-gray-300">{{ arma.perforante }}</span> L:<span class="text-gray-300">{{ arma.lacerante }}</span> C:<span class="text-gray-300">{{ arma.contundente }}</span>
                </div>
 
                <button
@@ -234,7 +234,7 @@ const colorBarraVida = computed(() => {
 const armaduraTotal = computed(() => {
   const resistencia = props.personaje.atributos.resistencia || 0;
   let total = {
-    penetrante: resistencia,
+    perforante: resistencia,
     lacerante: resistencia,
     contundente: resistencia,
   };
@@ -245,7 +245,7 @@ const armaduraTotal = computed(() => {
         (a: any) => a.id === armaduraId,
       );
       if (armadura) {
-        total.penetrante += armadura.penetrante || 0;
+        total.perforante += armadura.perforante || 0;
         total.lacerante += armadura.lacerante || 0;
         total.contundente += armadura.contundente || 0;
       }

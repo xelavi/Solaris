@@ -201,7 +201,7 @@ interface Arma {
   categoria: string;
   critico: string;
   rango_critico: number | null;
-  penetrante: number;
+  perforante: number;
   lacerante: number;
   contundente: number;
 }

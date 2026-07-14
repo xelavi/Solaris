@@ -124,13 +124,28 @@
                 </div>
                 <div class="cx-sh p">
                   <span class="cx-sh-cap">P</span>
-                  <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.penetrante }}</span></div>
+                  <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.perforante }}</span></div>
                 </div>
                 <div class="cx-sh c">
                   <span class="cx-sh-cap">C</span>
                   <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.contundente }}</span></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Habilidades -->
+        <div class="cx-panel cx-desc-panel-gap">
+          <div class="cx-phead"><span class="cx-grow">Habilidades</span></div>
+          <div v-if="!habilidadesConRango.length" class="cx-empty">
+            Sin habilidades con rangos asignados.
+          </div>
+          <div v-else class="cx-skills">
+            <div v-for="hab in habilidadesConRango" :key="hab.id" class="cx-skill">
+              <span class="cx-sname">{{ hab.nombre }}</span>
+              <span class="cx-srangos tnum">{{ hab.rangos }} rangos</span>
+              <span class="cx-sval tnum">{{ formatoMod(hab.total) }}</span>
             </div>
           </div>
         </div>
@@ -168,9 +183,13 @@
                 <span class="cx-tec-meta-l">Usable si:</span> {{ tecnica.usable_si }}
               </p>
               <p v-if="tecnica.descripcion" class="cx-tec-d"><DescripcionConEstados :texto="tecnica.descripcion" /></p>
+              <div class="cx-tec-stats">
+                <span class="cx-tec-stat">Alcance: {{ tecnica.alcance > 0 ? tecnica.alcance + " ecsas" : "Cuerpo a cuerpo" }}</span>
+                <span class="cx-tec-stat">Crítico: ×{{ tecnica.multiplicadorCritico }} · {{ tecnica.rangoCritico }}-24</span>
+              </div>
               <div v-if="tieneDano(tecnica)" class="cx-dmgcell">
                 <span class="cx-dchip l tnum">L {{ tecnica.dano.lacerante }}</span>
-                <span class="cx-dchip p tnum">P {{ tecnica.dano.penetrante }}</span>
+                <span class="cx-dchip p tnum">P {{ tecnica.dano.perforante }}</span>
                 <span class="cx-dchip c tnum">C {{ tecnica.dano.contundente }}</span>
               </div>
             </div>
@@ -182,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import type {
   CriaturaData,
   Tecnica,
@@ -197,6 +216,7 @@ import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { useZoomFicha } from "../../domain/useZoomFicha";
 import ControlZoom from "../ControlZoom.vue";
 import DescripcionConEstados from "../DescripcionConEstados.vue";
+import habilidadesData from "../../assets/habilidades.json";
 
 // Zoom ajustable por el usuario (persistido).
 const { zoom, aumentar, reducir, restablecer } = useZoomFicha("criatura", 1100);
@@ -243,10 +263,36 @@ function formatoMod(valor: number): string {
 function tieneDano(tecnica: Tecnica): boolean {
   return (
     tecnica.dano.lacerante > 0 ||
-    tecnica.dano.penetrante > 0 ||
+    tecnica.dano.perforante > 0 ||
     tecnica.dano.contundente > 0
   );
 }
+
+// --- Habilidades ---
+function modAtributoHabilidad(atributo: string): number {
+  const a = criatura.value?.atributos;
+  if (!a) return 0;
+  if (atributo === "Cuerpo") return a.cuerpo;
+  if (atributo === "Agilidad") return a.agilidad;
+  return a.mente; // Mente / Artesanía / Recolección
+}
+
+const habilidadesConRango = computed(() => {
+  if (!criatura.value) return [];
+  return criatura.value.habilidades
+    .filter((h) => h.rangos > 0)
+    .map((h) => {
+      const info = habilidadesData.habilidades.find((x) => x.id === h.id);
+      const atributo = info?.atributo ?? "Mente";
+      return {
+        id: h.id,
+        nombre: info?.nombre ?? "Habilidad desconocida",
+        rangos: h.rangos,
+        total: modAtributoHabilidad(atributo) + h.rangos,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+});
 
 async function cargarCriatura() {
   if (!props.criaturaId) {
@@ -656,7 +702,55 @@ onMounted(async () => {
   background: color-mix(in srgb, var(--con) 9%, var(--surface));
 }
 
+/* ---------- Habilidades ---------- */
+.cx-desc-panel-gap {
+  margin-bottom: 14px;
+}
+.cx-skills {
+  padding: 4px 12px;
+}
+.cx-skill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 2px;
+  border-bottom: 1px solid var(--border-2);
+}
+.cx-skill:last-child {
+  border-bottom: none;
+}
+.cx-sname {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.cx-srangos {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cx-sval {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 30px;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 6px;
+  padding: 1px 0;
+  background: var(--accent-soft);
+  flex-shrink: 0;
+}
+
 /* ---------- Técnicas ---------- */
+.cx-tec-stats {
+  display: flex;
+  gap: 14px;
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
 .cx-tecs {
   padding: 12px;
   display: flex;

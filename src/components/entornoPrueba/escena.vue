@@ -736,11 +736,26 @@ watch(
 
 // Watch del mapa hexagonal activo de la partida: al seleccionarlo/cambiarlo en
 // el gestor de mapas, se repinta el terreno de prismas.
+//
+// El sync remoto (usePartida.ts) reemplaza `partidaActual.value` entero ante
+// CUALQUIER cambio (mover un token, un mensaje de chat, etc.), así que
+// `.mapa` es una referencia nueva aunque el mapa activo sea el mismo. Por eso
+// no podemos recentrar la cámara aquí en cada disparo: solo cuando el mapa
+// activo realmente cambia (comparado por `mapaActivoId`), para no resetear
+// la vista de otros jugadores en cada sync ajeno.
+let mapaActivoIdRenderizado: string | undefined;
 watch(
   () => partidaActual.value?.mapa,
   (mapaHex) => {
-    if (mapaHex) renderMapaHex(mapaHex);
-    else limpiarMapaHex();
+    if (mapaHex) {
+      const cambioDeMapa =
+        partidaActual.value?.mapaActivoId !== mapaActivoIdRenderizado;
+      mapaActivoIdRenderizado = partidaActual.value?.mapaActivoId;
+      renderMapaHex(mapaHex, cambioDeMapa);
+    } else {
+      mapaActivoIdRenderizado = undefined;
+      limpiarMapaHex();
+    }
   },
   { immediate: true },
 );
@@ -871,7 +886,7 @@ function limpiarMapaHex() {
   hexMeshes.length = 0;
 }
 
-function renderMapaHex(mapaHex: MapaHex) {
+function renderMapaHex(mapaHex: MapaHex, recentrarCamara: boolean) {
   if (!scene) return;
 
   // Quitar terreno previo (hex + cuadrícula plana/paredes).
@@ -935,7 +950,7 @@ function renderMapaHex(mapaHex: MapaHex) {
     mapaHex.cells.filter((c) => c.shape === "half"),
   );
 
-  centrarCamaraHex(mapaHex);
+  if (recentrarCamara) centrarCamaraHex(mapaHex);
   syncTokens();
   syncMarcas();
   updateClickables();
@@ -1852,6 +1867,7 @@ function onKeyDown(event: KeyboardEvent) {
 
   if (event.key === "m" || event.key === "M") {
     event.preventDefault();
+    if (herramientaActiva.value) desactivarHerramienta();
     if (modoMovimiento.value) {
       limpiarRango();
     } else if (tokenSeleccionado.value) {
@@ -1859,6 +1875,7 @@ function onKeyDown(event: KeyboardEvent) {
     }
   } else if (event.key === "a" || event.key === "A") {
     event.preventDefault();
+    if (herramientaActiva.value) desactivarHerramienta();
     if (modoAtaque.value) {
       limpiarRango();
     } else if (tokenSeleccionado.value) {

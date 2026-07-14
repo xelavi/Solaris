@@ -280,7 +280,7 @@
                       <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('iniciativa', 1)">＋</button>
                     </span>
                   </div>
-                  <div class="fx-arow"><span>Deadeye</span>
+                  <div class="fx-arow"><span>Punteria</span>
                     <span class="fx-num" :class="{ boost: ef.deadeye !== personaje.agilidad.deadeye }">
                       <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('deadeye', -1)">−</button>
                       <b class="tnum">{{ ef.deadeye }}</b>
@@ -351,7 +351,7 @@
                   <div class="fx-sh p">
                     <span class="fx-sh-cap">P</span>
                     <div class="fx-sh-fig" :class="{ boost: bono('arm_pen') || ef.resistencia !== personaje.cuerpo.resistencia }">
-                      <span class="tnum">{{ armaduraTotal.penetrante + bono('arm_pen') }}</span>
+                      <span class="tnum">{{ armaduraTotal.perforante + bono('arm_pen') }}</span>
                     </div>
                     <div v-if="editArmadura" class="fx-shctrl">
                       <button class="fx-numb" @click="ajustarBono('arm_pen', -1)">−</button>
@@ -1214,7 +1214,7 @@ function ajustarEsencia(delta: number) {
 
 // Valores EFECTIVOS = base + bono propio + cascada del atributo principal.
 // Reglas del juego: cada punto de Cuerpo suma +1 a Poderío / Movimiento /
-// Resistencia; cada punto de Agilidad suma +3 a Evasión / Iniciativa / Deadeye.
+// Resistencia; cada punto de Agilidad suma +3 a Evasión / Iniciativa / Punteria.
 // El daño de un arma es (daño base + Poderío), así que sube con el Poderío.
 const ef = computed(() => {
   const p = personaje.value;
@@ -1680,10 +1680,10 @@ const armadurasVisibles = computed(() =>
 // resistencia efectiva, subir Cuerpo o Resistencia se refleja aquí también.
 const armaduraTotal = computed(() => {
   const r = ef.value.resistencia;
-  const total = { lacerante: r, penetrante: r, contundente: r };
+  const total = { lacerante: r, perforante: r, contundente: r };
   for (const a of armadurasVisibles.value) {
     total.lacerante += a.lac;
-    total.penetrante += a.cor;
+    total.perforante += a.cor;
     total.contundente += a.con;
   }
   return total;
@@ -2108,7 +2108,7 @@ async function cargarPersonaje() {
           // Desglose por tipo de daño (para el tooltip), solo tipos con base > 0
           const danos = [
             { etiqueta: "Lacerante", clase: "l", base: arma.lacerante },
-            { etiqueta: "Perforante", clase: "p", base: arma.penetrante },
+            { etiqueta: "Perforante", clase: "p", base: arma.perforante },
             { etiqueta: "Contundente", clase: "c", base: arma.contundente },
           ]
             .filter((d) => d.base > 0)
@@ -2119,7 +2119,7 @@ async function cargarPersonaje() {
             nombre: arma.nombre,
             // Daño final = base del arma + Poderío (por tipo)
             lac: conPoderio(arma.lacerante),
-            cor: conPoderio(arma.penetrante),
+            cor: conPoderio(arma.perforante),
             con: conPoderio(arma.contundente),
             critico: arma.critico,
             // Rango de crítico final (arma + personaje) y datos del desglose
@@ -2156,7 +2156,7 @@ async function cargarPersonaje() {
               id: armadura.id,
               nombre: armadura.nombre,
               lac: armadura.lacerante,
-              cor: armadura.penetrante,
+              cor: armadura.perforante,
               con: armadura.contundente,
               etiquetas: armadura.categoria ? [armadura.categoria] : [],
             };

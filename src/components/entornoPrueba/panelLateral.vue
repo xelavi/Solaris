@@ -575,6 +575,7 @@ function elegirTipo(tipo: EntradaDiario["tipo"]) {
 function seleccionar(item: ItemDisponible) {
   if (!tipoElegido.value) return;
   agregarAlDiario(tipoElegido.value, item.id, item.nombre);
+  cerrarModal();
 }
 
 // Arrastrar una entrada del diario hacia el mapa: la escena leerá estos datos

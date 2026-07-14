@@ -132,7 +132,7 @@
                   </div>
                   <div class="fx-sh p">
                     <span class="fx-sh-cap">P</span>
-                    <div class="fx-sh-fig"><span class="tnum">{{ criatura.armadura.penetrante }}</span></div>
+                    <div class="fx-sh-fig"><span class="tnum">{{ criatura.armadura.perforante }}</span></div>
                   </div>
                   <div class="fx-sh c">
                     <span class="fx-sh-cap">C</span>
@@ -192,10 +192,17 @@
                   :key="i"
                   :class="['fx-exp', { open: tecnica.abierto }]"
                 >
-                  <button class="fx-exp-h" @click="tecnica.abierto = !tecnica.abierto">
+                  <div
+                    class="fx-exp-h"
+                    :class="{
+                      'fx-usable': tieneDano(tecnica),
+                      'fx-sel': tieneDano(tecnica) && tecnicaSeleccionadaId === i,
+                    }"
+                    @click="tieneDano(tecnica) && seleccionarTecnica(i)"
+                  >
                     <span class="fx-exp-n">{{ tecnica.nombre }}</span>
                     <span
-                      v-if="esUsable(tecnica.tipoEjecucion)"
+                      v-if="esUsable(tecnica.tipoEjecucion) && !tieneDano(tecnica)"
                       class="fx-use-btn"
                       role="button"
                       title="Usar"
@@ -215,10 +222,49 @@
                         tecnica.tipoAccion === "mental" ? "Mental" : "Física"
                       }}</span>
                     </span>
-                    <svg class="fx-chev" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </button>
+                    <button
+                      type="button"
+                      class="fx-exp-toggle"
+                      @click.stop="tecnica.abierto = !tecnica.abierto"
+                      title="Ver detalles"
+                    >
+                      <svg class="fx-chev" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Alcance / crítico / daño: siempre visibles para técnicas de ataque -->
+                  <div v-if="tieneDano(tecnica)" class="fx-tec-atk">
+                    <span class="fx-tec-stat">{{
+                      tecnica.alcance > 0 ? tecnica.alcance + " ecsas" : "Cuerpo a cuerpo"
+                    }}</span>
+                    <span class="fx-tec-stat">×{{ tecnica.multiplicadorCritico }} · {{ tecnica.rangoCritico }}-24</span>
+                    <div class="fx-dmgcell">
+                      <span
+                        v-if="tecnica.dano.lacerante > 0"
+                        class="fx-dchip l tnum fx-dpick"
+                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'lacerante' }"
+                        @click.stop="seleccionarDanoTecnica(i, 'lacerante')"
+                        >L {{ tecnica.dano.lacerante }}</span
+                      >
+                      <span
+                        v-if="tecnica.dano.perforante > 0"
+                        class="fx-dchip p tnum fx-dpick"
+                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'perforante' }"
+                        @click.stop="seleccionarDanoTecnica(i, 'perforante')"
+                        >P {{ tecnica.dano.perforante }}</span
+                      >
+                      <span
+                        v-if="tecnica.dano.contundente > 0"
+                        class="fx-dchip c tnum fx-dpick"
+                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'contundente' }"
+                        @click.stop="seleccionarDanoTecnica(i, 'contundente')"
+                        >C {{ tecnica.dano.contundente }}</span
+                      >
+                    </div>
+                  </div>
+
                   <div v-if="tecnica.abierto" class="fx-exp-b">
                     <p v-if="tecnica.requisito" class="fx-exp-meta">
                       <span class="fx-exp-meta-l">Requisito:</span> {{ tecnica.requisito }}
@@ -229,16 +275,26 @@
                     <p v-if="tecnica.descripcion" class="fx-exp-d">
                       <DescripcionConEstados :texto="tecnica.descripcion" />
                     </p>
-                    <div v-if="tieneDano(tecnica)" class="fx-dmgcell">
-                      <span v-if="tecnica.dano.lacerante > 0" class="fx-dchip l tnum">L {{ tecnica.dano.lacerante }}</span>
-                      <span v-if="tecnica.dano.penetrante > 0" class="fx-dchip p tnum">P {{ tecnica.dano.penetrante }}</span>
-                      <span v-if="tecnica.dano.contundente > 0" class="fx-dchip c tnum">C {{ tecnica.dano.contundente }}</span>
-                    </div>
                   </div>
                 </div>
                 <div v-if="!tecnicas.length" class="fx-empty">Sin técnicas</div>
               </div>
             </div>
+
+            <!-- Botón de ataque: usa la técnica y el tipo de daño seleccionados -->
+            <button
+              v-if="tecnicasConDano.length"
+              class="fx-attack-btn"
+              :disabled="!puedeAtacarTecnica"
+              @click="confirmarAtaqueTecnica"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6.92 5H5l9 9 1.42-1.42L6.92 5Zm9.66-1 2.83 2.83-3.54 3.54 1.42 1.41 1.4-1.4 1.42 1.4L21 11l-1.42-1.42L21 8.17 16.58 3.75 15.17 5.17 16.58 4ZM3 17.25V21h3.75l9.06-9.06-3.75-3.75L3 17.25Z"
+                />
+              </svg>
+              <span>Atacar</span>
+            </button>
 
             <!-- Ventaja / Desventaja: afecta a todas las tiradas de la ficha -->
             <div
@@ -344,8 +400,8 @@ function formatoMod(valor: number): string {
 }
 
 // --- Habilidades ---
-// Las criaturas tienen todas las habilidades pero con 0 rangos: su total es solo
-// el modificador del atributo asociado (Cuerpo / Agilidad / Mente).
+// El total de cada habilidad es el modificador del atributo asociado más los
+// rangos que se le hayan asignado en la creación de la criatura.
 function modAtributo(atributo: string): number {
   const a = criatura.value?.atributos;
   if (!a) return 0;
@@ -353,15 +409,21 @@ function modAtributo(atributo: string): number {
   if (atributo === "Agilidad") return a.agilidad;
   return a.mente; // Mente / Artesanía / Recolección
 }
+function rangosHabilidad(id: number): number {
+  return criatura.value?.habilidades.find((h) => h.id === id)?.rangos ?? 0;
+}
 const habilidades = computed(() =>
-  (habilidadesData.habilidades as { nombre: string; atributo: string }[]).map(
-    (h) => ({
+  (
+    habilidadesData.habilidades as { id: number; nombre: string; atributo: string }[]
+  ).map((h) => {
+    const rangos = rangosHabilidad(h.id);
+    return {
       nombre: h.nombre,
       atributo: h.atributo,
-      competente: false,
-      total: modAtributo(h.atributo),
-    }),
-  ),
+      competente: rangos > 0,
+      total: modAtributo(h.atributo) + rangos,
+    };
+  }),
 );
 const mostrarTodas = ref(true);
 const habilidadesOrdenadas = computed(() =>
@@ -434,13 +496,13 @@ function esUsable(tipo?: string): boolean {
 }
 function tieneDano(tecnica: Tecnica): boolean {
   const d = tecnica.dano;
-  return d.lacerante > 0 || d.penetrante > 0 || d.contundente > 0;
+  return d.lacerante > 0 || d.perforante > 0 || d.contundente > 0;
 }
 // Cadena legible del daño de una técnica ("8 lacerante · 2 contundente").
 function textoDano(dano: DanoPorTipo): string {
   const partes: string[] = [];
   if (dano.lacerante > 0) partes.push(`${dano.lacerante} lacerante`);
-  if (dano.penetrante > 0) partes.push(`${dano.penetrante} penetrante`);
+  if (dano.perforante > 0) partes.push(`${dano.perforante} perforante`);
   if (dano.contundente > 0) partes.push(`${dano.contundente} contundente`);
   return partes.join(" · ");
 }
@@ -461,6 +523,74 @@ function usarTecnica(tecnica: Tecnica) {
     dano: golpea ? textoDano(tecnica.dano) : undefined,
     danoColor: golpea ? "#d8365f" : undefined,
     color: esReaccion ? "#cc7d10" : golpea ? "#d8365f" : "#4f46e5",
+  });
+}
+
+// --- Selección de ataque: igual que las armas del personaje, se elige la
+// técnica y uno de sus 3 tipos de daño antes de confirmar con "Atacar". ---
+type TipoDanoTecnica = "lacerante" | "perforante" | "contundente";
+const tecnicaSeleccionadaId = ref<number | null>(null);
+const tipoDanoSeleccionado = ref<TipoDanoTecnica | null>(null);
+
+function seleccionarTecnica(i: number) {
+  if (tecnicaSeleccionadaId.value !== i) {
+    tecnicaSeleccionadaId.value = i;
+    tipoDanoSeleccionado.value = null;
+  }
+}
+
+function seleccionarDanoTecnica(i: number, tipo: TipoDanoTecnica) {
+  tecnicaSeleccionadaId.value = i;
+  tipoDanoSeleccionado.value = tipo;
+}
+
+const tecnicasConDano = computed(() => tecnicas.value.filter(tieneDano));
+
+const tecnicaSeleccionada = computed(() =>
+  tecnicaSeleccionadaId.value !== null
+    ? (tecnicas.value[tecnicaSeleccionadaId.value] ?? null)
+    : null,
+);
+
+const puedeAtacarTecnica = computed(
+  () => !!tecnicaSeleccionada.value && !!tipoDanoSeleccionado.value,
+);
+
+const ETIQUETA_DANO_TECNICA: Record<TipoDanoTecnica, string> = {
+  lacerante: "lacerante",
+  perforante: "perforante",
+  contundente: "contundente",
+};
+const COLOR_DANO_TECNICA: Record<TipoDanoTecnica, string> = {
+  lacerante: "#d8365f",
+  perforante: "#2f7fd8",
+  contundente: "#cc7d10",
+};
+
+// Ataque con técnica: tira 2d12 + Estilo marcial para impactar y aplica el
+// daño plano del tipo elegido, usando el rango/multiplicador de crítico
+// propios de la técnica.
+function confirmarAtaqueTecnica() {
+  if (
+    !criatura.value ||
+    !tecnicaSeleccionada.value ||
+    !tipoDanoSeleccionado.value
+  )
+    return;
+  const tecnica = tecnicaSeleccionada.value;
+  const tipo = tipoDanoSeleccionado.value;
+  const valor = tecnica.dano[tipo];
+  const tirada = tirar2d12(
+    criatura.value.estiloMarcial,
+    "Estilo marcial",
+    ventajaTirada.value,
+  );
+  emit("tirar", {
+    texto: `ataca con ${tecnica.nombre}`,
+    tirada,
+    dano: `${valor} ${ETIQUETA_DANO_TECNICA[tipo]}`,
+    danoColor: COLOR_DANO_TECNICA[tipo],
+    color: COLOR_DANO_TECNICA[tipo],
   });
 }
 </script>
@@ -1082,12 +1212,8 @@ function usarTecnica(tecnica: Tecnica) {
   padding: 10px 2px;
   background: none;
   border: none;
-  cursor: pointer;
   text-align: left;
   color: inherit;
-}
-.fx-exp-h:hover .fx-exp-n {
-  color: var(--accent);
 }
 .fx-exp-n {
   font-size: 12.5px;
@@ -1209,6 +1335,104 @@ function usarTecnica(tecnica: Tecnica) {
   color: var(--con);
   background: color-mix(in srgb, var(--con) 10%, var(--surface));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--con) 25%, var(--border));
+}
+
+/* Técnica seleccionada para atacar (persistente, no solo hover). */
+.fx-exp-h.fx-sel,
+.fx-exp-h.fx-sel:hover {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  border-radius: 8px;
+}
+.fx-exp-h.fx-usable:hover .fx-exp-n {
+  color: var(--accent);
+}
+.fx-exp-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+}
+
+/* Alcance / crítico / daño de una técnica de ataque (siempre visibles). */
+.fx-tec-atk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px 8px;
+  flex-wrap: wrap;
+}
+.fx-tec-stat {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Chips de daño seleccionables y su estado activo. */
+.fx-dchip.fx-dpick {
+  cursor: pointer;
+}
+.fx-dchip.fx-dpick:hover {
+  filter: brightness(1.12);
+}
+.fx-dchip.l.fx-dsel {
+  color: #fff;
+  background: var(--lac);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lac) 55%, transparent);
+}
+.fx-dchip.p.fx-dsel {
+  color: #fff;
+  background: var(--pen);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pen) 55%, transparent);
+}
+.fx-dchip.c.fx-dsel {
+  color: #fff;
+  background: var(--con);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--con) 55%, transparent);
+}
+
+/* Botón de ataque */
+.fx-attack-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 90%, #fff),
+    var(--accent)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, #000);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.fx-attack-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.fx-attack-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.fx-attack-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.fx-attack-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Ventaja / Desventaja */

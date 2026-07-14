@@ -1,6 +1,6 @@
 # Armadura de espinas de ébano
 
-Penetrante: 3
+Perforante: 3
 Lacerante: 4
 Aporreo: 5
 Categoria: Media

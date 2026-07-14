@@ -162,7 +162,10 @@ const opciones: OpcionMenu[] = [
     id: "iniciativa",
     label: "Tirar iniciativa",
     icono: iconoIniciativa,
-    accion: () => (iniciativaAbierta.value = true),
+    accion: () => {
+      desactivar();
+      iniciativaAbierta.value = true;
+    },
     activa: () => iniciativaAbierta.value,
   },
   {

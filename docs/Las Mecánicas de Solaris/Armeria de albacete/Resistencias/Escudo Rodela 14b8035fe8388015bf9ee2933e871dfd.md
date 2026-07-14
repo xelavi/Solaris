@@ -1,5 +1,5 @@
 # Escudo/Rodela
 
-Penetrante: 1
+Perforante: 1
 Lacerante: 1
 Aporreo: 1

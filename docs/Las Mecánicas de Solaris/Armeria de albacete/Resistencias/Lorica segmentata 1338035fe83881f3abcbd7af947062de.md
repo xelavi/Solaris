@@ -1,6 +1,6 @@
 # Lorica segmentata
 
-Penetrante: 2
+Perforante: 2
 Lacerante: 3
 Aporreo: 4
 Categoria: Pesada
