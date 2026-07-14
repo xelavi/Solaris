@@ -12,6 +12,9 @@
               <h1>{{ criatura.nombre || "Sin nombre" }}</h1>
               <div class="fx-role">{{ rolTexto }}</div>
               <div class="fx-chips">
+                <span v-if="criatura.estiloMarcial.nombre" class="fx-chip">{{
+                  criatura.estiloMarcial.nombre
+                }}</span>
                 <span class="fx-chip">Dificultad {{ criatura.dificultad }}</span>
                 <span class="fx-chip">{{ criatura.experiencia }} XP</span>
               </div>
@@ -126,17 +129,16 @@
               <div class="fx-ac">
                 <div class="fx-ac-lbl">Armadura</div>
                 <div class="fx-shields">
-                  <div class="fx-sh l">
-                    <span class="fx-sh-cap">L</span>
-                    <div class="fx-sh-fig"><span class="tnum">{{ criatura.armadura.lacerante }}</span></div>
-                  </div>
-                  <div class="fx-sh p">
-                    <span class="fx-sh-cap">P</span>
-                    <div class="fx-sh-fig"><span class="tnum">{{ criatura.armadura.perforante }}</span></div>
-                  </div>
-                  <div class="fx-sh c">
-                    <span class="fx-sh-cap">C</span>
-                    <div class="fx-sh-fig"><span class="tnum">{{ criatura.armadura.contundente }}</span></div>
+                  <div
+                    v-for="tipo in TIPOS_DANO"
+                    :key="tipo.key"
+                    class="fx-sh"
+                    :style="{ '--dc': tipo.color }"
+                  >
+                    <span class="fx-sh-cap">{{ tipo.abbr }}</span>
+                    <div class="fx-sh-fig">
+                      <span class="tnum">{{ criatura.armadura[tipo.key] }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -242,25 +244,13 @@
                     <span class="fx-tec-stat">×{{ tecnica.multiplicadorCritico }} · {{ tecnica.rangoCritico }}-24</span>
                     <div class="fx-dmgcell">
                       <span
-                        v-if="tecnica.dano.lacerante > 0"
-                        class="fx-dchip l tnum fx-dpick"
-                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'lacerante' }"
-                        @click.stop="seleccionarDanoTecnica(i, 'lacerante')"
-                        >L {{ tecnica.dano.lacerante }}</span
-                      >
-                      <span
-                        v-if="tecnica.dano.perforante > 0"
-                        class="fx-dchip p tnum fx-dpick"
-                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'perforante' }"
-                        @click.stop="seleccionarDanoTecnica(i, 'perforante')"
-                        >P {{ tecnica.dano.perforante }}</span
-                      >
-                      <span
-                        v-if="tecnica.dano.contundente > 0"
-                        class="fx-dchip c tnum fx-dpick"
-                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === 'contundente' }"
-                        @click.stop="seleccionarDanoTecnica(i, 'contundente')"
-                        >C {{ tecnica.dano.contundente }}</span
+                        v-for="tipo in danoActivo(tecnica)"
+                        :key="tipo.key"
+                        class="fx-dchip tnum fx-dpick"
+                        :style="{ '--dc': tipo.color }"
+                        :class="{ 'fx-dsel': tecnicaSeleccionadaId === i && tipoDanoSeleccionado === tipo.key }"
+                        @click.stop="seleccionarDanoTecnica(i, tipo.key)"
+                        >{{ tipo.abbr }} {{ tipo.valor }}</span
                       >
                     </div>
                   </div>
@@ -275,6 +265,14 @@
                     <p v-if="tecnica.descripcion" class="fx-exp-d">
                       <DescripcionConEstados :texto="tecnica.descripcion" />
                     </p>
+                    <div v-if="tecnica.estadosAplicados.length" class="fx-tec-estados">
+                      <span
+                        v-for="(ea, ei) in tecnica.estadosAplicados"
+                        :key="ei"
+                        class="fx-tag fx-tag-estado"
+                        >{{ nombreEstado(ea.estadoId) }} (Dif. {{ ea.dificultad }})</span
+                      >
+                    </div>
                   </div>
                 </div>
                 <div v-if="!tecnicas.length" class="fx-empty">Sin técnicas</div>
@@ -327,6 +325,7 @@ import type {
   DanoPorTipo,
 } from "../../domain/Criatura";
 import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import { obtenerEstado } from "../../domain/EstadosAlterados";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
@@ -494,17 +493,45 @@ function claseEjecucion(tipo: TipoEjecucion): string {
 function esUsable(tipo?: string): boolean {
   return tipo === "accion" || tipo === "reaccion";
 }
+// Tipos de daño compartidos por técnicas, con abreviatura, etiqueta y color.
+const TIPOS_DANO: Array<{
+  key: keyof DanoPorTipo;
+  abbr: string;
+  etiqueta: string;
+  color: string;
+}> = [
+  { key: "lacerante", abbr: "L", etiqueta: "lacerante", color: "#d8365f" },
+  { key: "perforante", abbr: "P", etiqueta: "perforante", color: "#2f7fd8" },
+  { key: "contundente", abbr: "C", etiqueta: "contundente", color: "#cc7d10" },
+  { key: "pyro", abbr: "Py", etiqueta: "pyro", color: "#e8590c" },
+  { key: "cryo", abbr: "Cr", etiqueta: "cryo", color: "#1098ad" },
+  { key: "acido", abbr: "Ac", etiqueta: "ácido", color: "#66a80f" },
+  { key: "luz", abbr: "Lu", etiqueta: "luz", color: "#f08c00" },
+  { key: "oscuridad", abbr: "Os", etiqueta: "oscuridad", color: "#495057" },
+  { key: "radiacion", abbr: "Ra", etiqueta: "radiación", color: "#94d82d" },
+  { key: "espiral", abbr: "Es", etiqueta: "espiral", color: "#9c36b5" },
+];
+
 function tieneDano(tecnica: Tecnica): boolean {
-  const d = tecnica.dano;
-  return d.lacerante > 0 || d.perforante > 0 || d.contundente > 0;
+  return TIPOS_DANO.some((tipo) => tecnica.dano[tipo.key] > 0);
 }
-// Cadena legible del daño de una técnica ("8 lacerante · 2 contundente").
+
+function danoActivo(tecnica: Tecnica) {
+  return TIPOS_DANO.filter((tipo) => tecnica.dano[tipo.key] > 0).map((tipo) => ({
+    ...tipo,
+    valor: tecnica.dano[tipo.key],
+  }));
+}
+
+// Cadena legible del daño de una técnica ("8 lacerante · 2 pyro").
 function textoDano(dano: DanoPorTipo): string {
-  const partes: string[] = [];
-  if (dano.lacerante > 0) partes.push(`${dano.lacerante} lacerante`);
-  if (dano.perforante > 0) partes.push(`${dano.perforante} perforante`);
-  if (dano.contundente > 0) partes.push(`${dano.contundente} contundente`);
-  return partes.join(" · ");
+  return TIPOS_DANO.filter((tipo) => dano[tipo.key] > 0)
+    .map((tipo) => `${dano[tipo.key]} ${tipo.etiqueta}`)
+    .join(" · ");
+}
+
+function nombreEstado(estadoId: number): string {
+  return obtenerEstado(estadoId)?.nombre ?? "Estado desconocido";
 }
 
 // Usa una técnica: vuelca su descripción al chat. Si hace daño, tira además para
@@ -518,7 +545,11 @@ function usarTecnica(tecnica: Tecnica) {
     descripcion: tecnica.descripcion || undefined,
     tipoEjecucion: tecnica.tipoEjecucion,
     tirada: golpea
-      ? tirar2d12(criatura.value.estiloMarcial, "Estilo marcial", ventajaTirada.value)
+      ? tirar2d12(
+          criatura.value.estiloMarcial.valor,
+          "Estilo marcial",
+          ventajaTirada.value,
+        )
       : undefined,
     dano: golpea ? textoDano(tecnica.dano) : undefined,
     danoColor: golpea ? "#d8365f" : undefined,
@@ -527,8 +558,8 @@ function usarTecnica(tecnica: Tecnica) {
 }
 
 // --- Selección de ataque: igual que las armas del personaje, se elige la
-// técnica y uno de sus 3 tipos de daño antes de confirmar con "Atacar". ---
-type TipoDanoTecnica = "lacerante" | "perforante" | "contundente";
+// técnica y uno de sus tipos de daño antes de confirmar con "Atacar". ---
+type TipoDanoTecnica = keyof DanoPorTipo;
 const tecnicaSeleccionadaId = ref<number | null>(null);
 const tipoDanoSeleccionado = ref<TipoDanoTecnica | null>(null);
 
@@ -556,17 +587,6 @@ const puedeAtacarTecnica = computed(
   () => !!tecnicaSeleccionada.value && !!tipoDanoSeleccionado.value,
 );
 
-const ETIQUETA_DANO_TECNICA: Record<TipoDanoTecnica, string> = {
-  lacerante: "lacerante",
-  perforante: "perforante",
-  contundente: "contundente",
-};
-const COLOR_DANO_TECNICA: Record<TipoDanoTecnica, string> = {
-  lacerante: "#d8365f",
-  perforante: "#2f7fd8",
-  contundente: "#cc7d10",
-};
-
 // Ataque con técnica: tira 2d12 + Estilo marcial para impactar y aplica el
 // daño plano del tipo elegido, usando el rango/multiplicador de crítico
 // propios de la técnica.
@@ -579,18 +599,19 @@ function confirmarAtaqueTecnica() {
     return;
   const tecnica = tecnicaSeleccionada.value;
   const tipo = tipoDanoSeleccionado.value;
+  const tipoInfo = TIPOS_DANO.find((t) => t.key === tipo)!;
   const valor = tecnica.dano[tipo];
   const tirada = tirar2d12(
-    criatura.value.estiloMarcial,
+    criatura.value.estiloMarcial.valor,
     "Estilo marcial",
     ventajaTirada.value,
   );
   emit("tirar", {
     texto: `ataca con ${tecnica.nombre}`,
     tirada,
-    dano: `${valor} ${ETIQUETA_DANO_TECNICA[tipo]}`,
-    danoColor: COLOR_DANO_TECNICA[tipo],
-    color: COLOR_DANO_TECNICA[tipo],
+    dano: `${valor} ${tipoInfo.etiqueta}`,
+    danoColor: tipoInfo.color,
+    color: tipoInfo.color,
   });
 }
 </script>
@@ -1008,7 +1029,8 @@ function confirmarAtaqueTecnica() {
 }
 .fx-shields {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px 8px;
   justify-content: center;
 }
 .fx-sh {
@@ -1044,35 +1066,15 @@ function confirmarAtaqueTecnica() {
   color: var(--ink);
   line-height: 1;
 }
-.fx-sh.l .fx-sh-cap {
-  color: var(--lac);
+.fx-sh .fx-sh-cap {
+  color: var(--dc);
 }
-.fx-sh.l .fx-sh-fig::before {
-  background: color-mix(in srgb, var(--lac) 42%, var(--border));
+.fx-sh .fx-sh-fig::before {
+  background: color-mix(in srgb, var(--dc) 42%, var(--border));
 }
-.fx-sh.l .fx-sh-fig::after {
+.fx-sh .fx-sh-fig::after {
   inset: 2px;
-  background: color-mix(in srgb, var(--lac) 9%, var(--surface));
-}
-.fx-sh.p .fx-sh-cap {
-  color: var(--pen);
-}
-.fx-sh.p .fx-sh-fig::before {
-  background: color-mix(in srgb, var(--pen) 42%, var(--border));
-}
-.fx-sh.p .fx-sh-fig::after {
-  inset: 2px;
-  background: color-mix(in srgb, var(--pen) 9%, var(--surface));
-}
-.fx-sh.c .fx-sh-cap {
-  color: var(--con);
-}
-.fx-sh.c .fx-sh-fig::before {
-  background: color-mix(in srgb, var(--con) 42%, var(--border));
-}
-.fx-sh.c .fx-sh-fig::after {
-  inset: 2px;
-  background: color-mix(in srgb, var(--con) 9%, var(--surface));
+  background: color-mix(in srgb, var(--dc) 9%, var(--surface));
 }
 .fx-sp {
   padding: 13px 14px;
@@ -1263,6 +1265,17 @@ function confirmarAtaqueTecnica() {
   color: var(--muted);
   background: var(--surface-2);
 }
+.fx-tec-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.fx-tag-estado {
+  color: #7c3aed;
+  background: #f3e8ff;
+  border-color: #e0c8fb;
+}
 .fx-use-btn {
   margin-left: 6px;
   padding: 2px 8px;
@@ -1321,20 +1334,10 @@ function confirmarAtaqueTecnica() {
   border-radius: 6px;
   padding: 3px 8px;
 }
-.fx-dchip.l {
-  color: var(--lac);
-  background: color-mix(in srgb, var(--lac) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lac) 25%, var(--border));
-}
-.fx-dchip.p {
-  color: var(--pen);
-  background: color-mix(in srgb, var(--pen) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pen) 25%, var(--border));
-}
-.fx-dchip.c {
-  color: var(--con);
-  background: color-mix(in srgb, var(--con) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--con) 25%, var(--border));
+.fx-dchip {
+  color: var(--dc);
+  background: color-mix(in srgb, var(--dc) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc) 25%, var(--border));
 }
 
 /* Técnica seleccionada para atacar (persistente, no solo hover). */
@@ -1378,20 +1381,10 @@ function confirmarAtaqueTecnica() {
 .fx-dchip.fx-dpick:hover {
   filter: brightness(1.12);
 }
-.fx-dchip.l.fx-dsel {
+.fx-dchip.fx-dsel {
   color: #fff;
-  background: var(--lac);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lac) 55%, transparent);
-}
-.fx-dchip.p.fx-dsel {
-  color: #fff;
-  background: var(--pen);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pen) 55%, transparent);
-}
-.fx-dchip.c.fx-dsel {
-  color: #fff;
-  background: var(--con);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--con) 55%, transparent);
+  background: var(--dc);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dc) 55%, transparent);
 }
 
 /* Botón de ataque */

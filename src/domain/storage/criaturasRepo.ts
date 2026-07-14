@@ -3,7 +3,7 @@
 // datos asíncronos (backend intercambiable) + puntero "en creación" local.
 
 import type { CriaturaData } from "../Criatura";
-import { normalizarTecnica } from "../Criatura";
+import { normalizarTecnica, normalizarEstiloMarcial } from "../Criatura";
 import {
   leerJSON,
   guardarJSON,
@@ -33,10 +33,11 @@ export async function obtenerCriatura(
   const criatura = await leerJSON<CriaturaData>(id);
   if (!criatura) return null;
   // Migra técnicas del formato antiguo (activa/esMental) al unificado y
-  // garantiza el campo estiloMarcial (criaturas antiguas no lo tenían).
+  // garantiza el campo estiloMarcial (criaturas antiguas no lo tenían o lo
+  // tenían como número plano).
   return {
     ...criatura,
-    estiloMarcial: criatura.estiloMarcial ?? 0,
+    estiloMarcial: normalizarEstiloMarcial(criatura.estiloMarcial),
     tecnicas: (criatura.tecnicas ?? []).map(normalizarTecnica),
     habilidades: criatura.habilidades ?? [],
   };

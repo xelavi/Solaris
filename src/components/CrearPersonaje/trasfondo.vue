@@ -101,8 +101,14 @@
               : '',
           ]"
           :disabled="
-            !habilidadesSeleccionadas.includes(habilidad) &&
-            habilidadesSeleccionadas.length >= 3
+            estaHabilidadEnEspecialidad(habilidad) ||
+            (!habilidadesSeleccionadas.includes(habilidad) &&
+              habilidadesSeleccionadas.length >= 3)
+          "
+          :title="
+            estaHabilidadEnEspecialidad(habilidad)
+              ? 'Ya seleccionada en Especialidad'
+              : ''
           "
         >
           <span class="flex items-center gap-2.5">
@@ -220,6 +226,10 @@ watch(trasfondoActual, (newTrasfondo, oldTrasfondo) => {
     characterData.value.trasfondo_habilidades = [];
   }
 });
+
+function estaHabilidadEnEspecialidad(habilidad) {
+  return (characterData.value.especialidad_habilidades || []).includes(habilidad);
+}
 
 function toggleHabilidad(habilidad) {
   const idx = habilidadesSeleccionadas.value.indexOf(habilidad);

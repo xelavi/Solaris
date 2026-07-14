@@ -10,6 +10,12 @@
       <!-- Barra superior -->
       <div class="cx-topbar">
         <button @click="volver" class="cx-back">← Volver al bestiario</button>
+        <button @click="editar" class="cx-edit">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M13.586 3.586a2 2 0 1 1 2.828 2.828l-8.5 8.5a1 1 0 0 1-.44.26l-3 .857a.5.5 0 0 1-.617-.618l.857-3a1 1 0 0 1 .26-.439l8.5-8.5Z" />
+          </svg>
+          Editar
+        </button>
       </div>
 
       <div v-if="!criatura" class="cx-panel cx-tabpad">
@@ -25,6 +31,9 @@
             </div>
             <div class="cx-ident-info">
               <h1>{{ criatura.nombre || "Sin nombre" }}</h1>
+              <div v-if="criatura.estiloMarcial.nombre" class="cx-role">
+                {{ criatura.estiloMarcial.nombre }}
+              </div>
               <div class="cx-chips">
                 <span
                   v-for="etiqueta in criatura.etiquetas"
@@ -118,17 +127,16 @@
             <div class="cx-phead"><span class="cx-grow">Armadura</span></div>
             <div class="cx-ac">
               <div class="cx-shields">
-                <div class="cx-sh l">
-                  <span class="cx-sh-cap">L</span>
-                  <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.lacerante }}</span></div>
-                </div>
-                <div class="cx-sh p">
-                  <span class="cx-sh-cap">P</span>
-                  <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.perforante }}</span></div>
-                </div>
-                <div class="cx-sh c">
-                  <span class="cx-sh-cap">C</span>
-                  <div class="cx-sh-fig"><span class="tnum">{{ criatura.armadura.contundente }}</span></div>
+                <div
+                  v-for="tipo in TIPOS_DANO"
+                  :key="tipo.key"
+                  class="cx-sh"
+                  :style="{ '--dc': tipo.color }"
+                >
+                  <span class="cx-sh-cap">{{ tipo.abbr }}</span>
+                  <div class="cx-sh-fig">
+                    <span class="tnum">{{ criatura.armadura[tipo.key] }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -188,9 +196,21 @@
                 <span class="cx-tec-stat">Crítico: ×{{ tecnica.multiplicadorCritico }} · {{ tecnica.rangoCritico }}-24</span>
               </div>
               <div v-if="tieneDano(tecnica)" class="cx-dmgcell">
-                <span class="cx-dchip l tnum">L {{ tecnica.dano.lacerante }}</span>
-                <span class="cx-dchip p tnum">P {{ tecnica.dano.perforante }}</span>
-                <span class="cx-dchip c tnum">C {{ tecnica.dano.contundente }}</span>
+                <span
+                  v-for="tipo in danoActivo(tecnica)"
+                  :key="tipo.key"
+                  class="cx-dchip tnum"
+                  :style="{ '--dc': tipo.color }"
+                  >{{ tipo.abbr }} {{ tipo.valor }}</span
+                >
+              </div>
+              <div v-if="tecnica.estadosAplicados.length" class="cx-tec-estados">
+                <span
+                  v-for="(ea, ei) in tecnica.estadosAplicados"
+                  :key="ei"
+                  class="cx-tag cx-tag-estado"
+                  >{{ nombreEstado(ea.estadoId) }} (Dif. {{ ea.dificultad }})</span
+                >
               </div>
             </div>
           </div>
@@ -204,15 +224,20 @@
 import { ref, computed, onMounted, inject } from "vue";
 import type {
   CriaturaData,
+  DanoPorTipo,
   Tecnica,
   TipoEjecucion,
 } from "../../domain/Criatura";
+import { obtenerEstado } from "../../domain/EstadosAlterados";
 import {
   cargarCatalogoEtiquetas,
   clasesEtiqueta,
   type Etiqueta,
 } from "../../domain/Etiquetas";
-import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import {
+  obtenerCriatura,
+  editarCriaturaExistente,
+} from "../../domain/storage/criaturasRepo";
 import { useZoomFicha } from "../../domain/useZoomFicha";
 import ControlZoom from "../ControlZoom.vue";
 import DescripcionConEstados from "../DescripcionConEstados.vue";
@@ -230,9 +255,16 @@ const props = defineProps<{
 const criatura = ref<CriaturaData | null>(null);
 
 const navigateToBestiario = inject<() => void>("navigateToBestiario");
+const navigateToCrearCriatura = inject<() => void>("navigateToCrearCriatura");
 
 function volver() {
   if (navigateToBestiario) navigateToBestiario();
+}
+
+function editar() {
+  if (!props.criaturaId) return;
+  editarCriaturaExistente(props.criaturaId);
+  navigateToCrearCriatura?.();
 }
 
 const ETIQUETAS_EJECUCION: Record<TipoEjecucion, string> = {
@@ -260,12 +292,33 @@ function formatoMod(valor: number): string {
   return "0";
 }
 
+// Tipos de daño compartidos por armadura y técnicas, con abreviatura y color.
+const TIPOS_DANO: Array<{ key: keyof DanoPorTipo; abbr: string; color: string }> = [
+  { key: "lacerante", abbr: "L", color: "var(--lac)" },
+  { key: "perforante", abbr: "P", color: "var(--pen)" },
+  { key: "contundente", abbr: "C", color: "var(--con)" },
+  { key: "pyro", abbr: "Py", color: "#e8590c" },
+  { key: "cryo", abbr: "Cr", color: "#1098ad" },
+  { key: "acido", abbr: "Ac", color: "#66a80f" },
+  { key: "luz", abbr: "Lu", color: "#f08c00" },
+  { key: "oscuridad", abbr: "Os", color: "#495057" },
+  { key: "radiacion", abbr: "Ra", color: "#94d82d" },
+  { key: "espiral", abbr: "Es", color: "#9c36b5" },
+];
+
 function tieneDano(tecnica: Tecnica): boolean {
-  return (
-    tecnica.dano.lacerante > 0 ||
-    tecnica.dano.perforante > 0 ||
-    tecnica.dano.contundente > 0
-  );
+  return TIPOS_DANO.some((tipo) => tecnica.dano[tipo.key] > 0);
+}
+
+function danoActivo(tecnica: Tecnica) {
+  return TIPOS_DANO.filter((tipo) => tecnica.dano[tipo.key] > 0).map((tipo) => ({
+    ...tipo,
+    valor: tecnica.dano[tipo.key],
+  }));
+}
+
+function nombreEstado(estadoId: number): string {
+  return obtenerEstado(estadoId)?.nombre ?? "Estado desconocido";
 }
 
 // --- Habilidades ---
@@ -360,6 +413,27 @@ onMounted(async () => {
 .cx-back:hover {
   color: var(--ink);
 }
+.cx-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.cx-edit svg {
+  width: 15px;
+  height: 15px;
+}
+.cx-edit:hover {
+  filter: brightness(1.05);
+}
 
 /* ---------- Panel base ---------- */
 .cx-panel {
@@ -432,6 +506,12 @@ onMounted(async () => {
   font-weight: 800;
   color: var(--ink);
   letter-spacing: -0.4px;
+}
+.cx-role {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
 }
 .cx-chips {
   display: flex;
@@ -635,7 +715,8 @@ onMounted(async () => {
 }
 .cx-shields {
   display: flex;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 10px 8px;
   justify-content: center;
 }
 .cx-sh {
@@ -671,35 +752,15 @@ onMounted(async () => {
   color: var(--ink);
   line-height: 1;
 }
-.cx-sh.l .cx-sh-cap {
-  color: var(--lac);
+.cx-sh .cx-sh-cap {
+  color: var(--dc);
 }
-.cx-sh.l .cx-sh-fig::before {
-  background: color-mix(in srgb, var(--lac) 42%, var(--border));
+.cx-sh .cx-sh-fig::before {
+  background: color-mix(in srgb, var(--dc) 42%, var(--border));
 }
-.cx-sh.l .cx-sh-fig::after {
+.cx-sh .cx-sh-fig::after {
   inset: 2px;
-  background: color-mix(in srgb, var(--lac) 9%, var(--surface));
-}
-.cx-sh.p .cx-sh-cap {
-  color: var(--pen);
-}
-.cx-sh.p .cx-sh-fig::before {
-  background: color-mix(in srgb, var(--pen) 42%, var(--border));
-}
-.cx-sh.p .cx-sh-fig::after {
-  inset: 2px;
-  background: color-mix(in srgb, var(--pen) 9%, var(--surface));
-}
-.cx-sh.c .cx-sh-cap {
-  color: var(--con);
-}
-.cx-sh.c .cx-sh-fig::before {
-  background: color-mix(in srgb, var(--con) 42%, var(--border));
-}
-.cx-sh.c .cx-sh-fig::after {
-  inset: 2px;
-  background: color-mix(in srgb, var(--con) 9%, var(--surface));
+  background: color-mix(in srgb, var(--dc) 9%, var(--surface));
 }
 
 /* ---------- Habilidades ---------- */
@@ -833,6 +894,7 @@ onMounted(async () => {
 }
 .cx-dmgcell {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .cx-dchip {
@@ -843,20 +905,21 @@ onMounted(async () => {
   border-radius: 6px;
   padding: 4px 0;
 }
-.cx-dchip.l {
-  color: var(--lac);
-  background: color-mix(in srgb, var(--lac) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lac) 25%, var(--border));
+.cx-dchip {
+  color: var(--dc);
+  background: color-mix(in srgb, var(--dc) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc) 25%, var(--border));
 }
-.cx-dchip.p {
-  color: var(--pen);
-  background: color-mix(in srgb, var(--pen) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pen) 25%, var(--border));
+.cx-tec-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
 }
-.cx-dchip.c {
-  color: var(--con);
-  background: color-mix(in srgb, var(--con) 10%, var(--surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--con) 25%, var(--border));
+.cx-tag-estado {
+  color: #7c3aed;
+  background: #f3e8ff;
+  border-color: #e0c8fb;
 }
 
 @media (max-width: 720px) {

@@ -127,8 +127,14 @@
           ]"
           :disabled="
             enSubidaNivel ||
+            estaHabilidadEnTrasfondo(habilidad) ||
             (!estaHabilidadSeleccionada(habilidad) &&
               habilidadesSeleccionadas.length >= especialidadActual.numHabilidades)
+          "
+          :title="
+            estaHabilidadEnTrasfondo(habilidad)
+              ? 'Ya seleccionada en Trasfondo'
+              : ''
           "
         >
           <span class="flex items-center gap-2.5">
@@ -273,7 +279,7 @@ const especialidadesDetallados = computed(() => {
     habilidadesNombres: especialidad.habilidades.map(
       (id) => habilidadesMap.value[id] || `Habilidad ${id}`,
     ),
-    numHabilidades: especialidad.habilidades.length,
+    numHabilidades: 3,
     numDotes: characterData.value.nivel || 1, // 1 dote por nivel de personaje
     // Organizar dotes por requisitos (árbol de dependencias)
     gruposDotes: organizarDotesEnGrupos(especialidad.dotes),
@@ -379,6 +385,10 @@ watch(
 
 function estaHabilidadSeleccionada(habilidad) {
   return habilidadesSeleccionadasSet.value.has(habilidad);
+}
+
+function estaHabilidadEnTrasfondo(habilidad) {
+  return (characterData.value.trasfondo_habilidades || []).includes(habilidad);
 }
 
 function estaDoteSeleccionada(doteId) {

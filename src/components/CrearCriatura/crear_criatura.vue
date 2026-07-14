@@ -118,9 +118,18 @@
               />
             </div>
             <div>
+              <label class="label">Estilo marcial (nombre)</label>
+              <input
+                v-model="criatura.estiloMarcial.nombre"
+                type="text"
+                placeholder="Nombre del estilo"
+                class="input"
+              />
+            </div>
+            <div>
               <label class="label">Estilo marcial (mod. de ataque)</label>
               <input
-                v-model.number="criatura.estiloMarcial"
+                v-model.number="criatura.estiloMarcial.valor"
                 type="number"
                 class="input"
               />
@@ -184,7 +193,7 @@
             >
               🛡 Armadura (por tipo de daño)
             </h3>
-            <div class="mx-auto grid max-w-md grid-cols-3 gap-4">
+            <div class="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-5">
               <div
                 v-for="tipo in tiposDano"
                 :key="tipo.key"
@@ -348,9 +357,9 @@
                 ></textarea>
               </div>
 
-              <div class="mb-3 grid max-w-lg grid-cols-3 gap-4">
+              <div class="mb-3 grid max-w-xl grid-cols-3 gap-4">
                 <div>
-                  <label class="label">Alcance (ecsas)</label>
+                  <label class="label whitespace-nowrap">Alcance (ecsas)</label>
                   <input
                     v-model.number="tecnica.alcance"
                     type="number"
@@ -359,7 +368,7 @@
                   />
                 </div>
                 <div>
-                  <label class="label">Rango de crítico</label>
+                  <label class="label whitespace-nowrap">Rango de crítico</label>
                   <input
                     v-model.number="tecnica.rangoCritico"
                     type="number"
@@ -369,7 +378,7 @@
                   />
                 </div>
                 <div>
-                  <label class="label">Multiplicador de crítico</label>
+                  <label class="label whitespace-nowrap">Mult. de crítico</label>
                   <input
                     v-model.number="tecnica.multiplicadorCritico"
                     type="number"
@@ -379,9 +388,9 @@
                 </div>
               </div>
 
-              <div>
+              <div class="mb-3">
                 <label class="label">Daño</label>
-                <div class="grid max-w-md grid-cols-3 gap-4">
+                <div class="grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-5">
                   <div v-for="tipo in tiposDano" :key="tipo.key">
                     <label class="mb-1 block text-xs text-gray-500">{{
                       tipo.label
@@ -393,6 +402,55 @@
                       class="input-number w-full"
                     />
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="mb-1 flex items-center justify-between">
+                  <label class="label">Estados que aplica</label>
+                  <button
+                    type="button"
+                    @click="agregarEstadoTecnica(tecnica)"
+                    class="btn btn-secondary btn-sm"
+                  >
+                    + Añadir estado
+                  </button>
+                </div>
+                <div
+                  v-if="tecnica.estadosAplicados.length === 0"
+                  class="text-sm text-gray-400 italic"
+                >
+                  Sin estados.
+                </div>
+                <div
+                  v-for="(ea, ei) in tecnica.estadosAplicados"
+                  :key="ei"
+                  class="mb-2 flex items-center gap-2"
+                >
+                  <select v-model.number="ea.estadoId" class="input flex-1">
+                    <option
+                      v-for="estado in CATALOGO_ESTADOS"
+                      :key="estado.id"
+                      :value="estado.id"
+                    >
+                      {{ estado.nombre }}
+                    </option>
+                  </select>
+                  <input
+                    v-model.number="ea.dificultad"
+                    type="number"
+                    min="0"
+                    placeholder="Dificultad"
+                    class="input-number w-28"
+                  />
+                  <button
+                    type="button"
+                    @click="eliminarEstadoTecnica(tecnica, ei)"
+                    class="btn-icon"
+                    title="Quitar estado"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
             </div>
@@ -421,6 +479,7 @@ import {
   type Tecnica,
   type TipoEjecucion,
 } from "../../domain/Criatura";
+import { CATALOGO_ESTADOS } from "../../domain/EstadosAlterados";
 import {
   COLORES_ETIQUETA,
   cargarCatalogoEtiquetas,
@@ -495,6 +554,13 @@ const tiposDano: Array<{ key: keyof DanoPorTipo; label: string }> = [
   { key: "lacerante", label: "Lacerante" },
   { key: "perforante", label: "Perforante" },
   { key: "contundente", label: "Contundente" },
+  { key: "pyro", label: "Pyro" },
+  { key: "cryo", label: "Cryo" },
+  { key: "acido", label: "Ácido" },
+  { key: "luz", label: "Luz" },
+  { key: "oscuridad", label: "Oscuridad" },
+  { key: "radiacion", label: "Radiación" },
+  { key: "espiral", label: "Espiral" },
 ];
 
 const tiposEjecucion: Array<{ value: TipoEjecucion; label: string }> = [
@@ -578,6 +644,17 @@ function agregarTecnica() {
 
 function eliminarTecnica(index: number) {
   criatura.value.tecnicas.splice(index, 1);
+}
+
+function agregarEstadoTecnica(tecnica: Tecnica) {
+  tecnica.estadosAplicados.push({
+    estadoId: CATALOGO_ESTADOS[0]?.id ?? 0,
+    dificultad: 12,
+  });
+}
+
+function eliminarEstadoTecnica(tecnica: Tecnica, index: number) {
+  tecnica.estadosAplicados.splice(index, 1);
 }
 
 // --- Habilidades: valor final editable directamente, sin sumar atributos ---

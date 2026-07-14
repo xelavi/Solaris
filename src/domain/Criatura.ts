@@ -1,13 +1,43 @@
 import type { ArbolAttributes } from "./Character";
 
 /** Tipo de daño elemental compartido con armas y armaduras. */
-export type TipoDano = "lacerante" | "perforante" | "contundente";
+export type TipoDano =
+  | "lacerante"
+  | "perforante"
+  | "contundente"
+  | "pyro"
+  | "cryo"
+  | "acido"
+  | "luz"
+  | "oscuridad"
+  | "radiacion"
+  | "espiral";
 
-/** Reparto de daño por los 3 tipos, igual que armas/armaduras. */
+/** Reparto de daño por tipos, igual que armas/armaduras. */
 export interface DanoPorTipo {
   lacerante: number;
   perforante: number;
   contundente: number;
+  pyro: number;
+  cryo: number;
+  acido: number;
+  luz: number;
+  oscuridad: number;
+  radiacion: number;
+  espiral: number;
+}
+
+/** Estado alterado que aplica una técnica, con su dificultad de salvación. */
+export interface EstadoDeTecnica {
+  /** id del catálogo en estadosAlterados.json. */
+  estadoId: number;
+  dificultad: number;
+}
+
+/** Estilo marcial de una criatura: nombre de sabor + modificador numérico. */
+export interface EstiloMarcialCriatura {
+  nombre: string;
+  valor: number;
 }
 
 /** Cómo se ejecuta una técnica/activa. Compartido con activas y estiloMarcial. */
@@ -36,6 +66,8 @@ export interface Tecnica {
   /** Condición de uso. */
   usable_si: string;
   dano: DanoPorTipo;
+  /** Estados que aplica al impactar, cada uno con su propia dificultad. */
+  estadosAplicados: EstadoDeTecnica[];
   /** Alcance en ecsas (0 = cuerpo a cuerpo). */
   alcance: number;
   /** Valor mínimo de la tirada de ataque que se considera crítico (sobre 24). */
@@ -66,7 +98,7 @@ export interface CriaturaData {
    * Modificador numérico de "estilo marcial": se suma al 2d12 en las tiradas de
    * ataque de las técnicas que hacen daño (equivalente al Nivel del personaje).
    */
-  estiloMarcial: number;
+  estiloMarcial: EstiloMarcialCriatura;
   atributos: ArbolAttributes;
   tecnicas: Tecnica[];
   /** Rangos asignados por habilidad (id de habilidades.json). */
@@ -103,6 +135,33 @@ export function crearAtributosCriatura(): ArbolAttributes {
   };
 }
 
+/** Reparto de daño vacío (todos los tipos a 0). */
+export function crearDanoVacio(): DanoPorTipo {
+  return {
+    lacerante: 0,
+    perforante: 0,
+    contundente: 0,
+    pyro: 0,
+    cryo: 0,
+    acido: 0,
+    luz: 0,
+    oscuridad: 0,
+    radiacion: 0,
+    espiral: 0,
+  };
+}
+
+/** Completa un objeto de daño parcial (formato antiguo) con los tipos que falten a 0. */
+function normalizarDano(d: any): DanoPorTipo {
+  const vacio = crearDanoVacio();
+  if (!d) return vacio;
+  const resultado = { ...vacio };
+  for (const tipo of Object.keys(vacio) as (keyof DanoPorTipo)[]) {
+    if (typeof d[tipo] === "number") resultado[tipo] = d[tipo];
+  }
+  return resultado;
+}
+
 /** Técnica vacía para el formulario de creación. */
 export function crearTecnicaVacia(): Tecnica {
   return {
@@ -113,7 +172,8 @@ export function crearTecnicaVacia(): Tecnica {
     acciones: 1,
     requisito: "",
     usable_si: "",
-    dano: { lacerante: 0, perforante: 0, contundente: 0 },
+    dano: crearDanoVacio(),
+    estadosAplicados: [],
     alcance: 0,
     rangoCritico: 24,
     multiplicadorCritico: 2,
@@ -125,11 +185,13 @@ export function crearTecnicaVacia(): Tecnica {
  * formato antiguo (`activa`/`esMental` booleanos) al nuevo sistema de campos.
  */
 export function normalizarTecnica(t: any): Tecnica {
-  const dano: DanoPorTipo = t?.dano ?? {
-    lacerante: 0,
-    perforante: 0,
-    contundente: 0,
-  };
+  const dano = normalizarDano(t?.dano);
+  const estadosAplicados: EstadoDeTecnica[] = Array.isArray(t?.estadosAplicados)
+    ? t.estadosAplicados.map((e: any) => ({
+        estadoId: typeof e?.estadoId === "number" ? e.estadoId : 0,
+        dificultad: typeof e?.dificultad === "number" ? e.dificultad : 12,
+      }))
+    : [];
 
   // Formato nuevo: ya tiene tipoEjecucion.
   if (typeof t?.tipoEjecucion === "string") {
@@ -142,6 +204,7 @@ export function normalizarTecnica(t: any): Tecnica {
       requisito: t.requisito ?? "",
       usable_si: t.usable_si ?? "",
       dano,
+      estadosAplicados,
       alcance: typeof t.alcance === "number" ? t.alcance : 0,
       rangoCritico: typeof t.rangoCritico === "number" ? t.rangoCritico : 24,
       multiplicadorCritico:
@@ -160,9 +223,22 @@ export function normalizarTecnica(t: any): Tecnica {
     requisito: "",
     usable_si: "",
     dano,
+    estadosAplicados,
     alcance: 0,
     rangoCritico: 24,
     multiplicadorCritico: 2,
+  };
+}
+
+/**
+ * Normaliza el estilo marcial de una criatura. Migra el formato antiguo
+ * (número plano) al nuevo formato con nombre.
+ */
+export function normalizarEstiloMarcial(e: any): EstiloMarcialCriatura {
+  if (typeof e === "number") return { nombre: "", valor: e };
+  return {
+    nombre: typeof e?.nombre === "string" ? e.nombre : "",
+    valor: typeof e?.valor === "number" ? e.valor : 0,
   };
 }
 
@@ -175,8 +251,8 @@ export function crearCriaturaVacia(id: string): CriaturaData {
     experiencia: 0,
     etiquetas: [],
     descripcion: "",
-    armadura: { lacerante: 0, perforante: 0, contundente: 0 },
-    estiloMarcial: 0,
+    armadura: crearDanoVacio(),
+    estiloMarcial: { nombre: "", valor: 0 },
     atributos: crearAtributosCriatura(),
     tecnicas: [],
     habilidades: [],
