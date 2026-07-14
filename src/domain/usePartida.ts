@@ -5,7 +5,9 @@ import type {
   EntradaDiario,
   TokenPartida,
   MensajeChat,
+  MarcaPartida,
 } from "./Partida";
+import type { FormaMarca } from "./MarcasMapa";
 import { Character } from "./Character";
 import { useMapa } from "./useMapa";
 import { guardarPartida } from "./storage/partidasRepo";
@@ -106,6 +108,10 @@ let _fichaSeq = 0;
 // (instanciaId o characterId); valor = record de bonos por atributo.
 const bonosPartida = ref<Record<string, Record<string, number>>>({});
 
+// Arma seleccionada por ficha (para recordarla al cerrar y reabrir la ventana
+// flotante durante la sesión). Misma clave e igual de efímera que los bonos.
+const armaSeleccionadaPartida = ref<Record<string, number | null>>({});
+
 export function usePartida() {
   const { generarMapa } = useMapa();
 
@@ -130,6 +136,7 @@ export function usePartida() {
 
       // Los bonos temporales son propios de cada sesión: se descartan al cargar.
       bonosPartida.value = {};
+      armaSeleccionadaPartida.value = {};
 
       // Generar mapa lógico
       generarMapa();
@@ -207,6 +214,16 @@ export function usePartida() {
   function bonosDeFicha(clave: string): Record<string, number> {
     if (!bonosPartida.value[clave]) bonosPartida.value[clave] = {};
     return bonosPartida.value[clave];
+  }
+
+  // Arma seleccionada de una ficha: se guarda al cerrarla y se recupera al
+  // volver a abrirla (misma sesión de partida).
+  function armaSeleccionadaDeFicha(clave: string): number | null {
+    return armaSeleccionadaPartida.value[clave] ?? null;
+  }
+
+  function guardarArmaSeleccionada(clave: string, armaId: number | null) {
+    armaSeleccionadaPartida.value[clave] = armaId;
   }
 
   async function moverPersonajeActivo(destino: { x: number; z: number }) {
@@ -298,7 +315,9 @@ export function usePartida() {
     const repeticiones = partidaActual.value.diario.filter(
       (e) => e.refId === refId && e.tipo === tipo,
     ).length;
-    const nombreNumerado = `${nombre} (${repeticiones + 1})`;
+    // La primera entrada conserva el nombre tal cual; solo a partir de la
+    // segunda se numera: "Goblin", "Goblin (2)", "Goblin (3)"…
+    const nombreNumerado = repeticiones === 0 ? nombre : `${nombre} (${repeticiones + 1})`;
 
     partidaActual.value.diario.push({
       id: `diario_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
@@ -352,6 +371,19 @@ export function usePartida() {
     return guardado?.atributos?.hp ?? 10;
   }
 
+  // Esencia máxima del personaje de origen de un token (solo Pugilista). 6
+  // puntos base, +6 por cada estrato (1 estrato cada 5 niveles). Criaturas y
+  // personajes de otro estilo marcial no tienen Esencia (undefined).
+  async function esenciaMaximaDe(
+    entrada: Pick<EntradaDiario, "refId" | "tipo">,
+  ): Promise<number | undefined> {
+    if (entrada.tipo === "criatura") return undefined;
+    const guardado = await obtenerPersonaje(entrada.refId);
+    if (guardado?.estilo_marcial !== "Pugilista") return undefined;
+    const estrato = Math.ceil((guardado.nivel || 1) / 5);
+    return 6 * estrato;
+  }
+
   // Coloca un token de una entrada del diario. Si se pasa `posDestino` (p. ej.
   // al arrastrar y soltar sobre un hexágono), se usa esa posición; si no, se
   // busca la primera casilla libre del mapa hexagonal activo.
@@ -384,6 +416,7 @@ export function usePartida() {
     }
 
     const max = await vidaMaximaDe(entrada);
+    const esenciaMax = await esenciaMaximaDe(entrada);
     p.tokens.push({
       id: `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       refId: entrada.refId,
@@ -392,6 +425,7 @@ export function usePartida() {
       nombre: entrada.nombre,
       pos,
       vida: { actual: max, max },
+      esencia: esenciaMax ? { actual: 0, max: esenciaMax } : undefined,
       estados: [],
     });
     guardarPartidaActual();
@@ -427,6 +461,41 @@ export function usePartida() {
     if (!token) return;
     const vida = await asegurarVida(token);
     await establecerVidaToken(tokenId, vida.actual + delta);
+  }
+
+  // --- Esencia de un token (solo personajes Pugilista) ---
+  // Asegura que el token tenga el objeto esencia inicializado (tokens creados
+  // antes de esta función, o cuyo personaje se convirtió en Pugilista después
+  // de colocarse en el mapa) y devuelve su esencia, o undefined si no aplica.
+  async function asegurarEsencia(
+    token: TokenPartida,
+  ): Promise<{ actual: number; max: number } | undefined> {
+    if (!token.esencia) {
+      const max = await esenciaMaximaDe(token);
+      if (!max) return undefined;
+      token.esencia = { actual: 0, max };
+    }
+    return token.esencia;
+  }
+
+  // Fija la esencia actual del token (se limita entre 0 y el máximo).
+  async function establecerEsenciaToken(tokenId: string, actual: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const esencia = await asegurarEsencia(token);
+    if (!esencia) return;
+    const n = Number.isFinite(actual) ? Math.round(actual) : esencia.actual;
+    esencia.actual = Math.max(0, Math.min(esencia.max, n));
+    guardarPartidaActual();
+  }
+
+  // Suma (o resta) puntos a la esencia actual del token.
+  async function ajustarEsenciaToken(tokenId: string, delta: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const esencia = await asegurarEsencia(token);
+    if (!esencia) return;
+    await establecerEsenciaToken(tokenId, esencia.actual + delta);
   }
 
   // --- Estados alterados sobre un token ---
@@ -505,6 +574,51 @@ export function usePartida() {
     guardarPartidaActual();
   }
 
+  // --- Marcas sobre el mapa (trampas, objetos…) ---
+  // Pinta una marca de la forma elegida sobre una casilla. Es puramente visual.
+  function colocarMarca(
+    forma: FormaMarca,
+    pos: { col: number; row: number; nivel: number },
+  ) {
+    const p = partidaActual.value;
+    if (!p) return;
+    if (!p.marcas) p.marcas = [];
+    const marca: MarcaPartida = {
+      id: `marca_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      forma,
+      pos,
+    };
+    p.marcas.push(marca);
+    guardarPartidaActual();
+  }
+
+  function quitarMarca(id: string) {
+    const p = partidaActual.value;
+    if (!p?.marcas) return;
+    p.marcas = p.marcas.filter((m) => m.id !== id);
+    guardarPartidaActual();
+  }
+
+  // Quita la marca que haya en una celda concreta, si la hay (para poder
+  // "alternar" con un clic: quitar la existente en vez de apilar otra encima).
+  // Devuelve true si había una marca y se ha quitado.
+  function quitarMarcaEnCelda(pos: {
+    col: number;
+    row: number;
+    nivel: number;
+  }): boolean {
+    const p = partidaActual.value;
+    if (!p?.marcas) return false;
+    const antes = p.marcas.length;
+    p.marcas = p.marcas.filter(
+      (m) =>
+        !(m.pos.col === pos.col && m.pos.row === pos.row && m.pos.nivel === pos.nivel),
+    );
+    if (p.marcas.length === antes) return false;
+    guardarPartidaActual();
+    return true;
+  }
+
   return {
     partidaActual,
     personajeActivo,
@@ -516,6 +630,8 @@ export function usePartida() {
     abrirFichaCriatura,
     cerrarFicha,
     bonosDeFicha,
+    armaSeleccionadaDeFicha,
+    guardarArmaSeleccionada,
     agregarLog,
     iniciarPartida,
     detenerRealtimePartida,
@@ -535,8 +651,13 @@ export function usePartida() {
     quitarToken,
     establecerVidaToken,
     ajustarVidaToken,
+    establecerEsenciaToken,
+    ajustarEsenciaToken,
     agregarEstadoToken,
     establecerValorEstadoToken,
     quitarEstadoToken,
+    colocarMarca,
+    quitarMarca,
+    quitarMarcaEnCelda,
   };
 }

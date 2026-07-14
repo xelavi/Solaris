@@ -227,7 +227,7 @@
                       <span class="fx-exp-meta-l">Usable si:</span> {{ tecnica.usable_si }}
                     </p>
                     <p v-if="tecnica.descripcion" class="fx-exp-d">
-                      {{ tecnica.descripcion }}
+                      <DescripcionConEstados :texto="tecnica.descripcion" />
                     </p>
                     <div v-if="tieneDano(tecnica)" class="fx-dmgcell">
                       <span v-if="tecnica.dano.lacerante > 0" class="fx-dchip l tnum">L {{ tecnica.dano.lacerante }}</span>
@@ -275,6 +275,7 @@ import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
 import habilidadesData from "../../assets/habilidades.json";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
 
 const props = defineProps<{
   criaturaId?: string;

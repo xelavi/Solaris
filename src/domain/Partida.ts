@@ -3,6 +3,7 @@ import { Character } from "./Character";
 import type { MapaHex } from "./mapaHex";
 import type { EstadoAplicado } from "./EstadosAlterados";
 import type { DesgloseTirada } from "./dados";
+import type { FormaMarca } from "./MarcasMapa";
 
 // Tipos para el sistema de gestión de partidas
 export interface PersonajeInstancia {
@@ -92,8 +93,20 @@ export interface TokenPartida {
   pos: { col: number; row: number; nivel: number };
   /** Vida actual/máxima del token (para la barra sobre el personaje). */
   vida?: { actual: number; max: number };
+  /** Esencia actual/máxima del token (solo personajes Pugilista). */
+  esencia?: { actual: number; max: number };
   /** Estados alterados aplicados sobre este token (iconos sobre el personaje). */
   estados?: EstadoAplicado[];
+}
+
+/**
+ * Marca pintada sobre una casilla del mapa (trampa, objeto, punto de interés…).
+ * Es puramente visual/informativa: no afecta a movimiento ni combate.
+ */
+export interface MarcaPartida {
+  id: string;
+  forma: FormaMarca;
+  pos: { col: number; row: number; nivel: number };
 }
 
 /**
@@ -132,6 +145,9 @@ export interface PartidaData {
   mapaActivoId?: string;
   // Tokens colocados sobre el mapa. Opcional (partidas antiguas no lo tienen).
   tokens?: TokenPartida[];
+  // Marcas pintadas sobre casillas (trampas, objetos…). Opcional (partidas
+  // antiguas no lo tienen).
+  marcas?: MarcaPartida[];
   // Chat de la partida (texto y tiradas). Se comparte y persiste como el resto
   // del estado. Opcional (partidas antiguas no lo tienen).
   mensajesChat?: MensajeChat[];

@@ -167,7 +167,7 @@
               <p v-if="tecnica.usable_si" class="cx-tec-meta">
                 <span class="cx-tec-meta-l">Usable si:</span> {{ tecnica.usable_si }}
               </p>
-              <p v-if="tecnica.descripcion" class="cx-tec-d">{{ tecnica.descripcion }}</p>
+              <p v-if="tecnica.descripcion" class="cx-tec-d"><DescripcionConEstados :texto="tecnica.descripcion" /></p>
               <div v-if="tieneDano(tecnica)" class="cx-dmgcell">
                 <span class="cx-dchip l tnum">L {{ tecnica.dano.lacerante }}</span>
                 <span class="cx-dchip p tnum">P {{ tecnica.dano.penetrante }}</span>
@@ -196,6 +196,7 @@ import {
 import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 import { useZoomFicha } from "../../domain/useZoomFicha";
 import ControlZoom from "../ControlZoom.vue";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
 
 // Zoom ajustable por el usuario (persistido).
 const { zoom, aumentar, reducir, restablecer } = useZoomFicha("criatura", 1100);

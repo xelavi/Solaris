@@ -43,8 +43,49 @@
             {{ innata.nombre }}
           </div>
           <p class="text-sm leading-relaxed text-gray-600">
-            {{ innata.descripcion }}
+            <DescripcionConEstados :texto="innata.descripcion" />
           </p>
+          <template v-for="(bloque, bi) in innata.bloques || []" :key="bi">
+            <div v-if="bloque.tipo === 'puntos'" class="mt-2">
+              <div v-if="bloque.titulo" class="mb-1 text-xs font-semibold tracking-wide text-gray-700 uppercase">
+                {{ bloque.titulo }}
+              </div>
+              <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
+                <li v-for="(it, ii) in bloque.items" :key="ii">{{ it }}</li>
+              </ul>
+            </div>
+            <div v-else-if="bloque.tipo === 'tabla'" class="mt-2">
+              <div v-if="bloque.titulo" class="mb-1 text-xs font-semibold tracking-wide text-gray-700 uppercase">
+                {{ bloque.titulo }}
+              </div>
+              <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        v-for="(c, ci) in bloque.cabeceras"
+                        :key="ci"
+                        class="px-3 py-1.5 font-semibold text-gray-700"
+                      >
+                        {{ c }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr v-for="(fila, fi) in bloque.filas" :key="fi">
+                      <td
+                        v-for="(celda, cdi) in fila"
+                        :key="cdi"
+                        class="px-3 py-1.5 text-gray-600"
+                      >
+                        {{ celda }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -175,7 +216,7 @@
                       >
                     </div>
                     <p class="text-sm text-gray-600">
-                      {{ dote.descripcion }}
+                      <DescripcionConEstados :texto="dote.descripcion" />
                     </p>
                   </div>
                 </div>
@@ -193,6 +234,7 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 import especialidadesData from "../../assets/especialidades/especialidades.json";
 import habilidadesData from "../../assets/habilidades.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
 
 const { characterData, loadCharacterData, saveCharacterData, enSubidaNivel, subidaNivelBase } =
   useCharacterCreation();

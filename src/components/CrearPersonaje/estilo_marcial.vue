@@ -49,12 +49,71 @@
       <h4 class="label mb-4">Innatas</h4>
       <div class="space-y-4">
         <div v-for="(innata, idx) in estiloMarcialActual.innatas" :key="idx">
-          <div class="mb-1 font-semibold text-gray-900">
+          <div class="mb-1 flex items-center gap-2 font-semibold text-gray-900">
             {{ innata.nombre }}
+            <span
+              v-if="innata.tipoEjecucion"
+              :class="[
+                'badge',
+                innata.tipoEjecucion === 'accion' ? 'badge-accent' : 'badge-muted',
+              ]"
+              >{{ innata.tipoEjecucion === "accion" ? "Acción" : "Pasiva" }}</span
+            >
+            <span
+              v-if="innata.tipoEjecucion === 'accion' && innata.tipoAccion"
+              class="badge badge-muted"
+              >{{ innata.tipoAccion === "fisica" ? "Física" : "Mental" }}</span
+            >
+            <span
+              v-if="innata.tipoEjecucion === 'accion' && innata.acciones"
+              class="badge badge-muted"
+              >{{ innata.acciones }} acc.</span
+            >
           </div>
           <p class="text-sm leading-relaxed text-gray-600">
-            {{ innata.descripcion }}
+            <DescripcionConEstados :texto="innata.descripcion" />
           </p>
+          <template v-for="(bloque, bi) in innata.bloques || []" :key="bi">
+            <div v-if="bloque.tipo === 'puntos'" class="mt-2">
+              <div v-if="bloque.titulo" class="mb-1 text-xs font-semibold tracking-wide text-gray-700 uppercase">
+                {{ bloque.titulo }}
+              </div>
+              <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
+                <li v-for="(it, ii) in bloque.items" :key="ii">{{ it }}</li>
+              </ul>
+            </div>
+            <div v-else-if="bloque.tipo === 'tabla'" class="mt-2">
+              <div v-if="bloque.titulo" class="mb-1 text-xs font-semibold tracking-wide text-gray-700 uppercase">
+                {{ bloque.titulo }}
+              </div>
+              <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        v-for="(c, ci) in bloque.cabeceras"
+                        :key="ci"
+                        class="px-3 py-1.5 font-semibold text-gray-700"
+                      >
+                        {{ c }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr v-for="(fila, fi) in bloque.filas" :key="fi">
+                      <td
+                        v-for="(celda, cdi) in fila"
+                        :key="cdi"
+                        class="px-3 py-1.5 text-gray-600"
+                      >
+                        {{ celda }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -84,7 +143,12 @@
           </h5>
 
           <div class="space-y-3">
-            <div v-for="dote in grupo.dotes" :key="dote.id" class="ml-0">
+            <template v-for="(dote, idx) in grupo.dotes" :key="dote.id">
+              <div
+                v-if="idx > 0 && !dote.activaId && grupo.dotes[idx - 1].activaId"
+                class="!mt-6 border-t border-gray-200 pt-3"
+              ></div>
+              <div class="ml-0">
               <!-- Línea de conexión para requisitos -->
               <div v-if="dote.requiere" class="mb-2 flex items-start">
                 <div
@@ -108,6 +172,7 @@
                   'option-tile p-4',
                   estaDoteSeleccionada(dote.id) ? 'option-tile-selected' : '',
                   dote.requiere ? 'ml-8 w-[calc(100%-2rem)]' : '',
+                  activaDe(dote) ? 'border-purple-200 bg-purple-50/40' : '',
                 ]"
               >
                 <div class="flex items-start gap-3">
@@ -123,7 +188,12 @@
                     <div
                       class="mb-1 flex items-center gap-2 font-semibold text-gray-900"
                     >
-                      {{ dote.nombre }}
+                      <template v-if="activaDe(dote)">
+                        {{ dote.nombre }}
+                        <span class="text-xs font-normal text-gray-500">Mejora a</span>
+                        <ReferenciaActiva :activa="activaDe(dote)" />
+                      </template>
+                      <template v-else>{{ dote.nombre }}</template>
                       <span
                         v-if="esDoteBloqueada(dote.id)"
                         class="badge badge-muted"
@@ -151,14 +221,23 @@
                           dote.tipoAccion === "fisica" ? "Física" : "Mental"
                         }}</span
                       >
+                      <span
+                        v-if="dote.tipoEjecucion === 'accion' && dote.acciones"
+                        class="badge badge-muted"
+                        >{{ dote.acciones }} acc.</span
+                      >
+                      <span v-if="dote.coste" class="badge badge-accent"
+                        >Coste: {{ dote.coste }}</span
+                      >
                     </div>
                     <p class="text-sm text-gray-600">
-                      {{ dote.descripcion }}
+                      <DescripcionConEstados :texto="dote.descripcion" />
                     </p>
                   </div>
                 </div>
               </button>
-            </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -171,6 +250,8 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 import estiloMarcialData from "../../assets/estiloMarcial/estiloMarcial.json";
 import activasData from "../../assets/activas.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
+import ReferenciaActiva from "../ReferenciaActiva.vue";
 
 const { characterData, loadCharacterData, saveCharacterData, enSubidaNivel, subidaNivelBase } =
   useCharacterCreation();
@@ -290,6 +371,8 @@ const estiloMarcialActual = computed(() => {
         activaId: d.activa,
         tipoEjecucion: d.tipoEjecucion,
         tipoAccion: d.tipoAccion,
+        acciones: d.acciones,
+        coste: d.coste,
       })),
     });
   }
@@ -308,6 +391,8 @@ const estiloMarcialActual = computed(() => {
         activaId: d.activa,
         tipoEjecucion: d.tipoEjecucion,
         tipoAccion: d.tipoAccion,
+        acciones: d.acciones,
+        coste: d.coste,
       })),
     });
   });
@@ -361,6 +446,13 @@ function puedeSeleccionarDote(dote) {
 
 function estaDoteSeleccionada(doteId) {
   return dotesSeleccionadasSet.value.has(doteId);
+}
+
+// Si la dote es una mejora de una Activa (campo "activa" con id), devuelve
+// la Activa referenciada para mostrarla en vez del nombre de la dote.
+function activaDe(dote) {
+  if (!dote.activaId) return null;
+  return activasMap.value.get(String(dote.activaId)) || null;
 }
 
 function getNombreDote(doteId) {

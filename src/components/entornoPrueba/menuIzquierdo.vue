@@ -31,18 +31,98 @@
         {{ opcion.label }}
       </span>
     </button>
+
+    <!-- Marcas: pintar trampas/objetos sobre una casilla (desplegable de formas) -->
+    <div ref="marcasWrapRef" class="relative">
+      <button
+        class="group relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-700 bg-gray-800/70 text-gray-300 transition-colors hover:border-indigo-500/60 hover:bg-gray-800 hover:text-white"
+        :class="{
+          'border-indigo-500/70 bg-indigo-600/20 text-indigo-300':
+            herramientaActiva === 'marca',
+        }"
+        title="Marcas (trampas, objetos…)"
+        @click="onClickBotonMarcas"
+      >
+        <span class="text-lg leading-none">{{ emojiDeForma(formaMarcaActiva) }}</span>
+        <span
+          v-if="!marcasAbierto"
+          class="pointer-events-none absolute left-full ml-2 hidden whitespace-nowrap rounded-md border border-gray-700 bg-gray-900/95 px-2 py-1 text-xs font-semibold text-gray-100 shadow-lg group-hover:block"
+        >
+          Marcas (trampas, objetos…)
+        </span>
+      </button>
+
+      <div
+        v-if="marcasAbierto"
+        class="absolute top-0 left-full ml-2 flex flex-col gap-0.5 rounded-xl border border-gray-700 bg-gray-900/95 p-1.5 shadow-2xl backdrop-blur-md"
+      >
+        <button
+          v-for="f in FORMAS_MARCA"
+          :key="f.id"
+          class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm whitespace-nowrap text-gray-200 transition-colors hover:bg-indigo-600/70"
+          :class="{
+            'bg-indigo-600/30 text-indigo-200':
+              herramientaActiva === 'marca' && formaMarcaActiva === f.id,
+          }"
+          @click="elegirForma(f.id)"
+        >
+          <span class="w-5 text-center text-base">{{ f.emoji }}</span>
+          <span>{{ f.label }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <VentanaIniciativa v-if="iniciativaAbierta" @close="iniciativaAbierta = false" />
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import VentanaIniciativa from "./ventanaIniciativa.vue";
 import { useHerramientas } from "../../domain/useHerramientas";
+import { FORMAS_MARCA, emojiDeForma, type FormaMarca } from "../../domain/MarcasMapa";
 
-const { herramientaActiva, alternar } = useHerramientas();
+const { herramientaActiva, formaMarcaActiva, alternar, activar, desactivar } =
+  useHerramientas();
 const iniciativaAbierta = ref(false);
+
+// --- Desplegable de marcas ---
+const marcasAbierto = ref(false);
+const marcasWrapRef = ref<HTMLDivElement | null>(null);
+
+// Clic en el botón principal: si la herramienta ya está activa, la desactiva
+// (mismo gesto de toggle que el resto de herramientas); si no, abre/cierra el
+// desplegable para elegir forma.
+function onClickBotonMarcas() {
+  if (herramientaActiva.value === "marca") {
+    desactivar();
+    marcasAbierto.value = false;
+  } else {
+    marcasAbierto.value = !marcasAbierto.value;
+  }
+}
+
+// Elegir una forma activa la herramienta; volver a elegir la misma forma ya
+// activa la desactiva (mismo gesto que el resto de herramientas de toggle).
+function elegirForma(forma: FormaMarca) {
+  if (herramientaActiva.value === "marca" && formaMarcaActiva.value === forma) {
+    desactivar();
+  } else {
+    formaMarcaActiva.value = forma;
+    activar("marca");
+  }
+  marcasAbierto.value = false;
+}
+
+// Cierra el desplegable al clicar fuera de él.
+function onDocClick(e: MouseEvent) {
+  if (!marcasAbierto.value) return;
+  if (marcasWrapRef.value && !marcasWrapRef.value.contains(e.target as Node)) {
+    marcasAbierto.value = false;
+  }
+}
+onMounted(() => document.addEventListener("click", onDocClick));
+onBeforeUnmount(() => document.removeEventListener("click", onDocClick));
 
 interface OpcionMenu {
   id: string;

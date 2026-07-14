@@ -136,6 +136,9 @@
   .badge-warning {
     @apply border-amber-200 bg-amber-50 text-amber-700;
   }
+  .badge-purple {
+    @apply border-purple-200 bg-purple-50 text-purple-700;
+  }
 
   /* ---------- Estadísticas ---------- */
   .stat-tile {

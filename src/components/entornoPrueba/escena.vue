@@ -46,6 +46,7 @@
         :diario-id="ficha.diarioId"
         embebido
         @tirar="onTirarFicha($event, ficha.nombre)"
+        @rango-arma="onRangoArmaFicha(ficha, $event)"
       />
     </VentanaFlotante>
 
@@ -259,10 +260,10 @@
       </div>
     </div>
 
-    <!-- HUD sobre cada token: barra de vida + iconos de estado -->
+    <!-- HUD sobre cada token: nombre + barra de vida + iconos de estado -->
     <div
       v-for="hud in tokenHuds"
-      v-show="hud.visible"
+      v-show="hud.visible && hudsVisibles"
       :key="hud.id"
       class="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-full"
       :style="{ left: `${hud.x}px`, top: `${hud.y}px` }"
@@ -291,6 +292,13 @@
             >
           </span>
         </button>
+      </div>
+      <!-- Nombre del token -->
+      <div
+        class="mb-0.5 truncate text-center text-[10px] font-bold text-white"
+        style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9)"
+      >
+        {{ hud.nombre }}
       </div>
       <!-- Barra de vida -->
       <div
@@ -392,6 +400,7 @@ import {
   type MapaHex,
   type MapaHexCelda,
 } from "../../domain/mapaHex";
+import { emojiDeForma, type FormaMarca } from "../../domain/MarcasMapa";
 
 const props = defineProps<{ partidaId?: string }>();
 
@@ -405,6 +414,8 @@ const {
   moverPersonajeActivo,
   colocarToken,
   moverToken,
+  colocarMarca,
+  quitarMarcaEnCelda,
   enviarTiradaChat,
   fichasFlotantes,
   abrirFichaInstancia,
@@ -436,7 +447,11 @@ function onTirarFicha(payload: PayloadTirada, nombre?: string) {
 }
 
 const { mapa } = useMapa();
-const { herramientaActiva, desactivar: desactivarHerramienta } = useHerramientas();
+const {
+  herramientaActiva,
+  formaMarcaActiva,
+  desactivar: desactivarHerramienta,
+} = useHerramientas();
 
 // --- Herramienta de medir distancias ---
 // Dos puntos de mundo clicados (puede ser sobre el terreno o en el vacío). La
@@ -525,6 +540,29 @@ const COLORES_TOKENS = [
   0xff4d4d, 0x4d79ff, 0x4dff88, 0xffd24d, 0xff4dd2, 0x4dffff, 0xff8c1a,
   0xa64dff, 0x1aff8c, 0xff1a66, 0x8cff1a, 0x1a8cff,
 ];
+
+// --- Marcas sobre el mapa (trampas, objetos…) ---
+// Un plano con la textura de la forma (emoji dibujado en canvas), tumbado sobre
+// la cara superior de la casilla. Las texturas se cachean por forma: varias
+// marcas de la misma forma comparten el mismo THREE.Texture.
+const marcaMeshes = new Map<string, THREE.Mesh>();
+const marcaTexturas = new Map<FormaMarca, THREE.Texture>();
+
+function texturaDeForma(forma: FormaMarca): THREE.Texture {
+  let tex = marcaTexturas.get(forma);
+  if (tex) return tex;
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d")!;
+  ctx.font = "92px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(emojiDeForma(forma), 64, 68);
+  tex = new THREE.CanvasTexture(canvas);
+  marcaTexturas.set(forma, tex);
+  return tex;
+}
 // --- Menú contextual + rango de movimiento sobre tokens ---
 // Menú que aparece al hacer clic derecho sobre un token (Ver Ficha / Mover).
 const menuContextual = ref<{
@@ -598,6 +636,7 @@ const estadosAplicadosPanel = computed(() => {
 // HUDs (barra de vida + iconos de estado) proyectados sobre cada token.
 interface TokenHud {
   id: string;
+  nombre: string;
   x: number;
   y: number;
   visible: boolean;
@@ -612,6 +651,9 @@ interface TokenHud {
   }[];
 }
 const tokenHuds = ref<TokenHud[]>([]);
+// Visibilidad global de los HUDs (nombre + vida + estados) sobre los tokens.
+// Se puede alternar con la tecla V.
+const hudsVisibles = ref(true);
 
 // Constants
 const CUBE_SIZE = 1;
@@ -895,6 +937,7 @@ function renderMapaHex(mapaHex: MapaHex) {
 
   centrarCamaraHex(mapaHex);
   syncTokens();
+  syncMarcas();
   updateClickables();
 }
 
@@ -968,6 +1011,48 @@ function syncTokens() {
   updateClickables();
 }
 
+// Sincroniza los meshes de marcas con el estado de la partida (crea/mueve/
+// elimina). No dispone las texturas (se cachean por forma y se reutilizan).
+function syncMarcas() {
+  if (!scene) return;
+  const mapaHex = partidaActual.value?.mapa;
+  const marcas = partidaActual.value?.marcas ?? [];
+  const activos = new Set<string>();
+
+  marcas.forEach((m) => {
+    activos.add(m.id);
+    let mesh = marcaMeshes.get(m.id);
+    if (!mesh) {
+      const geometry = new THREE.PlaneGeometry(1.3, 1.3);
+      geometry.rotateX(-Math.PI / 2);
+      const material = new THREE.MeshBasicMaterial({
+        map: texturaDeForma(m.forma),
+        transparent: true,
+        depthWrite: false,
+      });
+      mesh = new THREE.Mesh(geometry, material);
+      mesh.renderOrder = 2;
+      mesh.userData.marcaId = m.id;
+      scene.add(mesh);
+      marcaMeshes.set(m.id, mesh);
+    }
+    if (mapaHex) {
+      const p = centroHex(mapaHex, m.pos.col, m.pos.row);
+      mesh.position.set(p.x, alturaSuperficie(mapaHex, m.pos.nivel) + 0.06, p.z);
+    }
+  });
+
+  for (const [id, mesh] of marcaMeshes) {
+    if (!activos.has(id)) {
+      scene.remove(mesh);
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+      marcaMeshes.delete(id);
+    }
+  }
+  updateClickables();
+}
+
 // Repinta los tokens cuando cambian (colocar/mover/quitar desde el diario) y
 // reconstruye los HUD (barra de vida + estados) sobre cada uno.
 watch(
@@ -976,6 +1061,13 @@ watch(
     syncTokens();
     reconstruirHuds();
   },
+  { deep: true, immediate: true },
+);
+
+// Repinta las marcas cuando cambian (pintar/quitar con la herramienta).
+watch(
+  () => partidaActual.value?.marcas,
+  () => syncMarcas(),
   { deep: true, immediate: true },
 );
 
@@ -989,6 +1081,7 @@ function reconstruirHuds() {
     const max = t.vida?.max ?? 10;
     return {
       id: t.id,
+      nombre: t.nombre,
       x: previo?.x ?? 0,
       y: previo?.y ?? 0,
       visible: previo?.visible ?? false,
@@ -1512,12 +1605,14 @@ function alcanceAtaqueDeToken(token: TokenPartida): number {
   return ARMAS_POR_ID.get(idEquipada)?.distancia_max ?? 1;
 }
 
-// Casillas (col,row) dentro de `radio` pasos hexagonales desde el origen,
+// Casillas (col,row) entre `min` y `max` pasos hexagonales desde el origen,
 // ignorando la altura (un ataque alcanza cualquier nivel dentro de su rango, sin
-// el escalonado ±1 del movimiento). No incluye la casilla de origen.
-function hexesEnRadio(
+// el escalonado ±1 del movimiento). No incluye la casilla de origen (mínimo
+// efectivo siempre >= 1).
+function hexesEnRango(
   origen: { col: number; row: number },
-  radio: number,
+  min: number,
+  max: number,
 ): Set<string> {
   const resultado = new Set<string>();
   const dist = new Map<string, number>();
@@ -1528,12 +1623,13 @@ function hexesEnRadio(
   while (cola.length > 0) {
     const actual = cola.shift()!;
     const d = dist.get(`${actual.col},${actual.row}`)!;
-    if (d >= radio) continue;
+    if (d >= max) continue;
     for (const [nc, nr] of vecinosHex(actual.col, actual.row)) {
       const clave = `${nc},${nr}`;
       if (dist.has(clave)) continue;
-      dist.set(clave, d + 1);
-      resultado.add(clave);
+      const nd = d + 1;
+      dist.set(clave, nd);
+      if (nd >= min) resultado.add(clave);
       cola.push({ col: nc, row: nr });
     }
   }
@@ -1542,15 +1638,20 @@ function hexesEnRadio(
 }
 
 // Pinta el rango de ataque del token (marcadores rojizos sobre cada casilla que
-// el arma puede alcanzar) y entra en modo "atacar". Es solo visualización: no
-// mueve el token; cualquier clic posterior limpia el rango.
-function mostrarRangoAtaque(tokenId: string) {
+// el arma puede alcanzar, entre `min` y `max`) y entra en modo "atacar". Es
+// solo visualización: no mueve el token; cualquier clic posterior limpia el
+// rango. Sin `alcance` explícito, se usa el del arma equipada (legado).
+function mostrarRangoAtaque(
+  tokenId: string,
+  alcance?: { min: number; max: number },
+) {
   limpiarRango();
   const mapaHex = partidaActual.value?.mapa;
   const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
   if (!mapaHex || !token || !scene) return;
 
-  const enRadio = hexesEnRadio(token.pos, alcanceAtaqueDeToken(token));
+  const { min, max } = alcance ?? { min: 1, max: alcanceAtaqueDeToken(token) };
+  const enRadio = hexesEnRango(token.pos, min, max);
   if (enRadio.size === 0) return;
 
   matRango = new THREE.MeshBasicMaterial({
@@ -1577,6 +1678,24 @@ function mostrarRangoAtaque(tokenId: string) {
   }
 
   modoAtaque.value = { tokenId };
+}
+
+// La ficha embebida de un personaje pide (o cancela) el resaltado del rango
+// de ataque de su arma seleccionada. `ficha.diarioId` localiza el token de esa
+// instancia concreta en el mapa (puede haber varias copias del mismo personaje).
+function onRangoArmaFicha(
+  ficha: { diarioId?: string },
+  alcance: { min: number; max: number } | null,
+) {
+  const token = ficha.diarioId
+    ? partidaActual.value?.tokens?.find((t) => t.diarioId === ficha.diarioId)
+    : undefined;
+  if (!token) return;
+  if (!alcance) {
+    limpiarRango();
+    return;
+  }
+  mostrarRangoAtaque(token.id, alcance);
 }
 
 // --- Menú contextual (clic derecho sobre un token) ---
@@ -1718,7 +1837,8 @@ function quitarEstadoPanel(estadoId: number) {
 }
 
 // Atajos de teclado: M activa/cancela el modo mover sobre el token
-// seleccionado; Escape cancela el modo o cierra el menú contextual.
+// seleccionado; V alterna la visibilidad de los HUD (nombre/vida/estados);
+// Escape cancela el modo o cierra el menú contextual.
 function onKeyDown(event: KeyboardEvent) {
   // No interceptar si se está escribiendo en un campo (chat, etc.).
   const destino = event.target as HTMLElement | null;
@@ -1744,6 +1864,9 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (tokenSeleccionado.value) {
       mostrarRangoAtaque(tokenSeleccionado.value);
     }
+  } else if (event.key === "v" || event.key === "V") {
+    event.preventDefault();
+    hudsVisibles.value = !hudsVisibles.value;
   } else if (event.key === "Escape") {
     menuContextual.value = null;
     panelValorEstado.value = null;
@@ -2106,6 +2229,17 @@ async function onCanvasClick(event: MouseEvent) {
     } else {
       plantillaFijada = true;
     }
+    return;
+  }
+
+  // Herramienta de marcas: un clic sobre una casilla pinta la forma elegida; si
+  // ya había una marca en esa casilla, la quita (permite "borrar" con un clic).
+  // La herramienta se queda activa para poder seguir pintando varias casillas.
+  if (herramientaActiva.value === "marca") {
+    const res = hexEnPuntero(event.clientX, event.clientY);
+    if (!res || !celdaSeleccionable(res.celda)) return;
+    const pos = { col: res.celda.col, row: res.celda.row, nivel: res.celda.y };
+    if (!quitarMarcaEnCelda(pos)) colocarMarca(formaMarcaActiva.value, pos);
     return;
   }
 

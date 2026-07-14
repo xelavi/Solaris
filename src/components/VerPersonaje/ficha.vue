@@ -93,6 +93,39 @@
                   >{{ formatoMod(ef.iniciativa) }}</span
                 >
               </button>
+              <div v-if="personajeEsPugilista" class="fx-mini" title="Esencia máxima">
+                <span class="fx-mini-l">Esencia máx.</span>
+                <span class="fx-mini-v tnum">{{ esenciaMaxima }}</span>
+              </div>
+              <div v-if="personajeEsPugilista && embebido" class="fx-mini fx-mini-esencia">
+                <span class="fx-mini-l">Esencia actual</span>
+                <span class="fx-esencia-ctrl">
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarEsencia(-1)"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    class="fx-hpinput tnum"
+                    min="0"
+                    :max="esenciaMaxima"
+                    :value="esenciaMostrada.actual"
+                    @input="
+                      fijarEsencia(($event.target as HTMLInputElement).value)
+                    "
+                  />
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarEsencia(1)"
+                  >
+                    ＋
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -698,7 +731,7 @@
                   </svg>
                 </button>
                 <div v-if="activa.abierto" class="fx-exp-b">
-                  <p class="fx-exp-d">{{ activa.descripcion }}</p>
+                  <p class="fx-exp-d"><DescripcionConEstados :texto="activa.descripcion" /></p>
                   <div v-if="activa.mejoras.length" class="fx-mejoras">
                     <div
                       v-for="m in activa.mejoras"
@@ -728,7 +761,7 @@
                             >
                           </span>
                         </div>
-                        <div class="fx-mejora-d">{{ m.descripcion }}</div>
+                        <div class="fx-mejora-d"><DescripcionConEstados :texto="m.descripcion" /></div>
                       </div>
                     </div>
                   </div>
@@ -836,7 +869,7 @@
                     </svg>
                   </button>
                   <div v-if="innata.abierto" class="fx-exp-b">
-                    <p class="fx-exp-d">{{ innata.descripcion }}</p>
+                    <p class="fx-exp-d"><DescripcionConEstados :texto="innata.descripcion" /></p>
                     <template
                       v-for="(bloque, bi) in innata.bloques || []"
                       :key="bi"
@@ -943,7 +976,7 @@
                       </svg>
                     </button>
                     <div v-if="dote.abierto" class="fx-exp-b">
-                      <p class="fx-exp-d">{{ dote.descripcion }}</p>
+                      <p class="fx-exp-d"><DescripcionConEstados :texto="dote.descripcion" /></p>
                     </div>
                   </div>
                 </template>
@@ -967,8 +1000,9 @@
                         @click.stop="usarActiva(dote)"
                         >Usar</span
                       >
-                      <span v-if="dote.tipoEjecucion" class="fx-tags">
+                      <span v-if="dote.tipoEjecucion || dote.coste" class="fx-tags">
                         <span
+                          v-if="dote.tipoEjecucion"
                           :class="['fx-tag', claseEjecucion(dote.tipoEjecucion)]"
                           >{{ labelEjecucion(dote.tipoEjecucion) }}</span
                         >
@@ -984,13 +1018,16 @@
                             dote.tipoAccion === "fisica" ? "Física" : "Mental"
                           }}</span
                         >
+                        <span v-if="dote.coste" class="fx-tag fx-tag-coste"
+                          >Coste: {{ dote.coste }}</span
+                        >
                       </span>
                       <svg class="fx-chev" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M6 9l6 6 6-6" />
                       </svg>
                     </button>
                     <div v-if="dote.abierto" class="fx-exp-b">
-                      <p class="fx-exp-d">{{ dote.descripcion }}</p>
+                      <p class="fx-exp-d"><DescripcionConEstados :texto="dote.descripcion" /></p>
                     </div>
                   </div>
                 </template>
@@ -1032,7 +1069,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, onMounted, onUnmounted, inject } from "vue";
 import armasData from "../../assets/armas.json";
 import armadurasData from "../../assets/armaduras.json";
 import especialidadesData from "../../assets/especialidades/especialidades.json";
@@ -1041,6 +1078,7 @@ import activasData from "../../assets/activas.json";
 import arbolData from "../../assets/arbol.json";
 import habilidadesData from "../../assets/habilidades.json";
 import Arbol from "./arbol.vue";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
 import type { PersonajeGuardado, VistaEquipo } from "../../domain/Personaje";
 import { ID_SIN_ARMAS } from "../../domain/Personaje";
 import {
@@ -1074,7 +1112,12 @@ const props = defineProps<{
 
 // En modo embebido, al pulsar una habilidad / ataque / activa / iniciativa se
 // emite "tirar" con la tirada resuelta (o la acción usada) lista para el chat.
-const emit = defineEmits<{ (e: "tirar", payload: PayloadTirada): void }>();
+// "rango-arma" pide a la escena que resalte (o limpie, con null) el alcance
+// del arma seleccionada sobre el token de esta ficha en el mapa.
+const emit = defineEmits<{
+  (e: "tirar", payload: PayloadTirada): void;
+  (e: "rango-arma", alcance: { min: number; max: number } | null): void;
+}>();
 
 // --- Ventaja / Desventaja (global a todas las tiradas de esta ficha) ---
 // Un único entero: >0 ventaja ×N, <0 desventaja ×N, 0 normal. Son excluyentes
@@ -1093,7 +1136,21 @@ const textoVentaja = computed(() => etiquetaVentaja(ventajaTirada.value));
 // VerPersonaje. Se guardan por clave (atributo/armadura/vida…) y son >= 0.
 // El objeto se toma del estado de la partida (bonosDeFicha) para que sobreviva
 // al cerrar y reabrir la ventana flotante; en modo no embebido es local.
-const { bonosDeFicha, partidaActual, establecerVidaToken } = usePartida();
+const {
+  bonosDeFicha,
+  armaSeleccionadaDeFicha,
+  guardarArmaSeleccionada,
+  partidaActual,
+  establecerVidaToken,
+  establecerEsenciaToken,
+} = usePartida();
+
+// Identidad de esta instancia dentro de la partida (para bonos temporales y
+// el arma recordada al cerrar la ficha). Prioridad: entrada del diario >
+// instancia de partida legada > id del personaje guardado.
+const claveInstancia = computed(
+  () => props.diarioId ?? props.personajeExterno?.instanciaId ?? props.characterId,
+);
 const bonos = ref<Record<string, number>>({});
 
 // Token de esta instancia colocado en el mapa (si lo hay): cuando existe, la
@@ -1122,6 +1179,38 @@ function fijarBono(clave: string, valor: string | number) {
 const editAtributos = ref(false);
 const editArmadura = ref(false);
 const editVida = ref(false);
+
+// --- Esencia (solo personajes Pugilista) ---
+// Máximo: 6 puntos por estrato (1 estrato cada 5 niveles). Actual: vinculada
+// al token en el mapa (igual que la vida); si no hay token, se guarda local
+// y no persiste (ficha suelta, fuera de partida).
+const personajeEsPugilista = computed(
+  () => personaje.value.estiloMarcial === "Pugilista",
+);
+const esenciaMaxima = computed(() =>
+  personajeEsPugilista.value
+    ? 6 * Math.ceil((personaje.value.nivel || 1) / 5)
+    : 0,
+);
+const esenciaLocal = ref(0);
+const esenciaMostrada = computed(() => ({
+  actual: tokenVinculado.value?.esencia?.actual ?? esenciaLocal.value,
+  max: esenciaMaxima.value,
+}));
+function fijarEsencia(valor: string | number) {
+  const n = Math.max(
+    0,
+    Math.min(esenciaMaxima.value, Math.round(Number(valor) || 0)),
+  );
+  if (tokenVinculado.value) {
+    void establecerEsenciaToken(tokenVinculado.value.id, n);
+  } else {
+    esenciaLocal.value = n;
+  }
+}
+function ajustarEsencia(delta: number) {
+  fijarEsencia(esenciaMostrada.value.actual + delta);
+}
 
 // Valores EFECTIVOS = base + bono propio + cascada del atributo principal.
 // Reglas del juego: cada punto de Cuerpo suma +1 a Poderío / Movimiento /
@@ -1206,8 +1295,10 @@ function seleccionarArma(arma: { id: number }) {
   if (!props.embebido) return;
   if (armaSeleccionadaId.value !== arma.id) {
     armaSeleccionadaId.value = arma.id;
-    // Al cambiar de arma, el tipo de daño elegido deja de ser válido.
+    // Al cambiar de arma, el tipo de daño elegido deja de ser válido y el
+    // rango mostrado (si lo hubiera) corresponde ya a otra arma.
     tipoDanoSeleccionado.value = null;
+    if (rangoArmaActivo.value) ocultarRangoArma();
   }
 }
 
@@ -1224,6 +1315,46 @@ const armaSeleccionada = computed(
 const puedeAtacar = computed(
   () => !!armaSeleccionada.value && !!tipoDanoSeleccionado.value,
 );
+
+// --- Rango de ataque en el mapa (solo modo embebido) ---
+// Con un arma elegida, la tecla "A" o el botón "Atacar" piden a la escena que
+// resalte las casillas alcanzables (mínimo/máximo del arma; cuerpo a cuerpo =
+// 1/1). Es un simple interruptor: si el rango ya se estaba mostrando, se oculta.
+const rangoArmaActivo = ref(false);
+
+function mostrarRangoArma() {
+  const arma = armaSeleccionada.value;
+  if (!arma) return;
+  rangoArmaActivo.value = true;
+  emit("rango-arma", { min: arma.distanciaMin, max: arma.distanciaMax });
+}
+
+function ocultarRangoArma() {
+  rangoArmaActivo.value = false;
+  emit("rango-arma", null);
+}
+
+function alternarRangoArma() {
+  if (rangoArmaActivo.value) ocultarRangoArma();
+  else mostrarRangoArma();
+}
+
+// Atajo de teclado "A": muestra/oculta el rango del arma elegida. Se ignora
+// si el foco está en un campo de texto (para no interferir con la escritura).
+function onKeydownRangoArma(e: KeyboardEvent) {
+  if (!props.embebido) return;
+  const objetivo = e.target as HTMLElement | null;
+  if (
+    objetivo &&
+    (objetivo.tagName === "INPUT" ||
+      objetivo.tagName === "TEXTAREA" ||
+      objetivo.isContentEditable)
+  )
+    return;
+  if (e.key.toLowerCase() !== "a") return;
+  e.preventDefault();
+  alternarRangoArma();
+}
 
 function etiquetaDano(tipo: TipoDano) {
   return tipo === "l" ? "lacerante" : tipo === "p" ? "perforante" : "contundente";
@@ -1246,6 +1377,7 @@ function confirmarAtaque() {
     return;
   const arma = armaSeleccionada.value;
   const tipo = tipoDanoSeleccionado.value;
+  mostrarRangoArma();
   const tirada = tirar2d12(personaje.value.nivel, "Nivel", ventajaTirada.value);
   emit("tirar", {
     texto: `ataca con ${arma.nombre}`,
@@ -1436,6 +1568,7 @@ const personaje = ref({
     tipoEjecucion?: string;
     tipoAccion?: string;
     acciones?: number;
+    coste?: number;
   }>,
   activas: [] as Array<{
     nombre: string;
@@ -1759,6 +1892,7 @@ async function cargarPersonaje() {
           tipoEjecucion?: string;
           tipoAccion?: string;
           acciones?: number;
+          coste?: number;
         }> = [];
 
         datos.estilo_marcial_dotes.forEach((doteId: string) => {
@@ -1806,6 +1940,7 @@ async function cargarPersonaje() {
               tipoEjecucion: (dote as any).tipoEjecucion,
               tipoAccion: (dote as any).tipoAccion,
               acciones: (dote as any).acciones,
+              coste: (dote as any).coste,
             });
           }
         });
@@ -1993,6 +2128,10 @@ async function cargarPersonaje() {
             rangoCritAmpArma: rc.ampArma,
             rangoCritAmpPersonaje: rc.ampPersonaje,
             distancia: arma.distancia_max || 0,
+            // Alcance real para el rango de ataque en el mapa: sin distancia
+            // definida es cuerpo a cuerpo (mínimo y máximo = 1 casilla).
+            distanciaMin: arma.distancia_max ? arma.distancia_min || 1 : 1,
+            distanciaMax: arma.distancia_max || 1,
             poderio,
             danos,
             etiquetas: arma.categoria
@@ -2048,6 +2187,8 @@ async function cargarPersonaje() {
       rangoCritAmpArma: rcSinArmas.ampArma,
       rangoCritAmpPersonaje: rcSinArmas.ampPersonaje,
       distancia: 0,
+      distanciaMin: 1,
+      distanciaMax: 1,
       poderio,
       danos: [
         {
@@ -2094,9 +2235,21 @@ onMounted(() => {
   // para que no se pierdan al cerrar la ficha flotante. Se identifica la ficha
   // por la instancia de partida o, en su defecto, por el id del personaje.
   if (props.embebido) {
-    const clave =
-      props.diarioId ?? props.personajeExterno?.instanciaId ?? props.characterId;
-    if (clave) bonos.value = bonosDeFicha(clave);
+    const clave = claveInstancia.value;
+    if (clave) {
+      bonos.value = bonosDeFicha(clave);
+      armaSeleccionadaId.value = armaSeleccionadaDeFicha(clave);
+    }
+    window.addEventListener("keydown", onKeydownRangoArma);
+  }
+});
+
+onUnmounted(() => {
+  if (props.embebido) {
+    window.removeEventListener("keydown", onKeydownRangoArma);
+    if (rangoArmaActivo.value) emit("rango-arma", null);
+    const clave = claveInstancia.value;
+    if (clave) guardarArmaSeleccionada(clave, armaSeleccionadaId.value);
   }
 });
 </script>
@@ -2650,6 +2803,21 @@ onMounted(() => {
   outline: none;
   border-color: color-mix(in srgb, #16a34a 55%, var(--border-strong));
   box-shadow: 0 0 0 2px color-mix(in srgb, #16a34a 22%, transparent);
+}
+.fx-esencia-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.fx-mini-esencia .fx-hpinput {
+  width: 42px;
+  height: 22px;
+  font-size: 13px;
+  color: #7c3aed;
+}
+.fx-mini-esencia .fx-hpinput:focus {
+  border-color: color-mix(in srgb, #7c3aed 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #7c3aed 22%, transparent);
 }
 
 /* HP */
@@ -3427,6 +3595,11 @@ onMounted(() => {
 .fx-tag-acc {
   color: var(--muted);
   background: var(--surface-2);
+}
+.fx-tag-coste {
+  color: #7c3aed;
+  background: #f3e8ff;
+  border-color: #e0c8fb;
 }
 
 /* Bloques de contenido de las innatas (listas, tablas, contadores) */

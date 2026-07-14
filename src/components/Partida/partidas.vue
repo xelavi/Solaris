@@ -85,14 +85,8 @@
                 Vista clásica
               </button>
               <button
-                @click.stop="jugarPartida(partida.id)"
-                class="btn btn-primary btn-sm flex-1"
-              >
-                Mapa 3D
-              </button>
-              <button
                 @click.stop="irAEscena(partida.id)"
-                class="btn btn-secondary btn-sm flex-1"
+                class="btn btn-primary btn-sm flex-1"
               >
                 Escena
               </button>
@@ -125,10 +119,6 @@ const navigateToCrearPartida = inject<() => void>("navigateToCrearPartida");
 const navigateToVerPartida = inject<(id: string) => void>(
   "navigateToVerPartida",
 );
-const navigateToJugarPartida = inject<(id: string) => void>(
-  "navigateToJugarPartida",
-);
-
 const navigateToEscena = inject<(id?: string) => void>("navigateToEscena");
 
 function irAEscena(id: string) {
@@ -154,12 +144,6 @@ function crearNuevaPartida() {
 function abrirPartida(id: string) {
   if (navigateToVerPartida) {
     navigateToVerPartida(id);
-  }
-}
-
-function jugarPartida(id: string) {
-  if (navigateToJugarPartida) {
-    navigateToJugarPartida(id);
   }
 }
 

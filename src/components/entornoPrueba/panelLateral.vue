@@ -90,7 +90,7 @@
 
             <div v-if="desgloseAbierto.has(msg.id)" class="chat-break">
               <div class="chat-break-row">
-                <span class="chat-break-l">Dados (d12)</span>
+                <span class="chat-break-l">Dados (d{{ msg.tirada.caras ?? 12 }})</span>
                 <span class="chat-dice">
                   <span
                     v-for="(d, i) in msg.tirada.dadosTirados"
@@ -129,7 +129,7 @@
           </div>
 
           <!-- Descripción de la acción / reacción -->
-          <p v-if="msg.descripcion" class="chat-desc">{{ msg.descripcion }}</p>
+          <p v-if="msg.descripcion" class="chat-desc"><DescripcionConEstados :texto="msg.descripcion" /></p>
         </div>
 
         <div
@@ -142,6 +142,18 @@
       </div>
 
       <div class="border-t border-gray-700 p-2">
+        <div
+          v-if="mensaje.startsWith('/')"
+          class="mb-2 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-300"
+        >
+          <p class="font-mono text-indigo-300">/roll XdY [v|d] [+/-mod]</p>
+          <p class="mt-1 text-gray-400">
+            Tira X dados de Y caras. <span class="text-gray-300">v</span> se
+            queda con los 2 mejores, <span class="text-gray-300">d</span> con
+            los 2 peores. Ej:
+            <span class="font-mono text-gray-300">/roll 5d12 v + 3</span>
+          </p>
+        </div>
         <div class="flex gap-2">
           <input
             v-model="mensaje"
@@ -405,11 +417,14 @@ import { listarPersonajes } from "../../domain/storage/personajesRepo";
 import { listarCriaturas } from "../../domain/storage/criaturasRepo";
 import { esPersonajeCompleto, type PersonajeGuardado } from "../../domain/Personaje";
 import type { CriaturaData } from "../../domain/Criatura";
+import { parseComandoRoll, tirarDados } from "../../domain/dados";
+import DescripcionConEstados from "../DescripcionConEstados.vue";
 
 const {
   mensajesChat,
   partidaActual,
   enviarMensajeChat,
+  enviarTiradaChat,
   agregarAlDiario,
   quitarDelDiario,
   colocarToken,
@@ -443,9 +458,27 @@ function labelEjecucion(tipo?: string): string {
   return tipo ?? "";
 }
 
+// El chat admite el comando /roll (p. ej. "/roll 5d12 v + 3") además de texto
+// libre: si el mensaje lo cumple, se resuelve como una tirada en vez de texto.
 function enviar() {
-  if (!mensaje.value.trim()) return;
-  enviarMensajeChat(mensaje.value);
+  const texto = mensaje.value.trim();
+  if (!texto) return;
+
+  const comando = parseComandoRoll(texto);
+  if (comando) {
+    const tirada = tirarDados(
+      comando.cantidad,
+      comando.caras,
+      comando.modo,
+      comando.modificador,
+    );
+    enviarTiradaChat("", {
+      texto: `tira ${comando.cantidad}d${comando.caras}`,
+      tirada,
+    });
+  } else {
+    enviarMensajeChat(texto);
+  }
   mensaje.value = "";
 }
 
@@ -585,7 +618,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
 /* ===================== CHAT ===================== */
 .chat-feed {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
 }
 .chat-msg {
   --msg: #6366f1;
@@ -610,7 +643,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
 }
 .chat-time {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 11px;
   color: #6b7280;
   font-variant-numeric: tabular-nums;
 }
@@ -648,19 +681,19 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   flex-wrap: wrap;
 }
 .chat-total-n {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1;
   color: var(--msg);
   font-variant-numeric: tabular-nums;
 }
 .chat-formula {
-  font-size: 12px;
+  font-size: 13px;
   color: #9ca3af;
   font-variant-numeric: tabular-nums;
 }
 .chat-vtag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -680,7 +713,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
 
 .chat-toggle {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #9ca3af;
   cursor: pointer;
@@ -703,7 +736,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   justify-content: space-between;
   gap: 8px;
   padding: 2px 0;
-  font-size: 12px;
+  font-size: 13px;
   color: #9ca3af;
 }
 .chat-break-row.total {
@@ -728,7 +761,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   padding: 2px 4px;
   text-align: center;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #6b7280;
   background: rgba(255, 255, 255, 0.04);
@@ -758,13 +791,13 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dmg) 40%, transparent);
 }
 .chat-dmg-l {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .chat-dmg-v {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
@@ -774,7 +807,7 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   margin-top: 8px;
   padding: 8px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   color: #cbd5e1;
   background: rgba(0, 0, 0, 0.22);
