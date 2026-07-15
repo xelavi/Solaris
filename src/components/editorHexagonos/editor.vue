@@ -170,50 +170,7 @@
                   : 'hover:bg-gray-500/20'
               "
             >
-              ▬ Fino
-            </button>
-            <button
-              @click="setMuroMode('grueso')"
-              class="px-2.5 h-8 rounded-lg text-xs font-bold transition-colors"
-              :class="
-                muroMode === 'grueso'
-                  ? 'bg-blue-500 text-white'
-                  : 'hover:bg-gray-500/20'
-              "
-            >
-              ▮ Grueso
-            </button>
-          </div>
-        </div>
-
-        <!-- Altura del muro -->
-        <div
-          v-if="currentTool === 'muro' && muroMode !== 'hex'"
-          class="flex flex-col justify-end items-center"
-        >
-          <div
-            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
-          >
-            ALTURA (+/−)
-          </div>
-          <div
-            class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border backdrop-blur-md"
-            :class="panelClass"
-          >
-            <button
-              @click="adjustWallHeight(-1)"
-              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
-            >
-              −
-            </button>
-            <div class="px-2 text-center min-w-[3rem]">
-              <div class="text-lg font-bold leading-none">{{ wallHeight }}</div>
-            </div>
-            <button
-              @click="adjustWallHeight(1)"
-              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
-            >
-              +
+              ▬ Recto
             </button>
           </div>
         </div>
@@ -633,13 +590,6 @@
               <div class="flex items-center gap-2">
                 <span
                   class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
-                  >Ctrl</span
-                >
-                Muro en ángulo recto
-              </div>
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
                   >AvPág / RePág</span
                 >
                 Nivel
@@ -690,7 +640,6 @@ export default {
       rot: 0,
       boxHeight: 3,
       muroMode: "hex",
-      wallHeight: 1,
       cellCount: 0,
       historyIndex: -1,
       historyLength: 0,
@@ -743,7 +692,6 @@ export default {
     });
     this.engine.setDarkMode(this.darkMode);
     this.engine.setBoxHeight(this.boxHeight);
-    this.engine.setWallHeight(this.wallHeight);
     this.updateEngine();
     setTimeout(() => this.updatePreview(), 100);
     window.addEventListener("keydown", this.onKeyDown);
@@ -794,10 +742,6 @@ export default {
     setMuroMode(mode) {
       this.muroMode = mode;
       this.engine.setMuroMode(mode);
-    },
-    adjustWallHeight(d) {
-      this.wallHeight = Math.max(1, this.wallHeight + d);
-      this.engine.setWallHeight(this.wallHeight);
     },
     adjustLevel(d) {
       this.engine.adjustLevel(d);
@@ -870,10 +814,6 @@ export default {
         if (e.key === "+" || e.key === "=") this.adjustBoxHeight(1);
         if (e.key === "-" || e.key === "_") this.adjustBoxHeight(-1);
       }
-      if (this.currentTool === "muro" && this.muroMode !== "hex") {
-        if (e.key === "+" || e.key === "=") this.adjustWallHeight(1);
-        if (e.key === "-" || e.key === "_") this.adjustWallHeight(-1);
-      }
       if (e.key === "PageUp") this.adjustLevel(1);
       if (e.key === "PageDown") this.adjustLevel(-1);
     },
@@ -895,9 +835,6 @@ export default {
             this.engine.loadCells(json.cells);
             json.cells.forEach((c) => this.addToUsedMaterials(c));
           }
-          this.engine.loadWalls(Array.isArray(json.walls) ? json.walls : []);
-          if (Array.isArray(json.walls))
-            json.walls.forEach((w) => this.addToUsedMaterials(w));
         } catch (err) {
           alert("Error JSON");
         }

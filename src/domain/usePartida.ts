@@ -503,6 +503,18 @@ export function usePartida() {
     await establecerVidaToken(tokenId, vida.actual + delta);
   }
 
+  // Sube (o baja) la vida MÁXIMA del token, arrastrando la vida actual el mismo
+  // delta (p. ej. al subir el atributo Cuerpo durante la partida). El máximo no
+  // baja de 1 y la actual queda entre 0 y el nuevo máximo.
+  async function ajustarVidaMaximaToken(tokenId: string, delta: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const vida = await asegurarVida(token);
+    vida.max = Math.max(1, vida.max + delta);
+    vida.actual = Math.max(0, Math.min(vida.max, vida.actual + delta));
+    guardarPartidaActual();
+  }
+
   // --- Esencia de un token (solo personajes Pugilista) ---
   // Asegura que el token tenga el objeto esencia inicializado (tokens creados
   // antes de esta función, o cuyo personaje se convirtió en Pugilista después
@@ -696,6 +708,7 @@ export function usePartida() {
     quitarToken,
     establecerVidaToken,
     ajustarVidaToken,
+    ajustarVidaMaximaToken,
     establecerEsenciaToken,
     ajustarEsenciaToken,
     agregarEstadoToken,

@@ -13,11 +13,7 @@ import {
   PRISM_HEIGHT,
   HEX_WIDTH,
   ROW_STEP,
-  WALL_THICKNESS,
-  WALL_THICKNESS_THICK,
-  WALL_SNAP,
   type HexCellData,
-  type HexWallData,
   type HexMaterial,
   type HexEngineCallbacks,
   type HexHistoryAction,
@@ -33,27 +29,6 @@ const parity = (n: number) => ((n % 2) + 2) % 2;
 function cellKey(col: number, row: number, y: number) {
   return `${col},${row},${y}`;
 }
-
-// Clave de muro independiente del orden de los extremos.
-function wallKey(
-  x0: number,
-  z0: number,
-  x1: number,
-  z1: number,
-  y: number
-) {
-  const f = (n: number) => n.toFixed(2);
-  const a = `${f(x0)},${f(z0)}`;
-  const b = `${f(x1)},${f(z1)}`;
-  const [p, q] = a <= b ? [a, b] : [b, a];
-  return `${p}|${q}|${y}`;
-}
-
-function wallKeyOf(w: HexWallData) {
-  return wallKey(w.x0, w.z0, w.x1, w.z1, w.y);
-}
-
-const snapCoord = (n: number) => Math.round(n / WALL_SNAP) * WALL_SNAP;
 
 function hexCenter(col: number, row: number, y: number): THREE.Vector3 {
   return new THREE.Vector3(
@@ -155,6 +130,36 @@ function buildPrismGeometry(shape: HexShape): THREE.BufferGeometry {
   return geo;
 }
 
+// Cuña de relleno del muro recto: prisma con base en el tercio inferior del
+// hexágono (vértices k2, k3, k4), es decir la punta hacia -Z. Se coloca en el
+// centro del hexágono AUSENTE que hay junto a una muesca del muro y se rota
+// para apuntar hacia el par de hexágonos de muro contiguos, cerrando el hueco.
+function buildWedgeGeometry(): THREE.BufferGeometry {
+  const pts: THREE.Vector2[] = [];
+  for (let k = 2; k <= 4; k++) {
+    const a = (k * Math.PI) / 3;
+    pts.push(
+      new THREE.Vector2(HEX_RADIUS * Math.sin(a), HEX_RADIUS * Math.cos(a))
+    );
+  }
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape(pts), {
+    depth: PRISM_HEIGHT,
+    bevelEnabled: false,
+  });
+  geo.rotateX(-Math.PI / 2);
+  return geo;
+}
+
+// Instancia de cuña de relleno derivada de las celdas de muro (no se guarda en
+// el historial: se recalcula en cada reconstrucción de mallas).
+interface WedgeInstance {
+  col: number;
+  row: number;
+  y: number;
+  rotY: number;
+  mat: HexMaterial;
+}
+
 interface Hit {
   object: THREE.Object3D;
   point: THREE.Vector3;
@@ -179,8 +184,6 @@ export class HexEngine {
   public currentRot: number = 0;
   // Altura (en niveles) que extruye la herramienta "cubo".
   public boxHeight: number = 3;
-  // Alto (en niveles) de los muros rectos.
-  public wallHeight: number = 1;
   private currentTool: HexTool = "prisma";
   private muroMode: MuroMode = "hex";
   private isShiftDown: boolean = false;
@@ -196,14 +199,8 @@ export class HexEngine {
 
   // Datos
   private cells: Map<string, HexCellData> = new Map();
-  private walls: Map<string, HexWallData> = new Map();
   private history: HexHistoryAction[] = [];
   private historyIndex: number = -1;
-
-  // Trazo de muro recto en curso (punto de inicio en el plano)
-  private wallStart: { x: number; z: number } | null = null;
-  private wallStrokeAdded: HexWallData[] = [];
-  private wallStrokeRemoved: HexWallData[] = [];
 
   // Trazo en curso
   private isPainting: boolean = false;
@@ -246,12 +243,10 @@ export class HexEngine {
   private fullGhost!: THREE.Mesh;
   private halfGhost!: THREE.Mesh;
 
-  // Muros rectos (losas finas)
-  private wallGeo!: THREE.BufferGeometry;
-  private wallMesh!: THREE.InstancedMesh;
-  private wallCapacity: number = 0;
-  private wallKeys: string[] = [];
-  private wallGhost!: THREE.Mesh;
+  // Cuñas de relleno del muro recto (geometría derivada de las celdas de muro)
+  private wedgeGeo!: THREE.BufferGeometry;
+  private wedgeMesh!: THREE.InstancedMesh;
+  private wedgeCapacity: number = 0;
 
   // Miniaturas de material
   private thumbScene?: THREE.Scene;
@@ -418,13 +413,10 @@ export class HexEngine {
     this.halfGhost.visible = false;
     this.scene.add(this.fullGhost, this.halfGhost);
 
-    // Muros rectos: caja unitaria centrada, escalada por instancia.
-    this.wallGeo = new THREE.BoxGeometry(1, 1, 1);
-    this.wallMesh = this.makeInstancedMesh(this.wallGeo, 256);
-    this.wallCapacity = 256;
-    this.wallGhost = new THREE.Mesh(this.wallGeo, ghostMat());
-    this.wallGhost.visible = false;
-    this.scene.add(this.wallGhost);
+    // Cuñas de relleno del muro recto.
+    this.wedgeGeo = buildWedgeGeometry();
+    this.wedgeMesh = this.makeInstancedMesh(this.wedgeGeo, 512);
+    this.wedgeCapacity = 512;
   }
 
   // Material con atributos por instancia (mismo patrón que el editor de vóxeles)
@@ -541,6 +533,7 @@ export class HexEngine {
 
     this.fullKeys = this.fillMesh(this.fullMesh, fulls);
     this.halfKeys = this.fillMesh(this.halfMesh, halves);
+    this.rebuildWedgeMesh();
   }
 
   private fillMesh(
@@ -597,40 +590,72 @@ export class HexEngine {
 
   private emitCount() {
     if (this.callbacks.onCellCountChange)
-      this.callbacks.onCellCountChange(this.cells.size + this.walls.size);
+      this.callbacks.onCellCountChange(this.cells.size);
   }
 
-  // Coloca/orienta/escala un objeto como losa recta entre dos puntos del plano,
-  // en pie sobre el nivel indicado, con alto (niveles) y grosor dados.
-  private applyWallTransform(
-    obj: THREE.Object3D,
-    x0: number,
-    z0: number,
-    x1: number,
-    z1: number,
-    y: number,
-    height: number,
-    thickness: number
-  ) {
-    const dx = x1 - x0;
-    const dz = z1 - z0;
-    const len = Math.max(0.0001, Math.hypot(dx, dz));
-    const h = Math.max(1, height) * PRISM_HEIGHT;
-    obj.position.set((x0 + x1) / 2, y * PRISM_HEIGHT + h / 2, (z0 + z1) / 2);
-    // El eje +Z local de la caja se alinea con la dirección del muro.
-    obj.rotation.set(0, Math.atan2(dx, dz), 0);
-    obj.scale.set(thickness, h, len);
+  // --- CUÑAS DE RELLENO DEL MURO RECTO ---
+
+  // En cada vértice del hexágono ausente C se juntan C y dos hexágonos vecinos
+  // (los que comparten ese vértice). Cuando esos dos vecinos existen y al menos
+  // uno es de muro, la muesca entre ellos se cierra rellenando la cuña de C que
+  // apunta hacia ambos. Recorremos los pares de vecinos contiguos (j, j+1) de
+  // cada hueco C adyacente a un muro.
+  private computeWedges(): WedgeInstance[] {
+    // Candidatos: huecos (sin celda) adyacentes a alguna celda de muro.
+    const candidates = new Map<string, { col: number; row: number; y: number }>();
+    this.cells.forEach((c) => {
+      if (!c.wall) return;
+      const { q, r } = offsetToAxial(c.col, c.row);
+      for (const [dq, dr] of AXIAL_DIRS) {
+        const o = axialToOffset(q + dq, r + dr);
+        const key = cellKey(o.col, o.row, c.y);
+        if (this.cells.has(key)) continue;
+        candidates.set(key, { col: o.col, row: o.row, y: c.y });
+      }
+    });
+
+    const wedges: WedgeInstance[] = [];
+    const center = new THREE.Vector3();
+    candidates.forEach(({ col, row, y }) => {
+      const { q, r } = offsetToAxial(col, row);
+      center.copy(hexCenter(col, row, y));
+      // Vecino presente por cada dirección y si es de muro.
+      const neigh: (HexCellData | null)[] = AXIAL_DIRS.map(([dq, dr]) => {
+        const o = axialToOffset(q + dq, r + dr);
+        return this.cells.get(cellKey(o.col, o.row, y)) ?? null;
+      });
+      for (let j = 0; j < 6; j++) {
+        const a = neigh[j];
+        const b = neigh[(j + 1) % 6];
+        if (!a || !b) continue;
+        if (!a.wall && !b.wall) continue;
+        // Bisectriz hacia ambos vecinos, en el plano (x,z).
+        const [dqa, dra] = AXIAL_DIRS[j]!;
+        const [dqb, drb] = AXIAL_DIRS[(j + 1) % 6]!;
+        const oa = axialToOffset(q + dqa, r + dra);
+        const ob = axialToOffset(q + dqb, r + drb);
+        const ca = hexCenter(oa.col, oa.row, y).sub(center);
+        const cb = hexCenter(ob.col, ob.row, y).sub(center);
+        const bx = ca.x + cb.x;
+        const bz = ca.z + cb.z;
+        // La punta de la cuña base mira a -Z; rotarla hacia la bisectriz.
+        const rotY = Math.atan2(-bx, -bz);
+        const mat = a.wall ? a : b;
+        wedges.push({ col, row, y, rotY, mat });
+      }
+    });
+    return wedges;
   }
 
-  private rebuildWallMesh() {
-    const list = Array.from(this.walls.entries());
-    if (list.length > this.wallCapacity) {
-      this.disposeInstancedMesh(this.wallMesh);
-      while (this.wallCapacity < list.length) this.wallCapacity *= 2;
-      this.wallMesh = this.makeInstancedMesh(this.wallGeo, this.wallCapacity);
+  private rebuildWedgeMesh() {
+    const list = this.computeWedges();
+    if (list.length > this.wedgeCapacity) {
+      this.disposeInstancedMesh(this.wedgeMesh);
+      while (this.wedgeCapacity < list.length) this.wedgeCapacity *= 2;
+      this.wedgeMesh = this.makeInstancedMesh(this.wedgeGeo, this.wedgeCapacity);
     }
 
-    const mesh = this.wallMesh;
+    const mesh = this.wedgeMesh;
     const rough = mesh.geometry.getAttribute(
       "roughness"
     ) as THREE.InstancedBufferAttribute;
@@ -646,24 +671,17 @@ export class HexEngine {
     const color = new THREE.Color();
     const eColor = new THREE.Color();
 
-    list.forEach(([, w], i) => {
-      this.applyWallTransform(
-        this.dummy,
-        w.x0,
-        w.z0,
-        w.x1,
-        w.z1,
-        w.y,
-        w.height,
-        w.thickness
-      );
+    list.forEach((w, i) => {
+      this.dummy.position.copy(hexCenter(w.col, w.row, w.y));
+      this.dummy.rotation.set(0, w.rotY, 0);
+      this.dummy.scale.set(1, 1, 1);
       this.dummy.updateMatrix();
       mesh.setMatrixAt(i, this.dummy.matrix);
-      mesh.setColorAt(i, color.set(w.color));
-      rough.setX(i, w.roughness);
-      metal.setX(i, w.metalness);
-      emInt.setX(i, w.emissiveIntensity);
-      eColor.set(w.emissive);
+      mesh.setColorAt(i, color.set(w.mat.color));
+      rough.setX(i, w.mat.roughness);
+      metal.setX(i, w.mat.metalness);
+      emInt.setX(i, w.mat.emissiveIntensity);
+      eColor.set(w.mat.emissive);
       emCol.setXYZ(i, eColor.r, eColor.g, eColor.b);
     });
 
@@ -675,21 +693,9 @@ export class HexEngine {
     metal.needsUpdate = true;
     emInt.needsUpdate = true;
     emCol.needsUpdate = true;
-    this.wallKeys = list.map(([k]) => k);
   }
 
   // --- ENTRADA ---
-
-  private isWallMode(): boolean {
-    return (
-      this.currentTool === "muro" &&
-      (this.muroMode === "recto" || this.muroMode === "grueso")
-    );
-  }
-
-  private currentWallThickness(): number {
-    return this.muroMode === "grueso" ? WALL_THICKNESS_THICK : WALL_THICKNESS;
-  }
 
   private isShapeTool(): boolean {
     return (
@@ -709,22 +715,6 @@ export class HexEngine {
     if (this.currentTool === "picker" || this.isAltDown) {
       const hit = this.raycast(event);
       if (hit) this.pickMaterialAt(hit);
-      return;
-    }
-
-    // Muro recto (losa fina): trazo con inicio fijo o borrado por arrastre.
-    if (this.isWallMode()) {
-      this.isPainting = true;
-      this.wallStrokeAdded = [];
-      this.wallStrokeRemoved = [];
-      if (this.isShiftDown) {
-        this.wallStart = null;
-        this.wallGhost.visible = false;
-        this.eraseWallAt(event);
-      } else {
-        this.wallStart = this.planePointFromPointer();
-        this.wallGhost.visible = false;
-      }
       return;
     }
 
@@ -760,19 +750,6 @@ export class HexEngine {
       -(event.clientY / window.innerHeight) * 2 + 1
     );
 
-    if (this.isWallMode()) {
-      if (this.isShiftDown) {
-        this.wallGhost.visible = false;
-        if (this.isPainting) this.eraseWallAt(event);
-      } else if (this.isPainting && this.wallStart) {
-        const raw = this.planePointFromPointer();
-        this.updateWallGhost(raw && this.wallEndPoint(this.wallStart, raw));
-      } else {
-        this.wallGhost.visible = false;
-      }
-      return;
-    }
-
     if (this.isShapeTool()) {
       const pc = this.planeCellFromPointer();
       this.updateShapeGhost(pc);
@@ -791,23 +768,6 @@ export class HexEngine {
   private onPointerUp() {
     if (!this.isPainting) return;
     this.isPainting = false;
-
-    if (this.isWallMode()) {
-      if (!this.isShiftDown && this.wallStart) {
-        const raw = this.planePointFromPointer();
-        const end = raw ? this.wallEndPoint(this.wallStart, raw) : null;
-        if (
-          end &&
-          Math.hypot(end.x - this.wallStart.x, end.z - this.wallStart.z) > 1e-3
-        ) {
-          this.placeWall(this.wallStart, end);
-        }
-      }
-      this.wallGhost.visible = false;
-      this.wallStart = null;
-      this.commitWallStroke();
-      return;
-    }
 
     if (this.isShapeTool()) {
       this.commitShape();
@@ -838,34 +798,6 @@ export class HexEngine {
     const h = hits[0];
     if (!h) return null;
     return worldToCell(h.point.x, h.point.z);
-  }
-
-  // Punto libre sobre el plano (x,z), ajustado a la rejilla fina de muros.
-  private planePointFromPointer(): { x: number; z: number } | null {
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObject(this.plane, false);
-    const h = hits[0];
-    if (!h) return null;
-    return { x: snapCoord(h.point.x), z: snapCoord(h.point.z) };
-  }
-
-  // Extremo del muro desde el inicio hasta el cursor. Con Ctrl fija el ángulo
-  // a incrementos de 45° (permite ángulos rectos y diagonales).
-  private wallEndPoint(
-    start: { x: number; z: number },
-    raw: { x: number; z: number }
-  ): { x: number; z: number } {
-    if (!this.isCtrlDown) return raw;
-    const dx = raw.x - start.x;
-    const dz = raw.z - start.z;
-    const len = Math.hypot(dx, dz);
-    if (len < 1e-4) return { ...start };
-    const step = Math.PI / 4;
-    const ang = Math.round(Math.atan2(dz, dx) / step) * step;
-    return {
-      x: snapCoord(start.x + Math.cos(ang) * len),
-      z: snapCoord(start.z + Math.sin(ang) * len),
-    };
   }
 
   // Lista de celdas (col,row) que abarca la forma entre inicio y fin.
@@ -913,6 +845,7 @@ export class HexEngine {
       yLevels.push(baseY);
     }
     const footprint = this.computeShapeCells(this.shapeStart, end);
+    const isWall = this.currentTool === "muro" && this.muroMode === "recto";
     for (const { col, row } of footprint) {
       for (const y of yLevels) {
         const key = cellKey(col, row, y);
@@ -928,6 +861,7 @@ export class HexEngine {
             y,
             shape: "full",
             rot: 0,
+            wall: isWall,
             ...this.currentMaterial,
           };
           if (existing && this.sameCell(existing, cell)) continue;
@@ -970,95 +904,6 @@ export class HexEngine {
     );
   }
 
-  // --- MURO RECTO (LOSA) ---
-
-  private updateWallGhost(pc: { x: number; z: number } | null | undefined) {
-    if (!this.wallStart || !pc) {
-      this.wallGhost.visible = false;
-      return;
-    }
-    if (Math.hypot(pc.x - this.wallStart.x, pc.z - this.wallStart.z) < 1e-3) {
-      this.wallGhost.visible = false;
-      return;
-    }
-    this.wallGhost.visible = true;
-    this.applyWallTransform(
-      this.wallGhost,
-      this.wallStart.x,
-      this.wallStart.z,
-      pc.x,
-      pc.z,
-      this.currentLevel,
-      this.wallHeight,
-      this.currentWallThickness()
-    );
-    (this.wallGhost.material as THREE.MeshBasicMaterial).color.setHex(0x44aaff);
-  }
-
-  private sameWall(a: HexWallData, b: HexWallData): boolean {
-    return (
-      a.height === b.height &&
-      a.thickness === b.thickness &&
-      a.color === b.color &&
-      a.emissive === b.emissive &&
-      a.metalness === b.metalness &&
-      a.roughness === b.roughness &&
-      a.emissiveIntensity === b.emissiveIntensity
-    );
-  }
-
-  private placeWall(
-    a: { x: number; z: number },
-    b: { x: number; z: number }
-  ) {
-    const key = wallKey(a.x, a.z, b.x, b.z, this.currentLevel);
-    const wall: HexWallData = {
-      x0: a.x,
-      z0: a.z,
-      x1: b.x,
-      z1: b.z,
-      y: this.currentLevel,
-      height: this.wallHeight,
-      thickness: this.currentWallThickness(),
-      ...this.currentMaterial,
-    };
-    const existing = this.walls.get(key);
-    if (existing && this.sameWall(existing, wall)) return;
-    if (existing) this.wallStrokeRemoved.push(existing);
-    this.walls.set(key, wall);
-    this.wallStrokeAdded.push(wall);
-    this.rebuildWallMesh();
-    this.emitCount();
-  }
-
-  private eraseWallAt(event: PointerEvent) {
-    const hit = this.raycast(event);
-    if (!hit || hit.object !== this.wallMesh || hit.instanceId === undefined)
-      return;
-    const key = this.wallKeys[hit.instanceId];
-    if (!key) return;
-    const wall = this.walls.get(key);
-    if (!wall) return;
-    this.wallStrokeRemoved.push(wall);
-    this.walls.delete(key);
-    this.rebuildWallMesh();
-    this.emitCount();
-  }
-
-  private commitWallStroke() {
-    if (this.wallStrokeAdded.length > 0 || this.wallStrokeRemoved.length > 0) {
-      this.recordAction({
-        added: [],
-        removed: [],
-        addedWalls: [...this.wallStrokeAdded],
-        removedWalls: [...this.wallStrokeRemoved],
-      });
-      if (this.callbacks.onActionRecord) this.callbacks.onActionRecord();
-    }
-    this.wallStrokeAdded = [];
-    this.wallStrokeRemoved = [];
-  }
-
   private raycast(event: MouseEvent): Hit | null {
     this.pointer.set(
       (event.clientX / window.innerWidth) * 2 - 1,
@@ -1068,7 +913,6 @@ export class HexEngine {
     const objects: THREE.Object3D[] = [this.plane];
     if (this.fullMesh.count > 0) objects.push(this.fullMesh);
     if (this.halfMesh.count > 0) objects.push(this.halfMesh);
-    if (this.wallMesh.count > 0) objects.push(this.wallMesh);
     const hits = this.raycaster.intersectObjects(objects, false);
     const h = hits[0];
     if (!h || !h.face) return null;
@@ -1088,14 +932,6 @@ export class HexEngine {
     const key = keys[hit.instanceId];
     if (!key) return null;
     return this.cells.get(key) ?? null;
-  }
-
-  private getWallFromHit(hit: Hit): HexWallData | null {
-    if (hit.object !== this.wallMesh || hit.instanceId === undefined)
-      return null;
-    const key = this.wallKeys[hit.instanceId];
-    if (!key) return null;
-    return this.walls.get(key) ?? null;
   }
 
   private getTarget(hit: Hit): CellTarget | null {
@@ -1138,6 +974,7 @@ export class HexEngine {
     return (
       a.shape === b.shape &&
       a.rot === b.rot &&
+      a.wall === b.wall &&
       a.color === b.color &&
       a.emissive === b.emissive &&
       a.metalness === b.metalness &&
@@ -1165,6 +1002,7 @@ export class HexEngine {
         y: target.y,
         shape,
         rot: shape === "half" ? this.currentRot : 0,
+        wall: false,
         ...this.currentMaterial,
       };
       if (existing && this.sameCell(existing, cell)) return;
@@ -1179,7 +1017,7 @@ export class HexEngine {
   }
 
   private pickMaterialAt(hit: Hit) {
-    const src = this.getCellFromHit(hit) ?? this.getWallFromHit(hit);
+    const src = this.getCellFromHit(hit);
     if (src && this.callbacks.onMaterialPick) {
       this.callbacks.onMaterialPick({
         color: src.color,
@@ -1243,11 +1081,8 @@ export class HexEngine {
     action.removed.forEach((c) =>
       this.cells.set(cellKey(c.col, c.row, c.y), c)
     );
-    action.addedWalls?.forEach((w) => this.walls.delete(wallKeyOf(w)));
-    action.removedWalls?.forEach((w) => this.walls.set(wallKeyOf(w), w));
     this.historyIndex--;
     this.rebuildMeshes();
-    this.rebuildWallMesh();
     if (this.callbacks.onHistoryChange)
       this.callbacks.onHistoryChange(this.historyIndex, this.history.length);
     this.emitCount();
@@ -1261,10 +1096,7 @@ export class HexEngine {
       this.cells.delete(cellKey(c.col, c.row, c.y))
     );
     action.added.forEach((c) => this.cells.set(cellKey(c.col, c.row, c.y), c));
-    action.removedWalls?.forEach((w) => this.walls.delete(wallKeyOf(w)));
-    action.addedWalls?.forEach((w) => this.walls.set(wallKeyOf(w), w));
     this.rebuildMeshes();
-    this.rebuildWallMesh();
     if (this.callbacks.onHistoryChange)
       this.callbacks.onHistoryChange(this.historyIndex, this.history.length);
     this.emitCount();
@@ -1274,14 +1106,10 @@ export class HexEngine {
 
   public setTool(tool: HexTool) {
     this.currentTool = tool;
-    this.wallGhost.visible = false;
-    this.wallStart = null;
   }
 
   public setMuroMode(mode: MuroMode) {
     this.muroMode = mode;
-    this.wallGhost.visible = false;
-    this.wallStart = null;
   }
 
   public setRot(rot: number) {
@@ -1306,10 +1134,6 @@ export class HexEngine {
     this.isCtrlDown = ctrl;
   }
 
-  public setWallHeight(h: number) {
-    this.wallHeight = Math.max(1, Math.round(h));
-  }
-
   public adjustLevel(d: number) {
     this.currentLevel += d;
     const y = this.currentLevel * PRISM_HEIGHT;
@@ -1319,44 +1143,11 @@ export class HexEngine {
 
   public clearAll() {
     this.cells.clear();
-    this.walls.clear();
     this.history = [];
     this.historyIndex = -1;
     this.rebuildMeshes();
-    this.rebuildWallMesh();
     if (this.callbacks.onHistoryChange)
       this.callbacks.onHistoryChange(this.historyIndex, this.history.length);
-    this.emitCount();
-  }
-
-  public loadWalls(list: Partial<HexWallData>[]) {
-    this.walls.clear();
-    list.forEach((w) => {
-      if (
-        typeof w.x0 !== "number" ||
-        typeof w.z0 !== "number" ||
-        typeof w.x1 !== "number" ||
-        typeof w.z1 !== "number" ||
-        typeof w.y !== "number"
-      )
-        return;
-      const wall: HexWallData = {
-        x0: w.x0,
-        z0: w.z0,
-        x1: w.x1,
-        z1: w.z1,
-        y: w.y,
-        height: typeof w.height === "number" ? Math.max(1, w.height) : 1,
-        thickness: typeof w.thickness === "number" ? w.thickness : WALL_THICKNESS,
-        color: w.color ?? "#ffffff",
-        emissive: w.emissive ?? "#000000",
-        metalness: w.metalness ?? 0,
-        roughness: w.roughness ?? 1,
-        emissiveIntensity: w.emissiveIntensity ?? 0,
-      };
-      this.walls.set(wallKeyOf(wall), wall);
-    });
-    this.rebuildWallMesh();
     this.emitCount();
   }
 
@@ -1375,6 +1166,7 @@ export class HexEngine {
         y: c.y,
         shape: c.shape === "half" ? "half" : "full",
         rot: typeof c.rot === "number" ? ((c.rot % 6) + 6) % 6 : 0,
+        wall: c.wall === true,
         color: c.color ?? "#ffffff",
         emissive: c.emissive ?? "#000000",
         metalness: c.metalness ?? 0,
@@ -1399,7 +1191,6 @@ export class HexEngine {
       prismHeight: PRISM_HEIGHT,
       timestamp: new Date().toISOString(),
       cells: Array.from(this.cells.values()),
-      walls: Array.from(this.walls.values()),
     };
     const dataStr = JSON.stringify(exportData, null, 2);
     const url = URL.createObjectURL(

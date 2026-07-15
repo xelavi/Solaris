@@ -112,7 +112,12 @@
         </button>
       </div>
 
-      <div v-if="vacio" class="empty-state">
+      <div v-if="cargando" class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando criaturas...</p>
+      </div>
+
+      <div v-else-if="vacio" class="empty-state">
         <p class="empty-title">No tienes criaturas guardadas todavía</p>
         <p class="empty-hint">¡Crea la primera del bestiario!</p>
         <button @click="crearNuevaCriatura" class="btn btn-primary mt-6">
@@ -344,6 +349,7 @@ const org = ref<OrganizacionBestiario>({
   vista: "grid",
 });
 const busqueda = ref("");
+const cargando = ref(true);
 
 const arrastrando = ref<string | null>(null);
 const contenedorActivo = ref<string | null>(null);
@@ -597,15 +603,19 @@ async function cargarCriaturas() {
 }
 
 onMounted(async () => {
-  catalogoEtiquetas.value = await cargarCatalogoEtiquetas();
-  await cargarCriaturas();
-  const organizacion = await cargarOrganizacion();
-  reconciliar(
-    organizacion,
-    criaturas.value.map((c) => c.id),
-  );
-  org.value = organizacion;
-  await persistir();
+  try {
+    catalogoEtiquetas.value = await cargarCatalogoEtiquetas();
+    await cargarCriaturas();
+    const organizacion = await cargarOrganizacion();
+    reconciliar(
+      organizacion,
+      criaturas.value.map((c) => c.id),
+    );
+    org.value = organizacion;
+    await persistir();
+  } finally {
+    cargando.value = false;
+  }
 });
 </script>
 

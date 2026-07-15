@@ -23,8 +23,13 @@
         </button>
       </div>
 
+      <div v-if="cargando" class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando partidas...</p>
+      </div>
+
       <div
-        v-if="partidas.length > 0"
+        v-else-if="partidas.length > 0"
         class="grid grid-cols-1 gap-4 md:grid-cols-2"
       >
         <div
@@ -114,6 +119,7 @@ import {
 } from "../../domain/storage/partidasRepo";
 
 const partidas = ref<PartidaData[]>([]);
+const cargando = ref(true);
 
 const navigateToCrearPartida = inject<() => void>("navigateToCrearPartida");
 const navigateToVerPartida = inject<(id: string) => void>(
@@ -184,8 +190,12 @@ function formatearFecha(fecha: string): string {
   });
 }
 
-onMounted(() => {
-  void cargarPartidas();
+onMounted(async () => {
+  try {
+    await cargarPartidas();
+  } finally {
+    cargando.value = false;
+  }
 });
 </script>
 

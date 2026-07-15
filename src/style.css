@@ -200,4 +200,22 @@
   .empty-hint {
     @apply mt-1 text-sm text-gray-500;
   }
+
+  /* ---------- Estado de carga ---------- */
+  .loading-state {
+    @apply flex flex-col items-center justify-center gap-4 py-16 text-center;
+  }
+  .spinner {
+    @apply h-9 w-9 rounded-full border-4 border-gray-200 border-t-indigo-500;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text {
+    @apply text-sm font-medium text-gray-500;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

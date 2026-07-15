@@ -153,8 +153,8 @@
                   <div class="fx-hp-cap">Actual</div>
                   <div class="fx-hp-field tnum">
                     {{ vidaMostrada.actual
-                    }}<span v-if="!tokenVinculado && bono('hp')" class="fx-hp-bonus"
-                      >+{{ bono("hp") }}</span
+                    }}<span v-if="vidaExtra" class="fx-hp-bonus"
+                      >+{{ vidaExtra }}</span
                     >
                   </div>
                 </div>
@@ -164,30 +164,27 @@
                 </div>
               </div>
               <div v-if="editVida" class="fx-hpedit">
-                <template v-if="tokenVinculado">
-                  <span class="fx-hpedit-l">Vida actual</span>
-                  <input
-                    type="number"
-                    class="fx-hpinput tnum"
-                    min="0"
-                    :value="vidaMostrada.actual"
-                    @input="
-                      fijarVidaToken(($event.target as HTMLInputElement).value)
-                    "
-                  />
-                </template>
-                <template v-else>
-                  <span class="fx-hpedit-l">Vida extra</span>
-                  <input
-                    type="number"
-                    class="fx-hpinput tnum"
-                    min="0"
-                    :value="bono('hp')"
-                    @input="
-                      fijarBono('hp', ($event.target as HTMLInputElement).value)
-                    "
-                  />
-                </template>
+                <span class="fx-hpedit-l">Vida actual</span>
+                <input
+                  type="number"
+                  class="fx-hpinput tnum"
+                  min="0"
+                  :max="vidaMostrada.max"
+                  :value="vidaMostrada.actual"
+                  @input="
+                    fijarVidaActual(($event.target as HTMLInputElement).value)
+                  "
+                />
+                <span class="fx-hpedit-l">Vida extra</span>
+                <input
+                  type="number"
+                  class="fx-hpinput tnum"
+                  min="0"
+                  :value="vidaExtra"
+                  @input="
+                    fijarBono('hp', ($event.target as HTMLInputElement).value)
+                  "
+                />
               </div>
               <div class="fx-hpbar">
                 <span :style="{ width: hpPct + '%' }"></span>
@@ -1181,6 +1178,7 @@ const {
   guardarArmaSeleccionada,
   partidaActual,
   establecerVidaToken,
+  ajustarVidaMaximaToken,
   establecerEsenciaToken,
 } = usePartida();
 
@@ -1204,9 +1202,31 @@ function bono(clave: string): number {
   return bonos.value[clave] || 0;
 }
 function ajustarBono(clave: string, delta: number) {
-  const nuevo = Math.max(0, (bonos.value[clave] || 0) + delta);
+  const previo = bonos.value[clave] || 0;
+  const nuevo = Math.max(0, previo + delta);
   if (nuevo === 0) delete bonos.value[clave];
   else bonos.value[clave] = nuevo;
+  // Al subir/bajar Cuerpo se arrastra la vida (máxima y actual): cada punto de
+  // Cuerpo aporta `hpPorCuerpo` puntos de vida (regla del árbol: 2·nivel).
+  if (clave === "cuerpo") aplicarCuerpoAVida(nuevo - previo);
+}
+
+// Puntos de vida que aporta cada punto de Cuerpo. La fórmula del árbol suma
+// (2·nivel) de HP por cada nodo de Cuerpo, así que replicamos ese factor para
+// los ajustes temporales de partida.
+const hpPorCuerpo = computed(() => 2 * (personaje.value.nivel || 1));
+
+// Traslada un cambio de Cuerpo (`deltaCuerpo` puntos) a la vida máxima y actual.
+function aplicarCuerpoAVida(deltaCuerpo: number) {
+  if (!deltaCuerpo) return;
+  const deltaHp = deltaCuerpo * hpPorCuerpo.value;
+  if (tokenVinculado.value) {
+    void ajustarVidaMaximaToken(tokenVinculado.value.id, deltaHp);
+  } else {
+    const hp = personaje.value.hp;
+    hp.maximo = Math.max(1, hp.maximo + deltaHp);
+    hp.actual = Math.max(0, Math.min(hp.maximo, hp.actual + deltaHp));
+  }
 }
 // Fija un bono a un valor exacto (desde un campo numérico). Nunca negativo.
 function fijarBono(clave: string, valor: string | number) {
@@ -1733,16 +1753,27 @@ function claseEjecucion(tipo?: string): string {
 // usa la vida base de la ficha con el bono temporal de "vida extra".
 const vidaMostrada = computed(() => {
   if (tokenVinculado.value?.vida) {
-    return { actual: tokenVinculado.value.vida.actual, max: tokenVinculado.value.vida.max };
+    return {
+      actual: tokenVinculado.value.vida.actual,
+      max: tokenVinculado.value.vida.max,
+    };
   }
-  const b = bono("hp");
-  return { actual: personaje.value.hp.actual + b, max: personaje.value.hp.maximo + b };
+  return { actual: personaje.value.hp.actual, max: personaje.value.hp.maximo };
 });
 
-// Fija la vida actual del token vinculado (edición desde la ficha embebida).
-function fijarVidaToken(valor: string | number) {
-  if (!tokenVinculado.value) return;
-  establecerVidaToken(tokenVinculado.value.id, Number(valor));
+// Vida extra: puntos temporales por encima del máximo (escudo/sobrevida). Se
+// guardan como bono de ficha y se muestran aparte con un "+".
+const vidaExtra = computed(() => bono("hp"));
+
+// Fija la vida ACTUAL (nunca por encima del máximo). Con token vinculado, la
+// escribe en el token (que ya la limita); si no, en la vida base de la ficha.
+function fijarVidaActual(valor: string | number) {
+  const n = Math.max(0, Math.floor(Number(valor) || 0));
+  if (tokenVinculado.value) {
+    establecerVidaToken(tokenVinculado.value.id, n);
+  } else {
+    personaje.value.hp.actual = Math.min(personaje.value.hp.maximo, n);
+  }
 }
 
 // Porcentaje de vida para la barra

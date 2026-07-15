@@ -10,6 +10,9 @@ export interface MapaHexCelda {
   y: number;
   shape: "full" | "half";
   rot: number;
+  // Hexágono colocado con el muro "recto" en el editor: lleva cuñas de relleno
+  // decorativas. No afecta a las casillas (es un hexágono completo).
+  wall?: boolean;
   color: string;
   emissive: string;
   metalness: number;
@@ -54,6 +57,7 @@ export function validarMapaHex(json: unknown): MapaHex | null {
       y: c.y,
       shape: c.shape === "half" ? "half" : "full",
       rot: typeof c.rot === "number" ? ((c.rot % 6) + 6) % 6 : 0,
+      wall: c.wall === true ? true : undefined,
       color: typeof c.color === "string" ? c.color : "#ffffff",
       emissive: typeof c.emissive === "string" ? c.emissive : "#000000",
       metalness: typeof c.metalness === "number" ? c.metalness : 0,

@@ -23,8 +23,13 @@
         </button>
       </div>
 
+      <div v-if="cargando" class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando personajes...</p>
+      </div>
+
       <div
-        v-if="personajes.length > 0"
+        v-else-if="personajes.length > 0"
         class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
       >
         <div
@@ -113,6 +118,7 @@ interface PersonajeInfo {
 }
 
 const personajes = ref<PersonajeInfo[]>([]);
+const cargando = ref(true);
 
 const navigateToFicha = inject<(id: string) => void>("navigateToFicha");
 const navigateToCrear = inject<() => void>("navigateToCrear");
@@ -151,7 +157,11 @@ async function eliminarPersonaje(id: string) {
 }
 
 onMounted(async () => {
-  await cargarPersonajes();
+  try {
+    await cargarPersonajes();
+  } finally {
+    cargando.value = false;
+  }
 });
 </script>
 
