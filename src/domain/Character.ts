@@ -41,6 +41,7 @@ export class Character {
     iniciativa: 0,
     punteria: 0,
     puntosHabilidad: 10,
+    voluntad: 2,
   };
 
   constructor(id: string, name: string) {

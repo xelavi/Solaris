@@ -7,9 +7,10 @@ import type { FormaMarca } from "./MarcasMapa";
 //   "area"  → plantilla de área: casillas dentro de un radio (en casillas).
 //   "cono"  → plantilla de cono/triángulo desde una casilla (en casillas).
 //   "marca" → pintar una marca (trampa, objeto…) sobre la casilla clicada.
+//   "ping"  → señalar un punto del mapa con un destello temporal (no persiste).
 // Estado a nivel de módulo → compartido entre el menú y la escena (mismo patrón
 // que useMapa/usePartida).
-export type Herramienta = "medir" | "area" | "cono" | "marca";
+export type Herramienta = "medir" | "area" | "cono" | "marca" | "ping";
 
 const herramientaActiva = ref<Herramienta | null>(null);
 // Forma elegida en el desplegable de marcas; se usa al pintar con "marca".

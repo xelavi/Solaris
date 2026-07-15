@@ -132,6 +132,7 @@ export function crearAtributosCriatura(): ArbolAttributes {
     iniciativa: 0,
     punteria: 0,
     puntosHabilidad: 0,
+    voluntad: 2,
   };
 }
 

@@ -127,6 +127,7 @@ export function useArbolAttributes(
     calculateAttributeWithMultiplier(14, 10, 2 * nivel.value, 1, 3),
   ); // ID 14 = Puntos de Habilidad (tipo 3 = Mente)
   const reacciones = computed(() => calculateAttributeWithMultiplier(13, 1, 1)); // ID 13 = Reacciones
+  const voluntad = computed(() => calculateAttributeWithMultiplier(15, 2, 1)); // ID 15 = Voluntad (tipo 3 = Mente)
 
   // Objeto con todos los atributos calculados
   const attributes = computed<ArbolAttributes>(() => ({
@@ -147,6 +148,7 @@ export function useArbolAttributes(
     punteria: punteria.value,
     puntosHabilidad: puntosHabilidad.value,
     hp: hp.value,
+    voluntad: voluntad.value,
   }));
 
   return {
@@ -168,6 +170,7 @@ export function useArbolAttributes(
     punteria,
     puntosHabilidad,
     hp,
+    voluntad,
 
     // Objeto completo
     attributes,

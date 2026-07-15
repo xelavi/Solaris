@@ -524,6 +524,15 @@
                   </svg>
                 </button>
               </div>
+              <div v-if="embebido && objetivosDisponibles.length" class="fx-objetivo">
+                <span class="fx-objetivo-l">Objetivo</span>
+                <select v-model="objetivoTokenId" class="fx-objetivo-sel">
+                  <option :value="null">Sin objetivo (solo tirada)</option>
+                  <option v-for="t in objetivosDisponibles" :key="t.id" :value="t.id">
+                    {{ t.nombre }}
+                  </option>
+                </select>
+              </div>
               <div v-if="configArmasAbierto" class="fx-cfg">
                 <div class="fx-cfg-hint">
                   Muestra, oculta y reordena tus armas. "Sin Armas" está siempre
@@ -564,8 +573,8 @@
                 </div>
               </div>
               <template v-if="armasVisibles.length">
-                <div class="fx-atk-head">
-                  <span>Arma</span><span>Alcance</span><span>Crítico</span><span>Daño</span>
+                <div class="fx-atk-head" :class="{ 'fx-atk-embebido': embebido }">
+                  <span>Arma</span><span>Alcance</span><span>Crítico</span><span>Daño</span><span v-if="embebido"></span>
                 </div>
                 <div
                   v-for="arma in armasVisibles"
@@ -574,6 +583,7 @@
                   :class="{
                     'fx-usable': embebido,
                     'fx-sel': embebido && arma.id === armaSeleccionadaId,
+                    'fx-atk-embebido': embebido,
                   }"
                   @click="seleccionarArma(arma)"
                 >
@@ -634,6 +644,54 @@
                       @click.stop="seleccionarDano(arma, 'c', arma.con)"
                       >{{ danoEfectivo(arma.con) }}</span
                     >
+                  </div>
+
+                  <div v-if="embebido" class="fx-atk-action" @click.stop>
+                    <button
+                      type="button"
+                      class="fx-attack-btn-mini"
+                      :disabled="
+                        !(arma.id === armaSeleccionadaId && tipoDanoSeleccionado)
+                      "
+                      title="Atacar"
+                      @click="confirmarAtaque"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M6.92 5H5l9 9 1.42-1.42L6.92 5Zm9.66-1 2.83 2.83-3.54 3.54 1.42 1.41 1.4-1.4 1.42 1.4L21 11l-1.42-1.42L21 8.17 16.58 3.75 15.17 5.17 16.58 4ZM3 17.25V21h3.75l9.06-9.06-3.75-3.75L3 17.25Z"
+                        />
+                      </svg>
+                      <span>Atacar</span>
+                    </button>
+                    <div
+                      class="fx-adv fx-adv-mini"
+                      :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
+                    >
+                      <button
+                        type="button"
+                        class="fx-adv-b dis"
+                        title="Añadir desventaja"
+                        @click="ajustarVentaja(-1)"
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        class="fx-adv-lbl"
+                        title="Reiniciar a Normal"
+                        @click="reiniciarVentaja"
+                      >
+                        {{ textoVentaja }}
+                      </button>
+                      <button
+                        type="button"
+                        class="fx-adv-b adv"
+                        title="Añadir ventaja"
+                        @click="ajustarVentaja(1)"
+                      >
+                        ＋
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Desglose del cálculo al pasar el ratón -->
@@ -772,52 +830,6 @@
               </div>
             </div>
 
-            <!-- Botón de ataque (fuera del apartado de ataque) -->
-            <button
-              v-if="embebido && armasVisibles.length"
-              class="fx-attack-btn"
-              :disabled="!puedeAtacar"
-              @click="confirmarAtaque"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6.92 5H5l9 9 1.42-1.42L6.92 5Zm9.66-1 2.83 2.83-3.54 3.54 1.42 1.41 1.4-1.4 1.42 1.4L21 11l-1.42-1.42L21 8.17 16.58 3.75 15.17 5.17 16.58 4ZM3 17.25V21h3.75l9.06-9.06-3.75-3.75L3 17.25Z"
-                />
-              </svg>
-              <span>Atacar</span>
-            </button>
-
-            <!-- Ventaja / Desventaja: afecta a todas las tiradas de la ficha -->
-            <div
-              v-if="embebido"
-              class="fx-adv"
-              :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
-            >
-              <button
-                type="button"
-                class="fx-adv-b dis"
-                title="Añadir desventaja"
-                @click="ajustarVentaja(-1)"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                class="fx-adv-lbl"
-                title="Reiniciar a Normal"
-                @click="reiniciarVentaja"
-              >
-                {{ textoVentaja }}
-              </button>
-              <button
-                type="button"
-                class="fx-adv-b adv"
-                title="Añadir ventaja"
-                @click="ajustarVentaja(1)"
-              >
-                ＋
-              </button>
-            </div>
           </div>
 
           <!-- Derecha: innatas + dotes -->
@@ -960,11 +972,22 @@
               <div class="fx-phead">Dotes</div>
               <div class="fx-rpad">
                 <template v-if="personaje.dotesEspecialidad.length">
-                  <div class="fx-feat-src">Especialidad</div>
+                  <button
+                    type="button"
+                    class="fx-feat-src fx-feat-src-toggle"
+                    :class="{ collapsed: !mostrarDotesEspecialidad }"
+                    @click="mostrarDotesEspecialidad = !mostrarDotesEspecialidad"
+                  >
+                    <span>Especialidad</span>
+                    <svg class="fx-chev" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
                   <div
+                    v-show="mostrarDotesEspecialidad"
                     v-for="dote in personaje.dotesEspecialidad"
                     :key="'esp-' + dote.nombre"
-                    :class="['fx-exp', { open: dote.abierto }]"
+                    :class="['fx-exp', 'fx-exp-compact', { open: dote.abierto }]"
                   >
                     <button
                       class="fx-exp-h"
@@ -981,11 +1004,22 @@
                   </div>
                 </template>
                 <template v-if="personaje.dotesEstilo.length">
-                  <div class="fx-feat-src">Estilo marcial</div>
+                  <button
+                    type="button"
+                    class="fx-feat-src fx-feat-src-toggle"
+                    :class="{ collapsed: !mostrarDotesEstilo }"
+                    @click="mostrarDotesEstilo = !mostrarDotesEstilo"
+                  >
+                    <span>Estilo marcial</span>
+                    <svg class="fx-chev" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
                   <div
+                    v-show="mostrarDotesEstilo"
                     v-for="dote in personaje.dotesEstilo"
                     :key="'est-' + dote.nombre"
-                    :class="['fx-exp', { open: dote.abierto }]"
+                    :class="['fx-exp', 'fx-exp-compact', { open: dote.abierto }]"
                   >
                     <button
                       class="fx-exp-h"
@@ -1069,7 +1103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, inject } from "vue";
+import { ref, computed, onMounted, onUnmounted, inject, watch } from "vue";
 import armasData from "../../assets/armas.json";
 import armadurasData from "../../assets/armaduras.json";
 import especialidadesData from "../../assets/especialidades/especialidades.json";
@@ -1085,7 +1119,12 @@ import {
   obtenerPersonaje,
   guardarPersonaje,
 } from "../../domain/storage/personajesRepo";
-import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
+import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import {
+  tirar2d12,
+  etiquetaVentaja,
+  parseMultiplicadorCritico,
+} from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
 import { useZoomFicha } from "../../domain/useZoomFicha";
@@ -1312,10 +1351,6 @@ const armaSeleccionada = computed(
   () => armasVisibles.value.find((a) => a.id === armaSeleccionadaId.value) || null,
 );
 
-const puedeAtacar = computed(
-  () => !!armaSeleccionada.value && !!tipoDanoSeleccionado.value,
-);
-
 // --- Rango de ataque en el mapa (solo modo embebido) ---
 // Con un arma elegida, la tecla "A" o el botón "Atacar" piden a la escena que
 // resalte las casillas alcanzables (mínimo/máximo del arma; cuerpo a cuerpo =
@@ -1370,19 +1405,82 @@ const COLOR_DANO: Record<TipoDano, string> = {
   c: "#cc7d10",
 };
 
-// Ataque: para golpear se tira 2d12 + nivel; el daño es plano (arma + Poderío,
-// ya calculado en arma.lac/cor/con).
-function confirmarAtaque() {
+// --- Objetivo del ataque (solo criaturas del escenario) ---
+// El jugador puede elegir una criatura con token en el mapa como objetivo. Al
+// atacarla, la tirada se compara con su Esquiva (empate impacta) y su armadura
+// del tipo de daño reduce el daño. Es solo informativo: no toca la vida del
+// token (lo ajusta el DJ a mano). Sin objetivo, el ataque se comporta como antes.
+const objetivoTokenId = ref<string | null>(null);
+const objetivosDisponibles = computed(() =>
+  (partidaActual.value?.tokens ?? []).filter((t) => t.tipo === "criatura"),
+);
+// Si el objetivo elegido desaparece del escenario, se deselecciona.
+watch(objetivosDisponibles, (lista) => {
+  if (
+    objetivoTokenId.value &&
+    !lista.some((t) => t.id === objetivoTokenId.value)
+  ) {
+    objetivoTokenId.value = null;
+  }
+});
+
+// Mapea el tipo de daño del arma (l/p/c) a la clave de armadura de la criatura.
+const TIPO_A_ARMADURA: Record<TipoDano, "lacerante" | "perforante" | "contundente"> = {
+  l: "lacerante",
+  p: "perforante",
+  c: "contundente",
+};
+
+// Ataque: para golpear se tira 2d12 + nivel; si la suma de dados alcanza el
+// Rango de Crítico del arma (arma + personaje), el daño plano se multiplica
+// por el multiplicador de crítico del arma. Con un objetivo elegido, además se
+// resuelve el impacto contra su Esquiva y se le resta la armadura del tipo.
+async function confirmarAtaque() {
   if (!props.embebido || !armaSeleccionada.value || !tipoDanoSeleccionado.value)
     return;
   const arma = armaSeleccionada.value;
   const tipo = tipoDanoSeleccionado.value;
   mostrarRangoArma();
-  const tirada = tirar2d12(personaje.value.nivel, "Nivel", ventajaTirada.value);
+  const tirada = tirar2d12(
+    personaje.value.nivel,
+    "Nivel",
+    ventajaTirada.value,
+    arma.rangoCritUmbral ?? 24,
+  );
+  const danoBase = danoEfectivo(valorDano(arma, tipo));
+  const dano = tirada.esCritico
+    ? Math.round(danoBase * parseMultiplicadorCritico(arma.critico))
+    : danoBase;
+
+  const objetivo = objetivoTokenId.value
+    ? objetivosDisponibles.value.find((t) => t.id === objetivoTokenId.value)
+    : null;
+  if (objetivo) {
+    const criatura = await obtenerCriatura(objetivo.refId);
+    const esquiva = criatura?.atributos.evasion ?? 0;
+    const armadura = criatura?.armadura?.[TIPO_A_ARMADURA[tipo]] ?? 0;
+    const impacta = tirada.total >= esquiva;
+    const danoNeto = Math.max(0, dano - armadura);
+    emit("tirar", {
+      texto: `ataca a ${objetivo.nombre} con ${arma.nombre}`,
+      tirada,
+      objetivo: `${objetivo.nombre} · Esquiva ${esquiva}`,
+      impacto: impacta,
+      dano: impacta
+        ? `${danoNeto} ${etiquetaDano(tipo)}${
+            armadura > 0 ? ` (−${armadura} arm.)` : ""
+          }${tirada.esCritico ? " ¡Crítico!" : ""}`
+        : undefined,
+      danoColor: COLOR_DANO[tipo],
+      color: COLOR_DANO[tipo],
+    });
+    return;
+  }
+
   emit("tirar", {
     texto: `ataca con ${arma.nombre}`,
     tirada,
-    dano: `${danoEfectivo(valorDano(arma, tipo))} ${etiquetaDano(tipo)}`,
+    dano: `${dano} ${etiquetaDano(tipo)}${tirada.esCritico ? " ¡Crítico!" : ""}`,
     danoColor: COLOR_DANO[tipo],
     color: COLOR_DANO[tipo],
   });
@@ -1415,6 +1513,10 @@ const currentTab = ref<"ficha" | "arbol" | "inventario">("ficha");
 
 // Filtro de habilidades
 const mostrarTodas = ref(false);
+
+// Colapsar/expandir los grupos de dotes (Especialidad / Estilo marcial)
+const mostrarDotesEspecialidad = ref(true);
+const mostrarDotesEstilo = ref(true);
 
 // --- Configuración de visualización de armas / armaduras en la ficha ---
 // "Disponibles" son todos los objetos que el personaje puede mostrar (armas
@@ -2124,6 +2226,7 @@ async function cargarPersonaje() {
             critico: arma.critico,
             // Rango de crítico final (arma + personaje) y datos del desglose
             rangoCritico: rc.texto,
+            rangoCritUmbral: rc.umbral,
             rangoCriticoArma: arma.rango_critico || null,
             rangoCritAmpArma: rc.ampArma,
             rangoCritAmpPersonaje: rc.ampPersonaje,
@@ -2183,6 +2286,7 @@ async function cargarPersonaje() {
       con: baseSinArmas + poderio,
       critico: "x2",
       rangoCritico: rcSinArmas.texto,
+      rangoCritUmbral: rcSinArmas.umbral,
       rangoCriticoArma: null,
       rangoCritAmpArma: rcSinArmas.ampArma,
       rangoCritAmpPersonaje: rcSinArmas.ampPersonaje,
@@ -3196,6 +3300,65 @@ onUnmounted(() => {
   align-items: center;
   padding: 9px 14px;
 }
+.fx-atk-head.fx-atk-embebido,
+.fx-atk-row.fx-atk-embebido {
+  grid-template-columns: 1fr 60px 82px 108px 168px;
+}
+.fx-atk-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fx-attack-btn-mini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 90%, #fff),
+    var(--accent)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, #000);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.fx-attack-btn-mini svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+.fx-attack-btn-mini:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.fx-attack-btn-mini:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.fx-attack-btn-mini:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.fx-adv-mini {
+  padding: 2px;
+  gap: 2px;
+}
+.fx-adv-mini .fx-adv-b {
+  width: 20px;
+  font-size: 13px;
+}
+.fx-adv-mini .fx-adv-lbl {
+  font-size: 10px;
+  padding: 0 4px;
+}
 .fx-atk-head {
   font-size: 10px;
   font-weight: 800;
@@ -3276,6 +3439,42 @@ onUnmounted(() => {
 .fx-panel-atk > .fx-sect:first-child {
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
+}
+
+/* ---- Selector de objetivo del ataque (solo en partida) ---- */
+.fx-objetivo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.fx-objetivo-l {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.fx-objetivo-sel {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fx-objetivo-sel:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* ---- Tooltip de desglose del ataque (al pasar el ratón) ---- */
@@ -3468,8 +3667,28 @@ onUnmounted(() => {
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--faint);
-  margin: 6px 0 2px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: 3px 7px;
+  margin: 10px 0 3px;
+}
+.fx-feat-src-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+.fx-feat-src-toggle .fx-chev {
+  width: 13px;
+  height: 13px;
+  stroke: var(--accent);
+}
+.fx-feat-src-toggle.collapsed .fx-chev {
+  transform: rotate(-90deg);
 }
 .fx-feat-src:first-child {
   margin-top: 0;
@@ -3532,6 +3751,9 @@ onUnmounted(() => {
   cursor: pointer;
   text-align: left;
   color: inherit;
+}
+.fx-exp-compact .fx-exp-h {
+  padding: 5px 2px;
 }
 .fx-exp-h:hover .fx-exp-n {
   color: var(--accent);

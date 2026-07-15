@@ -23,10 +23,14 @@
       </button>
     </div>
 
-    <!-- Contenido: se escala con el mismo zoom que dimensiona la ventana, de
-         modo que la ficha llena la ventana a cualquier tamaño. -->
-    <div class="min-h-0 flex-1 overflow-auto" :style="{ zoom }">
-      <slot />
+    <!-- Contenido: el scroll vive en un contenedor SIN zoom (para que
+         scrollHeight se calcule sobre el tamaño real de la ventana); el
+         escalado visual se aplica en un div interno, evitando el recorte que
+         provoca aplicar `zoom` y `overflow-auto` sobre el mismo elemento. -->
+    <div class="min-h-0 flex-1 overflow-auto">
+      <div :style="{ zoom }">
+        <slot />
+      </div>
     </div>
   </div>
 </template>

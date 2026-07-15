@@ -139,6 +139,114 @@
           </button>
         </div>
 
+        <!-- Modo del muro -->
+        <div v-if="currentTool === 'muro'" class="flex flex-col justify-end items-center">
+          <div
+            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
+          >
+            TIPO DE MURO
+          </div>
+          <div
+            class="flex items-center gap-1 px-1.5 py-1.5 rounded-xl shadow-2xl border backdrop-blur-md"
+            :class="panelClass"
+          >
+            <button
+              @click="setMuroMode('hex')"
+              class="px-2.5 h-8 rounded-lg text-xs font-bold transition-colors"
+              :class="
+                muroMode === 'hex'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-500/20'
+              "
+            >
+              ⬡ Hex
+            </button>
+            <button
+              @click="setMuroMode('recto')"
+              class="px-2.5 h-8 rounded-lg text-xs font-bold transition-colors"
+              :class="
+                muroMode === 'recto'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-500/20'
+              "
+            >
+              ▬ Fino
+            </button>
+            <button
+              @click="setMuroMode('grueso')"
+              class="px-2.5 h-8 rounded-lg text-xs font-bold transition-colors"
+              :class="
+                muroMode === 'grueso'
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-500/20'
+              "
+            >
+              ▮ Grueso
+            </button>
+          </div>
+        </div>
+
+        <!-- Altura del muro -->
+        <div
+          v-if="currentTool === 'muro' && muroMode !== 'hex'"
+          class="flex flex-col justify-end items-center"
+        >
+          <div
+            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
+          >
+            ALTURA (+/−)
+          </div>
+          <div
+            class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border backdrop-blur-md"
+            :class="panelClass"
+          >
+            <button
+              @click="adjustWallHeight(-1)"
+              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
+            >
+              −
+            </button>
+            <div class="px-2 text-center min-w-[3rem]">
+              <div class="text-lg font-bold leading-none">{{ wallHeight }}</div>
+            </div>
+            <button
+              @click="adjustWallHeight(1)"
+              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Altura del cubo -->
+        <div v-if="currentTool === 'cubo'" class="flex flex-col justify-end items-center">
+          <div
+            class="bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-t-md font-bold tracking-wider"
+          >
+            ALTURA (+/−)
+          </div>
+          <div
+            class="flex items-center gap-1 px-2 py-2 rounded-xl shadow-2xl border backdrop-blur-md"
+            :class="panelClass"
+          >
+            <button
+              @click="adjustBoxHeight(-1)"
+              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
+            >
+              −
+            </button>
+            <div class="px-2 text-center min-w-[3rem]">
+              <div class="text-lg font-bold leading-none">{{ boxHeight }}</div>
+            </div>
+            <button
+              @click="adjustBoxHeight(1)"
+              class="w-8 h-8 rounded hover:bg-gray-500/20 font-bold flex items-center justify-center"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
         <!-- Rotación del medio prisma -->
         <div v-if="currentTool === 'media'" class="flex flex-col justify-end items-center">
           <div
@@ -454,6 +562,34 @@
               <li class="flex items-center gap-2">
                 <span
                   class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >3</span
+                >
+                Área (arrastrar)
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >4</span
+                >
+                Muro (Hex / Recto)
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >5</span
+                >
+                Cubo (arrastrar + altura)
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >+ / −</span
+                >
+                Altura del cubo
+              </li>
+              <li class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
                   >R</span
                 >
                 Rotar medio (60°)
@@ -493,6 +629,13 @@
                   >Alt</span
                 >
                 Gotero
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="font-mono bg-gray-100 border border-gray-300 px-1.5 py-0.5 rounded text-xs"
+                  >Ctrl</span
+                >
+                Muro en ángulo recto
               </div>
               <div class="flex items-center gap-2">
                 <span
@@ -537,11 +680,17 @@ export default {
       tools: [
         { id: "prisma", label: "Prisma", icon: "⬢" },
         { id: "media", label: "Medio", icon: "◐" },
+        { id: "area", label: "Área", icon: "▦" },
+        { id: "muro", label: "Muro", icon: "▬" },
+        { id: "cubo", label: "Cubo", icon: "🧊" },
         { id: "picker", label: "Gotero", icon: "🧪" },
       ],
       currentTool: "prisma",
       currentLevel: 0,
       rot: 0,
+      boxHeight: 3,
+      muroMode: "hex",
+      wallHeight: 1,
       cellCount: 0,
       historyIndex: -1,
       historyLength: 0,
@@ -593,6 +742,8 @@ export default {
       onActionRecord: () => this.addToUsedMaterials(this.currentMaterial),
     });
     this.engine.setDarkMode(this.darkMode);
+    this.engine.setBoxHeight(this.boxHeight);
+    this.engine.setWallHeight(this.wallHeight);
     this.updateEngine();
     setTimeout(() => this.updatePreview(), 100);
     window.addEventListener("keydown", this.onKeyDown);
@@ -635,6 +786,18 @@ export default {
     rotateHalf(d) {
       this.rot = (((this.rot + d) % 6) + 6) % 6;
       this.engine.setRot(this.rot);
+    },
+    adjustBoxHeight(d) {
+      this.boxHeight = Math.max(1, this.boxHeight + d);
+      this.engine.setBoxHeight(this.boxHeight);
+    },
+    setMuroMode(mode) {
+      this.muroMode = mode;
+      this.engine.setMuroMode(mode);
+    },
+    adjustWallHeight(d) {
+      this.wallHeight = Math.max(1, this.wallHeight + d);
+      this.engine.setWallHeight(this.wallHeight);
     },
     adjustLevel(d) {
       this.engine.adjustLevel(d);
@@ -687,8 +850,8 @@ export default {
     },
     onKeyDown(e) {
       if (e.target.tagName === "INPUT") return;
-      if (e.key === "Shift") this.engine.setModifiers(true, e.altKey);
-      if (e.key === "Alt") this.engine.setModifiers(e.shiftKey, true);
+      if (e.key === "Shift" || e.key === "Alt" || e.key === "Control")
+        this.engine.setModifiers(e.shiftKey, e.altKey, e.ctrlKey);
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
         e.preventDefault();
         this.undo();
@@ -699,13 +862,24 @@ export default {
       }
       if (e.key === "1") this.setTool("prisma");
       if (e.key === "2") this.setTool("media");
+      if (e.key === "3") this.setTool("area");
+      if (e.key === "4") this.setTool("muro");
+      if (e.key === "5") this.setTool("cubo");
       if (e.key === "r") this.rotateHalf(1);
+      if (this.currentTool === "cubo") {
+        if (e.key === "+" || e.key === "=") this.adjustBoxHeight(1);
+        if (e.key === "-" || e.key === "_") this.adjustBoxHeight(-1);
+      }
+      if (this.currentTool === "muro" && this.muroMode !== "hex") {
+        if (e.key === "+" || e.key === "=") this.adjustWallHeight(1);
+        if (e.key === "-" || e.key === "_") this.adjustWallHeight(-1);
+      }
       if (e.key === "PageUp") this.adjustLevel(1);
       if (e.key === "PageDown") this.adjustLevel(-1);
     },
     onKeyUp(e) {
-      if (e.key === "Shift" || e.key === "Alt")
-        this.engine.setModifiers(false, false);
+      if (e.key === "Shift" || e.key === "Alt" || e.key === "Control")
+        this.engine.setModifiers(e.shiftKey, e.altKey, e.ctrlKey);
     },
     triggerImport() {
       this.$refs.fileInput.click();
@@ -721,6 +895,9 @@ export default {
             this.engine.loadCells(json.cells);
             json.cells.forEach((c) => this.addToUsedMaterials(c));
           }
+          this.engine.loadWalls(Array.isArray(json.walls) ? json.walls : []);
+          if (Array.isArray(json.walls))
+            json.walls.forEach((w) => this.addToUsedMaterials(w));
         } catch (err) {
           alert("Error JSON");
         }

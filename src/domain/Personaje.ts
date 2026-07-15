@@ -28,6 +28,7 @@ export interface ArbolAttributes {
   iniciativa: number;
   punteria: number;
   puntosHabilidad: number;
+  voluntad: number;
 }
 
 /** Id de la pseudo-arma "Sin Armas", disponible para todos los personajes. */
@@ -102,6 +103,7 @@ export function crearAtributosPorDefecto(): ArbolAttributes {
     iniciativa: 0,
     punteria: 0,
     puntosHabilidad: 10,
+    voluntad: 2,
   };
 }
 

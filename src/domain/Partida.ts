@@ -123,6 +123,10 @@ export interface MensajeChat {
   tirada?: DesgloseTirada;
   dano?: string; // daño plano de un ataque (p. ej. "8 lacerante")
   danoColor?: string; // color del daño
+  // Ataque dirigido a una entidad del escenario: etiqueta del objetivo
+  // (nombre · Esquiva) y si la tirada la alcanza (empate impacta).
+  objetivo?: string;
+  impacto?: boolean;
   descripcion?: string; // descripción de la acción/reacción
   tipoEjecucion?: string; // "accion" | "reaccion" | …
   color?: string; // color de acento del mensaje

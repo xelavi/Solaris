@@ -157,6 +157,12 @@ const iconoCono = `
   <circle cx="12" cy="3" r="1.5" fill="currentColor" stroke="none" />
 </svg>`;
 
+const iconoPing = `
+<svg viewBox="0 0 24 24" fill="none" width="22" height="22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z" />
+  <circle cx="12" cy="9" r="2.5" fill="currentColor" stroke="none" />
+</svg>`;
+
 const opciones: OpcionMenu[] = [
   {
     id: "iniciativa",
@@ -188,6 +194,13 @@ const opciones: OpcionMenu[] = [
     icono: iconoCono,
     accion: () => alternar("cono"),
     activa: () => herramientaActiva.value === "cono",
+  },
+  {
+    id: "ping",
+    label: "Ping: marcar un punto en el mapa",
+    icono: iconoPing,
+    accion: () => alternar("ping"),
+    activa: () => herramientaActiva.value === "ping",
   },
 ];
 </script>

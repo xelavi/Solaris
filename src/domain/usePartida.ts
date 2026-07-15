@@ -113,6 +113,28 @@ const bonosPartida = ref<Record<string, Record<string, number>>>({});
 // flotante durante la sesión). Misma clave e igual de efímera que los bonos.
 const armaSeleccionadaPartida = ref<Record<string, number | null>>({});
 
+// --- Orden de iniciativa ---
+// Vive a nivel de módulo (como bonosPartida) para sobrevivir a cerrar y
+// reabrir el panel de iniciativa (que destruye el componente): sin esto, cada
+// apertura del panel volvía a tirar los dados desde cero. No se persiste en
+// localStorage: es propio de la sesión, como el resto del estado efímero.
+export interface EntradaIniciativa {
+  tokenId: string;
+  nombre: string;
+  tipo: "personaje" | "criatura";
+  modificador: number; // atributo de iniciativa
+  tirada: number; // total 2d12 + iniciativa
+}
+const ordenIniciativa = ref<EntradaIniciativa[]>([]);
+const turnoIniciativa = ref(0);
+
+// Token que hay que señalar en la escena 3D (centrar cámara + resaltar), p.
+// ej. al hacer clic en una entrada del Diario que ya tiene token en el mapa.
+// Lleva un `seq` incremental para que dos clics seguidos sobre el mismo token
+// disparen el watch en la escena aunque el `tokenId` no cambie.
+const tokenSenalado = ref<{ tokenId: string; seq: number } | null>(null);
+let _senalSeq = 0;
+
 export function usePartida() {
   const { generarMapa } = useMapa();
 
@@ -138,6 +160,8 @@ export function usePartida() {
       // Los bonos temporales son propios de cada sesión: se descartan al cargar.
       bonosPartida.value = {};
       armaSeleccionadaPartida.value = {};
+      ordenIniciativa.value = [];
+      turnoIniciativa.value = 0;
 
       // Generar mapa lógico
       generarMapa();
@@ -154,6 +178,12 @@ export function usePartida() {
 
   function seleccionarPersonaje(personaje: PersonajeInstancia | null) {
     personajeActivo.value = personaje;
+  }
+
+  // Pide a la escena 3D que centre la cámara sobre un token y lo resalte
+  // brevemente (p. ej. al hacer clic en una entrada del Diario).
+  function senalarToken(tokenId: string) {
+    tokenSenalado.value = { tokenId, seq: ++_senalSeq };
   }
 
   // --- Fichas flotantes ---
@@ -300,6 +330,14 @@ export function usePartida() {
       clase: "tirada",
       ...payload,
     });
+  }
+
+  // Vacía el historial de chat de la partida (acción manual, sin confirmación
+  // aquí: la pide la UI antes de llamarla).
+  function limpiarChat() {
+    if (!partidaActual.value) return;
+    partidaActual.value.mensajesChat = [];
+    guardarPartidaActual();
   }
 
   // --- Diario ---
@@ -627,6 +665,10 @@ export function usePartida() {
     logs,
     mensajesChat,
     fichasFlotantes,
+    ordenIniciativa,
+    turnoIniciativa,
+    tokenSenalado,
+    senalarToken,
     abrirFichaInstancia,
     abrirFichaGuardado,
     abrirFichaCriatura,
@@ -644,6 +686,7 @@ export function usePartida() {
     guardarPartidaActual,
     enviarMensajeChat,
     enviarTiradaChat,
+    limpiarChat,
     agregarAlDiario,
     quitarDelDiario,
     seleccionarMapa,

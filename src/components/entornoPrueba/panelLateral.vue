@@ -43,6 +43,18 @@
     <!-- ===================== CHAT ===================== -->
     <div v-show="tabActiva === 'chat'" class="flex min-h-0 flex-1 flex-col">
       <div
+        v-if="mensajesChat.length > 0"
+        class="flex items-center justify-end border-b border-gray-700 px-3 py-1.5"
+      >
+        <button
+          @click="confirmarLimpiarChat"
+          class="text-[11px] font-semibold text-gray-500 transition-colors hover:text-red-400"
+          title="Borrar todo el historial del chat"
+        >
+          🗑 Limpiar chat
+        </button>
+      </div>
+      <div
         ref="logContainer"
         class="chat-feed flex-1 space-y-2.5 overflow-y-auto p-3"
       >
@@ -82,6 +94,9 @@
                 class="chat-vtag dis"
                 >Desventaja ×{{ -msg.tirada.ventaja }}</span
               >
+              <span v-if="msg.tirada.esCritico" class="chat-vtag crit"
+                >¡Crítico!</span
+              >
             </div>
 
             <button class="chat-toggle" @click="toggleDesglose(msg.id)">
@@ -116,6 +131,18 @@
                 <span class="chat-break-v">{{ msg.tirada.total }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- Objetivo del ataque: impacto/fallo contra su Esquiva -->
+          <div
+            v-if="msg.objetivo"
+            class="chat-target"
+            :class="msg.impacto ? 'hit' : 'miss'"
+          >
+            <span class="chat-target-n">🎯 {{ msg.objetivo }}</span>
+            <span class="chat-target-r">{{
+              msg.impacto ? "Impacta" : "Falla"
+            }}</span>
           </div>
 
           <!-- Daño plano del ataque -->
@@ -216,9 +243,9 @@
               :key="entrada.id"
               draggable="true"
               @dragstart="onDragStart($event, entrada)"
-              @click="abrirFichaGuardado(entrada.refId, entrada.nombre, entrada.id)"
-              @contextmenu.prevent="abrirFichaGuardado(entrada.refId, entrada.nombre, entrada.id)"
-              title="Clic para ver la ficha · arrastra al mapa"
+              @click="marcarEntrada(entrada)"
+              @contextmenu.prevent="seleccionarEntrada(entrada)"
+              title="Clic para marcar en el mapa · clic derecho para ver la ficha · arrastra al mapa"
               class="group flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800/60 px-3 py-2 transition-colors hover:border-indigo-500/50 hover:bg-gray-800 active:cursor-grabbing"
             >
               <span
@@ -237,13 +264,14 @@
                 >
                   📍
                 </button>
-                <span
+                <button
                   v-else
-                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100"
-                  title="Ya está en el mapa"
+                  @click.stop="eliminarDelEscenario(entrada)"
+                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
+                  title="Quitar del Escenario"
                 >
-                  En el mapa
-                </span>
+                  En el mapa ✕
+                </button>
                 <button
                   @click.stop="quitarDelDiario(entrada.id)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
@@ -287,9 +315,9 @@
               :key="entrada.id"
               draggable="true"
               @dragstart="onDragStart($event, entrada)"
-              @click="abrirFichaCriatura(entrada.refId, entrada.nombre, entrada.id)"
-              @contextmenu.prevent="abrirFichaCriatura(entrada.refId, entrada.nombre, entrada.id)"
-              title="Clic para ver la ficha · arrastra al mapa"
+              @click="marcarEntrada(entrada)"
+              @contextmenu.prevent="seleccionarEntrada(entrada)"
+              title="Clic para marcar en el mapa · clic derecho para ver la ficha · arrastra al mapa"
               class="group flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-700 bg-gray-800/60 px-3 py-2 transition-colors hover:border-indigo-500/50 hover:bg-gray-800 active:cursor-grabbing"
             >
               <span
@@ -308,13 +336,14 @@
                 >
                   📍
                 </button>
-                <span
+                <button
                   v-else
-                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100"
-                  title="Ya está en el mapa"
+                  @click.stop="eliminarDelEscenario(entrada)"
+                  class="text-[10px] text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
+                  title="Quitar del Escenario"
                 >
-                  En el mapa
-                </span>
+                  En el mapa ✕
+                </button>
                 <button
                   @click.stop="quitarDelDiario(entrada.id)"
                   class="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
@@ -425,11 +454,14 @@ const {
   partidaActual,
   enviarMensajeChat,
   enviarTiradaChat,
+  limpiarChat,
   agregarAlDiario,
   quitarDelDiario,
   colocarToken,
+  quitarToken,
   abrirFichaGuardado,
   abrirFichaCriatura,
+  senalarToken,
 } = usePartida();
 
 const tabs = [
@@ -482,6 +514,11 @@ function enviar() {
   mensaje.value = "";
 }
 
+function confirmarLimpiarChat() {
+  if (!confirm("¿Borrar todo el historial del chat? No se puede deshacer.")) return;
+  limpiarChat();
+}
+
 watch(
   mensajesChat,
   () => {
@@ -516,6 +553,36 @@ function tieneTokenColocado(entradaId: string): boolean {
   return (partidaActual.value?.tokens ?? []).some(
     (t) => t.diarioId === entradaId,
   );
+}
+
+// Quita del Escenario el token colocado de una entrada del diario (pide
+// confirmación). La entrada sigue en el diario, solo se retira del mapa.
+function eliminarDelEscenario(entrada: EntradaDiario) {
+  const token = (partidaActual.value?.tokens ?? []).find(
+    (t) => t.diarioId === entrada.id,
+  );
+  if (!token) return;
+  if (!confirm(`¿Quitar a "${entrada.nombre}" del Escenario?`)) return;
+  quitarToken(token.id);
+}
+
+// Clic izquierdo: si la entrada tiene un token colocado, pide a la escena
+// que centre la cámara sobre él y lo resalte para indicar dónde está en el
+// mapa. No abre la ficha.
+function marcarEntrada(entrada: EntradaDiario) {
+  const token = (partidaActual.value?.tokens ?? []).find(
+    (t) => t.diarioId === entrada.id,
+  );
+  if (token) senalarToken(token.id);
+}
+
+// Clic derecho: abre la ficha de la entrada del diario.
+function seleccionarEntrada(entrada: EntradaDiario) {
+  if (entrada.tipo === "criatura") {
+    abrirFichaCriatura(entrada.refId, entrada.nombre, entrada.id);
+  } else {
+    abrirFichaGuardado(entrada.refId, entrada.nombre, entrada.id);
+  }
 }
 
 // --- Modal añadir entidad ---
@@ -711,6 +778,11 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   background: rgba(239, 68, 68, 0.15);
   box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.4);
 }
+.chat-vtag.crit {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.5);
+}
 
 .chat-toggle {
   margin-top: 6px;
@@ -801,6 +873,36 @@ function onDragStart(e: DragEvent, entrada: EntradaDiario) {
   font-size: 16px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+}
+
+/* Objetivo del ataque: nombre + Esquiva y resultado (impacta / falla) */
+.chat-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.chat-target.hit {
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #22c55e 42%, transparent);
+}
+.chat-target.miss {
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ef4444 40%, transparent);
+}
+.chat-target-r {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 /* Descripción de acción / reacción */

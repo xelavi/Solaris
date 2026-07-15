@@ -21,7 +21,7 @@ defineEmits<{
 <style scoped>
 .ctrl-zoom {
   position: fixed;
-  right: 12px;
+  left: 12px;
   bottom: 12px;
   z-index: 60;
   display: flex;

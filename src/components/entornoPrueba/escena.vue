@@ -22,7 +22,7 @@
       v-for="(ficha, idx) in fichasFlotantes"
       :key="ficha.uid"
       :titulo="`Ficha — ${ficha.nombre}`"
-      :ancho="1280"
+      :ancho="1340"
       :alto="960"
       :zoom="zoomFicha"
       :desplazamiento="idx"
@@ -125,6 +125,12 @@
         @click="menuAnadirEstado"
       >
         ✨ Estados
+      </button>
+      <button
+        class="block w-full border-t border-gray-700 px-3 py-2 text-left text-red-400 transition-colors hover:bg-red-600/70 hover:text-white"
+        @click="menuEliminar"
+      >
+        🗑️ Eliminar
       </button>
     </div>
 
@@ -414,6 +420,7 @@ const {
   moverPersonajeActivo,
   colocarToken,
   moverToken,
+  quitarToken,
   colocarMarca,
   quitarMarcaEnCelda,
   enviarTiradaChat,
@@ -427,6 +434,7 @@ const {
   agregarEstadoToken,
   establecerValorEstadoToken,
   quitarEstadoToken,
+  tokenSenalado,
 } = usePartida();
 
 // Tamaño inicial de la ficha flotante: grande y ajustado al viewport (deja
@@ -465,6 +473,51 @@ let medMatLinea: THREE.LineBasicMaterial | null = null;
 const medMarcadores: THREE.Mesh[] = [];
 // Plano horizontal y=0 para poder medir clicando "en medio de la nada".
 const medPlano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+// --- Herramienta de ping ---
+// Destello temporal (anillo que crece y se desvanece) para señalar un punto
+// del mapa a los demás jugadores en pantalla. Es puramente visual: no se
+// persiste en la partida, cada uno desaparece solo tras `PING_DURACION`.
+const PING_DURACION = 1.1; // segundos
+const pings: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; inicio: number }[] = [];
+
+function crearPing(p: THREE.Vector3) {
+  const geo = new THREE.RingGeometry(0.05, 0.28, 32);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff8822,
+    transparent: true,
+    opacity: 1,
+    depthTest: false,
+    side: THREE.DoubleSide,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(p);
+  mesh.position.y += 0.05;
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.renderOrder = 999;
+  scene.add(mesh);
+  pings.push({ mesh, mat, inicio: Date.now() });
+}
+
+// Hace crecer y desvanecer cada ping activo; los retira al terminar su vida.
+function actualizarPings() {
+  if (pings.length === 0) return;
+  const ahora = Date.now();
+  for (let i = pings.length - 1; i >= 0; i--) {
+    const ping = pings[i];
+    const t = (ahora - ping.inicio) / 1000 / PING_DURACION;
+    if (t >= 1) {
+      scene.remove(ping.mesh);
+      ping.mesh.geometry.dispose();
+      ping.mat.dispose();
+      pings.splice(i, 1);
+      continue;
+    }
+    const escala = 1 + t * 3;
+    ping.mesh.scale.set(escala, escala, escala);
+    ping.mat.opacity = 1 - t;
+  }
+}
 // Etiqueta HTML con la distancia, posicionada en el punto medio de la línea.
 const medicionLabel = ref<{
   x: number;
@@ -536,6 +589,8 @@ const stats = new Stats();
 // Tokens colocados sobre el mapa (tokenId -> mesh) + token seleccionado.
 const tokenMeshes = new Map<string, THREE.Mesh>();
 const tokenSeleccionado = ref<string | null>(null);
+// Token resaltado temporalmente (al señalarlo desde la barra derecha).
+let resaltadoTimeout: ReturnType<typeof setTimeout> | null = null;
 const COLORES_TOKENS = [
   0xff4d4d, 0x4d79ff, 0x4dff88, 0xffd24d, 0xff4dd2, 0x4dffff, 0xff8c1a,
   0xa64dff, 0x1aff8c, 0xff1a66, 0x8cff1a, 0x1a8cff,
@@ -1086,6 +1141,37 @@ watch(
   { deep: true, immediate: true },
 );
 
+// Señalar un token desde la barra derecha (Diario): centra la cámara sobre él
+// (conservando el ángulo/distancia actuales) y lo resalta en verde un
+// instante para indicar dónde está en el mapa.
+watch(
+  () => tokenSenalado.value,
+  (v) => {
+    if (!v) return;
+    const mesh = tokenMeshes.get(v.tokenId);
+    if (!mesh) return;
+
+    if (controls && camera) {
+      const destino = mesh.position.clone();
+      const offset = camera.position.clone().sub(controls.target);
+      controls.target.copy(destino);
+      camera.position.copy(destino).add(offset);
+      controls.update();
+    }
+
+    const mat = mesh.material as THREE.MeshStandardMaterial;
+    mat.emissive.set(0x22cc55);
+    if (resaltadoTimeout) clearTimeout(resaltadoTimeout);
+    const tokenId = v.tokenId;
+    resaltadoTimeout = setTimeout(() => {
+      const m = tokenMeshes.get(tokenId);
+      if (!m) return;
+      const mm = m.material as THREE.MeshStandardMaterial;
+      mm.emissive.set(tokenId === tokenSeleccionado.value ? 0x555500 : 0x000000);
+    }, 1600);
+  },
+);
+
 // (Re)crea las entradas de HUD a partir del estado de los tokens. Solo el
 // contenido (vida/estados); la posición en pantalla se actualiza cada frame en
 // el bucle de render (proyectando la posición 3D del token).
@@ -1454,6 +1540,7 @@ function animate() {
   // Reposicionar la etiqueta de la medición activa.
   actualizarLabelMedicion();
   actualizarLabelPlantilla();
+  actualizarPings();
 
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
@@ -1797,6 +1884,16 @@ function menuAnadirEstado() {
   if (!menu) return;
   panelEstados.value = { x: menu.x, y: menu.y, tokenId: menu.tokenId };
   menuContextual.value = null;
+}
+
+// Quita del Escenario el token del menú (pide confirmación).
+function menuEliminar() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  menuContextual.value = null;
+  if (!confirm(`¿Quitar a "${menu.nombre}" del Escenario?`)) return;
+  if (tokenSeleccionado.value === menu.tokenId) tokenSeleccionado.value = null;
+  quitarToken(menu.tokenId);
 }
 
 // Aplica un estado del catálogo al token del panel. Los estados simples se
@@ -2246,6 +2343,15 @@ async function onCanvasClick(event: MouseEvent) {
     } else {
       plantillaFijada = true;
     }
+    return;
+  }
+
+  // Herramienta de ping: un clic señala el punto (sobre terreno o "en el
+  // vacío") con un destello temporal. Se queda activa para poder pingear
+  // varias veces seguidas.
+  if (herramientaActiva.value === "ping") {
+    const p = puntoMundoEnPuntero(event.clientX, event.clientY);
+    if (p) crearPing(p);
     return;
   }
 

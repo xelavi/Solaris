@@ -260,6 +260,7 @@
             <div
               v-for="(tecnica, i) in criatura.tecnicas"
               :key="i"
+              :ref="(el) => setTecnicaRef(el, i)"
               class="panel relative p-4"
             >
               <button
@@ -273,7 +274,12 @@
               <div class="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label class="label">Nombre</label>
-                  <input v-model="tecnica.nombre" type="text" class="input" />
+                  <input
+                    :ref="(el) => setTecnicaNombreRef(el, i)"
+                    v-model="tecnica.nombre"
+                    type="text"
+                    class="input"
+                  />
                 </div>
                 <div class="flex flex-wrap items-end gap-3 pb-1">
                   <div>
@@ -470,7 +476,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted } from "vue";
+import { ref, computed, inject, onMounted, nextTick } from "vue";
 import {
   crearCriaturaVacia,
   crearTecnicaVacia,
@@ -516,7 +522,8 @@ const gruposAtributos: GrupoAtributos[] = [
     campos: [
       { key: "hp", label: "HP" },
       { key: "resistencia", label: "Resistencia" },
-      { key: "regeneracion", label: "Voluntad" },
+      { key: "regeneracion", label: "Regeneración" },
+      { key: "voluntad", label: "Voluntad" },
     ],
   },
   {
@@ -638,8 +645,27 @@ function quitarEtiqueta(nombre: string) {
   );
 }
 
+const tecnicaRefs: (HTMLElement | null)[] = [];
+const tecnicaNombreRefs: (HTMLInputElement | null)[] = [];
+
+function setTecnicaRef(el: Element | { $el?: Element } | null, i: number) {
+  tecnicaRefs[i] = (el as HTMLElement) ?? null;
+}
+
+function setTecnicaNombreRef(el: Element | { $el?: Element } | null, i: number) {
+  tecnicaNombreRefs[i] = (el as HTMLInputElement) ?? null;
+}
+
 function agregarTecnica() {
   criatura.value.tecnicas.push(crearTecnicaVacia());
+  const nuevoIndex = criatura.value.tecnicas.length - 1;
+  nextTick(() => {
+    tecnicaRefs[nuevoIndex]?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    tecnicaNombreRefs[nuevoIndex]?.focus();
+  });
 }
 
 function eliminarTecnica(index: number) {

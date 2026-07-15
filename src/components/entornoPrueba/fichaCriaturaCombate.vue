@@ -116,6 +116,7 @@
                 </div>
                 <div class="fx-attr-rows">
                   <div class="fx-arow"><span>Regeneración</span><b class="tnum">{{ criatura.atributos.regeneracion }}</b></div>
+                  <div class="fx-arow"><span>Voluntad</span><b class="tnum">{{ criatura.atributos.voluntad }}</b></div>
                   <div class="fx-arow"><span>Acciones</span><b class="tnum">{{ criatura.atributos.acciones }}</b></div>
                   <div class="fx-arow"><span>Reacciones</span><b class="tnum">{{ criatura.atributos.reacciones }}</b></div>
                 </div>
@@ -130,7 +131,7 @@
                 <div class="fx-ac-lbl">Armadura</div>
                 <div class="fx-shields">
                   <div
-                    v-for="tipo in TIPOS_DANO"
+                    v-for="tipo in tiposEscudoVisibles"
                     :key="tipo.key"
                     class="fx-sh"
                     :style="{ '--dc': tipo.color }"
@@ -512,6 +513,15 @@ const TIPOS_DANO: Array<{
   { key: "espiral", abbr: "Es", etiqueta: "espiral", color: "#9c36b5" },
 ];
 
+const TIPOS_DANO_PRINCIPALES = new Set(["lacerante", "perforante", "contundente"]);
+
+// Escudos principales siempre visibles; el resto solo si tienen valor > 0.
+const tiposEscudoVisibles = computed(() =>
+  TIPOS_DANO.filter(
+    (tipo) => TIPOS_DANO_PRINCIPALES.has(tipo.key) || (criatura.value?.armadura[tipo.key] ?? 0) > 0,
+  ),
+);
+
 function tieneDano(tecnica: Tecnica): boolean {
   return TIPOS_DANO.some((tipo) => tecnica.dano[tipo.key] > 0);
 }
@@ -535,26 +545,46 @@ function nombreEstado(estadoId: number): string {
 }
 
 // Usa una técnica: vuelca su descripción al chat. Si hace daño, tira además para
-// impactar con 2d12 + Estilo marcial e incluye el daño plano de la técnica.
+// impactar con 2d12 + Estilo marcial e incluye el daño plano de la técnica,
+// multiplicado si la tirada alcanza el Rango de Crítico propio de la técnica.
 function usarTecnica(tecnica: Tecnica) {
   if (!criatura.value) return;
   const golpea = tieneDano(tecnica);
   const esReaccion = tecnica.tipoEjecucion === "reaccion";
+  const tirada = golpea
+    ? tirar2d12(
+        criatura.value.estiloMarcial.valor,
+        "Estilo marcial",
+        ventajaTirada.value,
+        tecnica.rangoCritico,
+      )
+    : undefined;
   emit("tirar", {
     texto: `usa ${tecnica.nombre}`,
     descripcion: tecnica.descripcion || undefined,
     tipoEjecucion: tecnica.tipoEjecucion,
-    tirada: golpea
-      ? tirar2d12(
-          criatura.value.estiloMarcial.valor,
-          "Estilo marcial",
-          ventajaTirada.value,
-        )
+    tirada,
+    dano: golpea
+      ? textoDanoFinal(tecnica.dano, tirada!.esCritico, tecnica.multiplicadorCritico)
       : undefined,
-    dano: golpea ? textoDano(tecnica.dano) : undefined,
     danoColor: golpea ? "#d8365f" : undefined,
     color: esReaccion ? "#cc7d10" : golpea ? "#d8365f" : "#4f46e5",
   });
+}
+
+// Igual que textoDano, pero multiplica cada tipo de daño por el multiplicador
+// de crítico si la tirada de ataque ha sido crítico.
+function textoDanoFinal(
+  dano: DanoPorTipo,
+  esCritico: boolean,
+  multiplicador: number,
+): string {
+  if (!esCritico) return textoDano(dano);
+  return (
+    TIPOS_DANO.filter((tipo) => dano[tipo.key] > 0)
+      .map((tipo) => `${Math.round(dano[tipo.key] * multiplicador)} ${tipo.etiqueta}`)
+      .join(" · ") + " ¡Crítico!"
+  );
 }
 
 // --- Selección de ataque: igual que las armas del personaje, se elige la
@@ -605,11 +635,15 @@ function confirmarAtaqueTecnica() {
     criatura.value.estiloMarcial.valor,
     "Estilo marcial",
     ventajaTirada.value,
+    tecnica.rangoCritico,
   );
+  const dano = tirada.esCritico
+    ? Math.round(valor * tecnica.multiplicadorCritico)
+    : valor;
   emit("tirar", {
     texto: `ataca con ${tecnica.nombre}`,
     tirada,
-    dano: `${valor} ${tipoInfo.etiqueta}`,
+    dano: `${dano} ${tipoInfo.etiqueta}${tirada.esCritico ? " ¡Crítico!" : ""}`,
     danoColor: tipoInfo.color,
     color: tipoInfo.color,
   });

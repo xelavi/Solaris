@@ -116,6 +116,7 @@
                 </div>
                 <div class="cx-attr-rows">
                   <div class="cx-arow"><span>Regeneración</span><b class="tnum">{{ criatura.atributos.regeneracion }}</b></div>
+                  <div class="cx-arow"><span>Voluntad</span><b class="tnum">{{ criatura.atributos.voluntad }}</b></div>
                   <div class="cx-arow"><span>Acciones</span><b class="tnum">{{ criatura.atributos.acciones }}</b></div>
                   <div class="cx-arow"><span>Reacciones</span><b class="tnum">{{ criatura.atributos.reacciones }}</b></div>
                 </div>
@@ -128,7 +129,7 @@
             <div class="cx-ac">
               <div class="cx-shields">
                 <div
-                  v-for="tipo in TIPOS_DANO"
+                  v-for="tipo in tiposEscudoVisibles"
                   :key="tipo.key"
                   class="cx-sh"
                   :style="{ '--dc': tipo.color }"
@@ -305,6 +306,15 @@ const TIPOS_DANO: Array<{ key: keyof DanoPorTipo; abbr: string; color: string }>
   { key: "radiacion", abbr: "Ra", color: "#94d82d" },
   { key: "espiral", abbr: "Es", color: "#9c36b5" },
 ];
+
+const TIPOS_DANO_PRINCIPALES = new Set(["lacerante", "perforante", "contundente"]);
+
+// Escudos principales siempre visibles; el resto solo si tienen valor > 0.
+const tiposEscudoVisibles = computed(() =>
+  TIPOS_DANO.filter(
+    (tipo) => TIPOS_DANO_PRINCIPALES.has(tipo.key) || (criatura.value?.armadura[tipo.key] ?? 0) > 0,
+  ),
+);
 
 function tieneDano(tecnica: Tecnica): boolean {
   return TIPOS_DANO.some((tipo) => tecnica.dano[tipo.key] > 0);

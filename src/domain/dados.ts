@@ -19,6 +19,7 @@ export interface DesgloseTirada {
   modificadorLabel: string; // qué representa el modificador (Nivel, atributo…)
   total: number;
   caras?: number; // caras del dado tirado (por defecto 12, tiradas de /roll pueden usar otro)
+  esCritico: boolean; // true si la suma de dados alcanza el umbral de crítico
 }
 
 function d12(): number {
@@ -29,6 +30,11 @@ export function tirar2d12(
   modificador: number,
   modificadorLabel: string,
   ventaja = 0,
+  // Umbral (sobre la suma de los 2 dados conservados) a partir del cual la
+  // tirada es crítico. Por defecto 24 = ambos dados al máximo. Los ataques
+  // pueden bajarlo combinando el Rango de Crítico del personaje/criatura con
+  // el del arma/técnica.
+  umbralCritico = 24,
 ): DesgloseTirada {
   const extra = Math.abs(ventaja);
   const cantidad = 2 + extra;
@@ -48,6 +54,7 @@ export function tirar2d12(
   const indicesUsados = usados.map((u) => u.i);
   const sumaDados = dadosUsados.reduce((a, b) => a + b, 0);
   const total = sumaDados + modificador;
+  const esCritico = sumaDados >= umbralCritico;
 
   const signo =
     modificador >= 0 ? `+ ${modificador}` : `− ${Math.abs(modificador)}`;
@@ -62,14 +69,15 @@ export function tirar2d12(
     modificador,
     modificadorLabel,
     total,
+    esCritico,
   };
 }
 
 // Etiqueta legible del estado de ventaja/desventaja.
 export function etiquetaVentaja(ventaja: number): string {
-  if (ventaja > 0) return `Ventaja ×${ventaja}`;
-  if (ventaja < 0) return `Desventaja ×${-ventaja}`;
-  return "Normal";
+  if (ventaja > 0) return `V ${ventaja}`;
+  if (ventaja < 0) return `D ${-ventaja}`;
+  return "V/D";
 }
 
 // --- Comando de chat /roll ---
@@ -129,6 +137,9 @@ export function tirarDados(
   const sumaDados = dadosUsados.reduce((a, b) => a + b, 0);
   const total = sumaDados + modificador;
   const ventaja = conservaDos ? (modo > 0 ? cantidad - 2 : -(cantidad - 2)) : 0;
+  // Sin un umbral de personaje/arma que aplique a una tirada libre, se
+  // considera crítico cuando los dados conservados salen todos al máximo.
+  const esCritico = dadosUsados.every((d) => d === caras);
 
   const signo =
     modificador >= 0 ? `+ ${modificador}` : `− ${Math.abs(modificador)}`;
@@ -145,5 +156,14 @@ export function tirarDados(
     modificadorLabel: "Modificador",
     total,
     caras,
+    esCritico,
   };
+}
+
+// Convierte el multiplicador de crítico de un arma ("x2", "x1.5", "x3"…) a
+// número. Sin formato reconocible, se asume x2 (el valor por defecto del juego).
+export function parseMultiplicadorCritico(critico: string | undefined | null): number {
+  const m = String(critico ?? "").match(/([\d.]+)/);
+  const valor = m ? parseFloat(m[1]) : NaN;
+  return !isNaN(valor) && valor > 0 ? valor : 2;
 }

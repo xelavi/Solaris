@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import VentanaFlotante from "./ventanaFlotante.vue";
 import { usePartida } from "../../domain/usePartida";
 import type { TokenPartida } from "../../domain/Partida";
@@ -155,18 +155,11 @@ import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
 
 defineEmits<{ (e: "close"): void }>();
 
-const { partidaActual } = usePartida();
-
-interface EntradaIniciativa {
-  tokenId: string;
-  nombre: string;
-  tipo: "personaje" | "criatura";
-  modificador: number; // atributo de iniciativa
-  tirada: number; // total 2d12 + iniciativa
-}
-
-const orden = ref<EntradaIniciativa[]>([]);
-const turnoActual = ref(0);
+// `orden` y `turnoActual` viven en usePartida (a nivel de módulo) para que el
+// orden tirado sobreviva a cerrar y reabrir este panel, en vez de perderse al
+// destruirse el componente.
+const { partidaActual, ordenIniciativa: orden, turnoIniciativa: turnoActual } =
+  usePartida();
 const configAbierta = ref(false);
 const arrastrandoIdx = ref<number | null>(null);
 
@@ -228,5 +221,7 @@ function soltarEn(destino: number) {
   turnoActual.value = 0;
 }
 
-onMounted(tirarIniciativa);
+// Solo se tira automáticamente la primera vez (sin orden ya calculado); si el
+// panel se cierra y se reabre, el orden guardado en usePartida se conserva.
+if (orden.value.length === 0) tirarIniciativa();
 </script>
