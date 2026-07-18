@@ -116,6 +116,44 @@
       </button>
       <button
         class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuSaltar"
+      >
+        🐇 Saltar
+      </button>
+      <button
+        v-if="menuContextual.volador"
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
+        @click="menuVolar"
+      >
+        🕊️ Volar
+      </button>
+      <!-- Altura de vuelo (solo Voladores): el token flota sobre su casilla -->
+      <div
+        v-if="menuContextual.volador"
+        class="flex items-center gap-1.5 border-b border-gray-700 px-3 py-2"
+      >
+        <span title="Altura de vuelo">☁️</span>
+        <button
+          class="flex h-6 w-6 items-center justify-center rounded bg-gray-800 text-base leading-none transition-colors hover:bg-sky-600/70"
+          title="Bajar 1 nivel"
+          @click="ajustarAlturaMenu(-1)"
+        >
+          −
+        </button>
+        <span class="w-8 text-center text-sm font-bold tnum">{{
+          alturaTokenMenu
+        }}</span>
+        <button
+          class="flex h-6 w-6 items-center justify-center rounded bg-gray-800 text-base leading-none transition-colors hover:bg-sky-600/70"
+          title="Subir 1 nivel"
+          @click="ajustarAlturaMenu(1)"
+        >
+          +
+        </button>
+        <span class="text-xs text-gray-400">niveles</span>
+      </div>
+      <button
+        class="block w-full px-3 py-2 text-left transition-colors hover:bg-indigo-600/70"
         @click="menuAtacar"
       >
         ⚔️ Atacar
@@ -352,7 +390,8 @@
           tokenSeleccionadoNombre
         }}</span>
         <span class="ml-2 text-xs text-gray-300"
-          >— pulsa <strong>M</strong> o clic derecho → Mover</span
+          >— <strong>M</strong> mover · <strong>S</strong> saltar ·
+          <strong>F</strong> volar · <strong>A</strong> atacar</span
         >
       </p>
       <p v-else-if="personajeActivo">
@@ -407,6 +446,11 @@ import {
   type MapaHexCelda,
 } from "../../domain/mapaHex";
 import { emojiDeForma, type FormaMarca } from "../../domain/MarcasMapa";
+import {
+  saltoHorizontal,
+  saltoVertical,
+  esVolador,
+} from "../../domain/locomocion";
 
 const props = defineProps<{ partidaId?: string }>();
 
@@ -434,6 +478,8 @@ const {
   agregarEstadoToken,
   establecerValorEstadoToken,
   quitarEstadoToken,
+  establecerAlturaVueloToken,
+  bonosDeFicha,
   tokenSenalado,
 } = usePartida();
 
@@ -625,10 +671,18 @@ const menuContextual = ref<{
   y: number;
   tokenId: string;
   nombre: string;
+  // Se rellena en diferido al abrir el menú (hay que leer la criatura guardada
+  // para mirar sus etiquetas): muestra Volar y el control de altura de vuelo.
+  volador: boolean;
 } | null>(null);
 // Token cuyo rango de movimiento se está mostrando (modo "mover"). Al estar
-// activo, un clic sobre una casilla alcanzable mueve el token allí.
-const modoMovimiento = ref<{ tokenId: string } | null>(null);
+// activo, un clic sobre una casilla alcanzable mueve el token allí. `tipo`
+// distingue qué rango se pintó (andar/saltar/volar) para que cada atajo de
+// teclado (M/S/F) alterne solo su propio modo.
+const modoMovimiento = ref<{
+  tokenId: string;
+  tipo: "mover" | "saltar" | "volar";
+} | null>(null);
 // Token cuyo rango de ataque se está mostrando (modo "atacar"). A diferencia del
 // modo mover, es solo visualización: un clic cualquiera lo cierra sin mover.
 const modoAtaque = ref<{ tokenId: string } | null>(null);
@@ -1022,22 +1076,24 @@ function alturaToken(tipo: TokenPartida["tipo"]): number {
 }
 
 // Posición de mundo de un token según el mapa hexagonal activo. La `y` deja el
-// cilindro apoyado sobre la superficie (centro a media altura del cilindro).
+// cilindro apoyado sobre la superficie (centro a media altura del cilindro),
+// más la altura de vuelo si el token está flotando (criaturas Voladoras).
 function posicionMundoToken(
   pos: { col: number; row: number; nivel: number },
   altura = ALTURA_TOKEN_PERSONAJE,
+  alturaVuelo = 0,
 ): THREE.Vector3 {
   const m = partidaActual.value?.mapa;
   if (m) {
     const p = centroHex(m, pos.col, pos.row);
     return new THREE.Vector3(
       p.x,
-      alturaSuperficie(m, pos.nivel) + altura / 2,
+      alturaSuperficie(m, pos.nivel) + alturaVuelo * m.prismHeight + altura / 2,
       p.z,
     );
   }
   // Sin mapa hexagonal: reparto plano aproximado.
-  return new THREE.Vector3(pos.col * 2, altura / 2, pos.row * 2);
+  return new THREE.Vector3(pos.col * 2, alturaVuelo + altura / 2, pos.row * 2);
 }
 
 // Sincroniza los meshes de token con el estado de la partida (crea/actualiza/
@@ -1065,7 +1121,7 @@ function syncTokens() {
       scene.add(mesh);
       tokenMeshes.set(t.id, mesh);
     }
-    mesh.position.copy(posicionMundoToken(t.pos, altura));
+    mesh.position.copy(posicionMundoToken(t.pos, altura, t.alturaVuelo ?? 0));
     const mat = mesh.material as THREE.MeshStandardMaterial;
     mat.emissive.set(t.id === tokenSeleccionado.value ? 0x555500 : 0x000000);
   });
@@ -1580,13 +1636,40 @@ function vecinosHex(col: number, row: number): [number, number][] {
   return tabla.map(([dc, dr]) => [col + dc, row + dr] as [number, number]);
 }
 
-// Puntos de movimiento del personaje/criatura de origen del token.
-async function movimientoDeToken(token: TokenPartida): Promise<number> {
+// Locomoción EFECTIVA del personaje/criatura de origen del token: atributos
+// guardados + bonos temporales editados en su ficha de partida (bonosDeFicha,
+// misma clave que usa la ficha flotante: la entrada del diario). Así, lo que se
+// edita en la ficha cambia la distancia real mostrada en el mapa.
+async function locomocionDeToken(token: TokenPartida): Promise<{
+  movimiento: number;
+  saltoH: number;
+  saltoV: number;
+  vuelo: number;
+  volador: boolean;
+}> {
   const guardado =
     token.tipo === "criatura"
       ? await obtenerCriatura(token.refId)
       : await obtenerPersonaje(token.refId);
-  return guardado?.atributos?.movimiento ?? 3;
+  const bonos = bonosDeFicha(token.diarioId ?? token.refId);
+  const b = (clave: string) => bonos[clave] || 0;
+  // En personajes, cada punto temporal de Cuerpo arrastra +1 a Poderío y
+  // Movimiento (misma cascada que aplica la ficha).
+  const cascadaCuerpo = token.tipo === "criatura" ? 0 : b("cuerpo");
+  const movimiento =
+    (guardado?.atributos?.movimiento ?? 3) + b("movimiento") + cascadaCuerpo;
+  const poderio =
+    (guardado?.atributos?.poderio ?? 0) + b("poderio") + cascadaCuerpo;
+  const volador =
+    token.tipo === "criatura" &&
+    esVolador((guardado as { etiquetas?: string[] } | null)?.etiquetas);
+  return {
+    movimiento,
+    saltoH: saltoHorizontal(movimiento, poderio) + b("salto"),
+    saltoV: saltoVertical(poderio) + b("saltoV"),
+    vuelo: movimiento + b("vuelo"),
+    volador,
+  };
 }
 
 // Casillas alcanzables desde `origen` con `pasos` puntos de movimiento. Cada
@@ -1647,19 +1730,18 @@ function limpiarRango() {
   modoAtaque.value = null;
 }
 
-// Pinta el rango de movimiento del token (marcadores translúcidos sobre la cara
-// superior de cada casilla alcanzable) y entra en modo "mover".
-async function mostrarRango(tokenId: string) {
-  limpiarRango();
+// Pinta marcadores translúcidos sobre la cara superior de cada casilla
+// alcanzable y las registra como destinos válidos (celdasAlcanzables).
+// Compartido por los modos mover, saltar y volar (cambia solo el color).
+function pintarAlcance(
+  alcance: Map<string, { col: number; row: number; nivel: number }>,
+  color: number,
+) {
   const mapaHex = partidaActual.value?.mapa;
-  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
-  if (!mapaHex || !token || !scene) return;
-
-  const alcance = calcularAlcance(token.pos, await movimientoDeToken(token));
-  if (alcance.size === 0) return;
+  if (!mapaHex || !scene) return;
 
   matRango = new THREE.MeshBasicMaterial({
-    color: 0x33ff99,
+    color,
     transparent: true,
     opacity: 0.35,
     depthWrite: false,
@@ -1681,8 +1763,102 @@ async function mostrarRango(tokenId: string) {
     scene.add(marcador);
     marcadoresRango.push(marcador);
   }
+}
 
-  modoMovimiento.value = { tokenId };
+// Pinta el rango de movimiento del token (verde) y entra en modo "mover".
+async function mostrarRango(tokenId: string) {
+  limpiarRango();
+  const mapaHex = partidaActual.value?.mapa;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  if (!mapaHex || !token || !scene) return;
+
+  const loco = await locomocionDeToken(token);
+  const alcance = calcularAlcance(token.pos, loco.movimiento);
+  if (alcance.size === 0) return;
+
+  pintarAlcance(alcance, 0x33ff99);
+  modoMovimiento.value = { tokenId, tipo: "mover" };
+}
+
+// Casillas alcanzables de un salto: en línea recta por el aire (no recorre el
+// camino, así que puede cruzar huecos y muros), a como mucho `saltoH` pasos
+// hexagonales del origen. El destino no puede quedar más de `saltoV` niveles
+// por ENCIMA del origen; hacia abajo se puede saltar cualquier altura.
+function calcularAlcanceSalto(
+  origen: { col: number; row: number; nivel: number },
+  saltoH: number,
+  saltoV: number,
+): Map<string, { col: number; row: number; nivel: number }> {
+  const resultado = new Map<
+    string,
+    { col: number; row: number; nivel: number }
+  >();
+  for (const celda of celdaPorClave.values()) {
+    const clave = claveCelda(celda.col, celda.row, celda.y);
+    if (!casillasValidas.has(clave)) continue;
+    const d = distanciaHex(origen, celda);
+    if (d < 1 || d > saltoH) continue;
+    if (celda.y - origen.nivel > saltoV) continue;
+    resultado.set(clave, { col: celda.col, row: celda.row, nivel: celda.y });
+  }
+  return resultado;
+}
+
+// Casillas alcanzables volando: el movimiento se gasta por igual en horizontal
+// (pasos hexagonales) y en vertical (niveles de diferencia entre superficies),
+// ignorando muros y desniveles intermedios. La altura de vuelo actual del token
+// se conserva al moverse, así que no entra en el coste.
+function calcularAlcanceVuelo(
+  origen: { col: number; row: number; nivel: number },
+  vuelo: number,
+): Map<string, { col: number; row: number; nivel: number }> {
+  const resultado = new Map<
+    string,
+    { col: number; row: number; nivel: number }
+  >();
+  const claveOrigen = claveCelda(origen.col, origen.row, origen.nivel);
+  for (const celda of celdaPorClave.values()) {
+    const clave = claveCelda(celda.col, celda.row, celda.y);
+    if (clave === claveOrigen || !casillasValidas.has(clave)) continue;
+    const coste = distanciaHex(origen, celda) + Math.abs(celda.y - origen.nivel);
+    if (coste > vuelo) continue;
+    resultado.set(clave, { col: celda.col, row: celda.row, nivel: celda.y });
+  }
+  return resultado;
+}
+
+// Pinta el rango de salto del token (ámbar) y entra en modo "mover" (un clic
+// sobre una casilla alcanzable salta allí).
+async function mostrarRangoSalto(tokenId: string) {
+  limpiarRango();
+  const mapaHex = partidaActual.value?.mapa;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  if (!mapaHex || !token || !scene) return;
+
+  const loco = await locomocionDeToken(token);
+  const alcance = calcularAlcanceSalto(token.pos, loco.saltoH, loco.saltoV);
+  if (alcance.size === 0) return;
+
+  pintarAlcance(alcance, 0xffc837);
+  modoMovimiento.value = { tokenId, tipo: "saltar" };
+}
+
+// Pinta el rango de vuelo del token (celeste) y entra en modo "mover". Solo
+// para criaturas con la etiqueta Volador: el menú ya lo filtra, y el guard de
+// aquí cubre el atajo de teclado (F), que no pasa por el menú.
+async function mostrarRangoVuelo(tokenId: string) {
+  limpiarRango();
+  const mapaHex = partidaActual.value?.mapa;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  if (!mapaHex || !token || !scene) return;
+
+  const loco = await locomocionDeToken(token);
+  if (!loco.volador) return;
+  const alcance = calcularAlcanceVuelo(token.pos, loco.vuelo);
+  if (alcance.size === 0) return;
+
+  pintarAlcance(alcance, 0x66ccff);
+  modoMovimiento.value = { tokenId, tipo: "volar" };
 }
 
 // Instancia de personaje de la partida (con su `armaEquipada`) a la que
@@ -1824,7 +2000,20 @@ function onContextMenu(event: MouseEvent) {
     y: event.clientY,
     tokenId,
     nombre: token?.nombre ?? "",
+    volador: false,
   };
+  // Saber si es Volador requiere leer la criatura guardada (async): se rellena
+  // en diferido y solo si el menú sigue abierto sobre el mismo token.
+  if (token?.tipo === "criatura") {
+    void obtenerCriatura(token.refId).then((c) => {
+      if (
+        menuContextual.value?.tokenId === tokenId &&
+        esVolador(c?.etiquetas)
+      ) {
+        menuContextual.value.volador = true;
+      }
+    });
+  }
 }
 
 function menuVerFicha() {
@@ -1846,6 +2035,39 @@ function menuMover() {
   syncTokens();
   mostrarRango(menu.tokenId);
   menuContextual.value = null;
+}
+
+function menuSaltar() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  tokenSeleccionado.value = menu.tokenId;
+  syncTokens();
+  mostrarRangoSalto(menu.tokenId);
+  menuContextual.value = null;
+}
+
+function menuVolar() {
+  const menu = menuContextual.value;
+  if (!menu) return;
+  tokenSeleccionado.value = menu.tokenId;
+  syncTokens();
+  mostrarRangoVuelo(menu.tokenId);
+  menuContextual.value = null;
+}
+
+// Altura de vuelo del token del menú (niveles sobre su casilla).
+const alturaTokenMenu = computed(() => {
+  const tokenId = menuContextual.value?.tokenId;
+  if (!tokenId) return 0;
+  const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+  return token?.alturaVuelo ?? 0;
+});
+
+// Sube/baja un nivel la altura de vuelo del token del menú (mínimo 0 = posado).
+function ajustarAlturaMenu(delta: number) {
+  const tokenId = menuContextual.value?.tokenId;
+  if (!tokenId) return;
+  establecerAlturaVueloToken(tokenId, alturaTokenMenu.value + delta);
 }
 
 function menuAtacar() {
@@ -1965,10 +2187,27 @@ function onKeyDown(event: KeyboardEvent) {
   if (event.key === "m" || event.key === "M") {
     event.preventDefault();
     if (herramientaActiva.value) desactivarHerramienta();
-    if (modoMovimiento.value) {
+    if (modoMovimiento.value?.tipo === "mover") {
       limpiarRango();
     } else if (tokenSeleccionado.value) {
       mostrarRango(tokenSeleccionado.value);
+    }
+  } else if (event.key === "s" || event.key === "S") {
+    event.preventDefault();
+    if (herramientaActiva.value) desactivarHerramienta();
+    if (modoMovimiento.value?.tipo === "saltar") {
+      limpiarRango();
+    } else if (tokenSeleccionado.value) {
+      mostrarRangoSalto(tokenSeleccionado.value);
+    }
+  } else if (event.key === "f" || event.key === "F") {
+    event.preventDefault();
+    if (herramientaActiva.value) desactivarHerramienta();
+    if (modoMovimiento.value?.tipo === "volar") {
+      limpiarRango();
+    } else if (tokenSeleccionado.value) {
+      // Solo pinta el rango si el token es Volador (lo comprueba dentro).
+      mostrarRangoVuelo(tokenSeleccionado.value);
     }
   } else if (event.key === "a" || event.key === "A") {
     event.preventDefault();

@@ -1,6 +1,17 @@
 <template>
+  <!-- Pestaña para ocultar/mostrar el panel (pegada a su borde izquierdo) -->
+  <button
+    class="fixed top-1/2 z-50 flex h-12 w-5 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 border-gray-700 bg-gray-900/95 text-gray-400 shadow-lg backdrop-blur-md transition-all duration-200 hover:text-white"
+    :class="visible ? 'right-80' : 'right-0'"
+    :title="visible ? 'Ocultar panel' : 'Mostrar panel'"
+    @click="visible = !visible"
+  >
+    {{ visible ? "›" : "‹" }}
+  </button>
+
   <div
-    class="panel-scroll fixed top-0 right-0 z-50 flex h-screen w-80 flex-col overflow-hidden border-l border-gray-700 bg-gray-900/95 text-gray-100 shadow-2xl backdrop-blur-md"
+    class="panel-scroll fixed top-0 right-0 z-50 flex h-screen w-80 flex-col overflow-hidden border-l border-gray-700 bg-gray-900/95 text-gray-100 shadow-2xl backdrop-blur-md transition-transform duration-200"
+    :class="visible ? 'translate-x-0' : 'translate-x-full'"
   >
     <!-- Cabecera -->
     <div class="flex items-center gap-2.5 border-b border-gray-700 px-4 py-3">
@@ -469,6 +480,9 @@ const tabs = [
   { id: "diario" as const, label: "Diario", icon: "📖" },
 ];
 const tabActiva = ref<"chat" | "diario">("chat");
+
+// Visibilidad del panel (la pestaña del borde lo oculta/muestra).
+const visible = ref(true);
 
 // --- Chat ---
 const mensaje = ref("");

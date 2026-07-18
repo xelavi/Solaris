@@ -1,7 +1,18 @@
 <template>
+  <!-- Pestaña para ocultar/mostrar la barra (pegada a su borde derecho) -->
+  <button
+    class="fixed top-1/2 z-40 flex h-12 w-5 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-gray-700 bg-gray-900/95 text-gray-400 shadow-lg backdrop-blur-md transition-all duration-200 hover:text-white"
+    :class="visible ? 'left-16' : 'left-0'"
+    :title="visible ? 'Ocultar menú' : 'Mostrar menú'"
+    @click="visible = !visible"
+  >
+    {{ visible ? "‹" : "›" }}
+  </button>
+
   <!-- Barra lateral izquierda a pantalla completa -->
   <div
-    class="fixed top-0 left-0 z-40 flex h-screen w-16 flex-col items-center gap-2 border-r border-gray-700 bg-gray-900/95 py-3 shadow-2xl backdrop-blur-md"
+    class="fixed top-0 left-0 z-40 flex h-screen w-16 flex-col items-center gap-2 border-r border-gray-700 bg-gray-900/95 py-3 shadow-2xl backdrop-blur-md transition-transform duration-200"
+    :class="visible ? 'translate-x-0' : '-translate-x-full'"
   >
     <!-- Marca -->
     <div
@@ -85,6 +96,9 @@ import { FORMAS_MARCA, emojiDeForma, type FormaMarca } from "../../domain/Marcas
 const { herramientaActiva, formaMarcaActiva, alternar, activar, desactivar } =
   useHerramientas();
 const iniciativaAbierta = ref(false);
+
+// Visibilidad de la barra (la pestaña del borde la oculta/muestra).
+const visible = ref(true);
 
 // --- Desplegable de marcas ---
 const marcasAbierto = ref(false);

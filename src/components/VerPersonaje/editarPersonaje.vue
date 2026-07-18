@@ -117,11 +117,13 @@
             :key="arma.id"
             type="button"
             :class="['ed-item', { on: characterData.armas.includes(arma.id) }]"
-            @click="toggle(characterData.armas, arma.id)"
+            @click="toggleArma(arma.id)"
           >
             <span class="ed-check"><span v-if="characterData.armas.includes(arma.id)">✓</span></span>
             <span class="ed-item-n">{{ arma.nombre }}</span>
-            <span class="ed-item-tag">{{ arma.categoria }}</span>
+            <span class="ed-item-tag">{{
+              nombresEtiquetas(arma.etiquetas).join(", ")
+            }}</span>
             <span class="ed-dmg">
               <span class="ed-dchip l">{{ arma.lacerante }}</span>
               <span class="ed-dchip p">{{ arma.perforante }}</span>
@@ -140,7 +142,7 @@
             :key="arm.id"
             type="button"
             :class="['ed-item', { on: characterData.armaduras.includes(arm.id) }]"
-            @click="toggle(characterData.armaduras, arm.id)"
+            @click="toggleArmadura(arm.id)"
           >
             <span class="ed-check"><span v-if="characterData.armaduras.includes(arm.id)">✓</span></span>
             <span class="ed-item-n">{{ arm.nombre }}</span>
@@ -177,6 +179,8 @@ import EstiloMarcial from "../CrearPersonaje/estilo_marcial.vue";
 import Arbol from "../CrearPersonaje/arbol.vue";
 import Habilidades from "../CrearPersonaje/habilidades.vue";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
+import { nombresEtiquetas } from "../../domain/etiquetasEquipo";
+import { armaduraVinculada, armaVinculada } from "../../domain/escudos";
 import type { PersonajeGuardado } from "../../domain/Personaje";
 import {
   obtenerPersonaje,
@@ -220,10 +224,29 @@ onMounted(async () => {
   await editarPersonajeExistente(props.characterId);
 });
 
-function toggle(lista: number[], id: number) {
+function fijarSeleccion(lista: number[], id: number, seleccionado: boolean) {
   const i = lista.indexOf(id);
-  if (i === -1) lista.push(id);
-  else lista.splice(i, 1);
+  if (seleccionado && i === -1) lista.push(id);
+  if (!seleccionado && i !== -1) lista.splice(i, 1);
+}
+
+function toggleArma(id: number) {
+  const seleccionar = !characterData.value.armas.includes(id);
+  fijarSeleccion(characterData.value.armas, id, seleccionar);
+  // Los escudos son a la vez arma y armadura: mantener ambos apartados en sincronía
+  const armaduraId = armaduraVinculada(id);
+  if (armaduraId !== undefined) {
+    fijarSeleccion(characterData.value.armaduras, armaduraId, seleccionar);
+  }
+}
+
+function toggleArmadura(id: number) {
+  const seleccionar = !characterData.value.armaduras.includes(id);
+  fijarSeleccion(characterData.value.armaduras, id, seleccionar);
+  const armaId = armaVinculada(id);
+  if (armaId !== undefined) {
+    fijarSeleccion(characterData.value.armas, armaId, seleccionar);
+  }
 }
 
 // Suelta el puntero "en creación" y limpia el estado en memoria antes de salir.

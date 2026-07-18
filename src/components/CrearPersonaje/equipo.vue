@@ -72,9 +72,15 @@
                 {{ arma.contundente }}
               </div>
 
-              <!-- Categoría -->
-              <div class="col-span-3 text-sm text-gray-600">
-                {{ arma.categoria }}
+              <!-- Etiquetas -->
+              <div class="col-span-3 flex flex-wrap gap-1">
+                <span
+                  v-for="etiqueta in resolverEtiquetas(arma.etiquetas)"
+                  :key="etiqueta.id"
+                  :class="['etiqueta-chip', clasesEtiquetaEquipo(etiqueta)]"
+                >
+                  {{ etiqueta.nombre }}
+                </span>
               </div>
 
               <!-- Crítico -->
@@ -172,8 +178,15 @@
               </div>
 
               <!-- Categoría -->
-              <div class="col-span-2 text-sm text-gray-600">
-                {{ armadura.categoria }}
+              <div class="col-span-2">
+                <span
+                  :class="[
+                    'etiqueta-chip',
+                    clasesEtiquetaEquipo(armadura.categoria),
+                  ]"
+                >
+                  {{ armadura.categoria }}
+                </span>
               </div>
             </div>
           </div>
@@ -188,6 +201,11 @@ import { ref, watch, onMounted } from "vue";
 import armasData from "../../assets/armas.json";
 import armadurasData from "../../assets/armaduras.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
+import {
+  resolverEtiquetas,
+  clasesEtiquetaEquipo,
+} from "../../domain/etiquetasEquipo";
+import { armaduraVinculada, armaVinculada } from "../../domain/escudos";
 
 const armas = ref(armasData.armas);
 const armaduras = ref(armadurasData.armaduras);
@@ -247,20 +265,27 @@ function formatDistancia(min: number | null, max: number | null): string {
   return "-";
 }
 
+function fijarSeleccion(lista: number[], id: number, seleccionado: boolean) {
+  const index = lista.indexOf(id);
+  if (seleccionado && index === -1) lista.push(id);
+  if (!seleccionado && index !== -1) lista.splice(index, 1);
+}
+
 function toggleArma(armaId: number) {
-  const index = armasSeleccionadas.value.indexOf(armaId);
-  if (index === -1) {
-    armasSeleccionadas.value.push(armaId);
-  } else {
-    armasSeleccionadas.value.splice(index, 1);
+  const seleccionar = !armasSeleccionadas.value.includes(armaId);
+  fijarSeleccion(armasSeleccionadas.value, armaId, seleccionar);
+  // Los escudos son a la vez arma y armadura: mantener ambos apartados en sincronía
+  const armaduraId = armaduraVinculada(armaId);
+  if (armaduraId !== undefined) {
+    fijarSeleccion(armadurasSeleccionadas.value, armaduraId, seleccionar);
   }
 }
 function toggleArmadura(armaduraId: number) {
-  const index = armadurasSeleccionadas.value.indexOf(armaduraId);
-  if (index === -1) {
-    armadurasSeleccionadas.value.push(armaduraId);
-  } else {
-    armadurasSeleccionadas.value.splice(index, 1);
+  const seleccionar = !armadurasSeleccionadas.value.includes(armaduraId);
+  fijarSeleccion(armadurasSeleccionadas.value, armaduraId, seleccionar);
+  const armaId = armaVinculada(armaduraId);
+  if (armaId !== undefined) {
+    fijarSeleccion(armasSeleccionadas.value, armaId, seleccionar);
   }
 }
 </script>
@@ -271,5 +296,16 @@ function toggleArmadura(armaduraId: number) {
 }
 .tabla-grid {
   min-width: 760px;
+}
+.etiqueta-chip {
+  display: inline-flex;
+  align-items: center;
+  border-width: 1px;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1rem;
+  white-space: nowrap;
 }
 </style>

@@ -198,7 +198,7 @@ const mensaje = ref("");
 interface Arma {
   id: number;
   nombre: string;
-  categoria: string;
+  etiquetas: number[];
   critico: string;
   rango_critico: number | null;
   perforante: number;

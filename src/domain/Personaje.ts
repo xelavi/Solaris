@@ -70,6 +70,14 @@ export interface PersonajeGuardado {
   armas: number[];
   /** IDs de las armaduras seleccionadas. */
   armaduras: number[];
+  /**
+   * Slot de armadura activa (no escudo). Las armaduras no se acumulan: solo
+   * una activa a la vez, más un escudo. undefined = la primera que posea;
+   * null = ninguna. Ver domain/escudos.ts (armadurasActivas).
+   */
+  armadura_equipada?: number | null;
+  /** Slot del escudo activo, mismas reglas que armadura_equipada. */
+  escudo_equipado?: number | null;
   /** Orden y visibilidad de las armas en la ficha (incluye "Sin Armas"). */
   armas_vista?: VistaEquipo[];
   /** Orden y visibilidad de las armaduras en la ficha. */

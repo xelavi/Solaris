@@ -93,6 +93,19 @@
                 <div class="cx-attr-rows">
                   <div class="cx-arow"><span>Poderío</span><b class="tnum">{{ criatura.atributos.poderio }}</b></div>
                   <div class="cx-arow"><span>Movimiento</span><b class="tnum">{{ criatura.atributos.movimiento }}</b></div>
+                  <div
+                    class="cx-arow"
+                    title="Distancia horizontal (ecsas) / altura vertical (niveles)"
+                  >
+                    <span>Salto</span><b class="tnum">{{ salto.h }} / {{ salto.v }}</b>
+                  </div>
+                  <div
+                    v-if="volador"
+                    class="cx-arow"
+                    title="Velocidad de vuelo (ecsas), horizontal y vertical"
+                  >
+                    <span>Vuelo</span><b class="tnum">{{ criatura.atributos.movimiento }}</b>
+                  </div>
                   <div class="cx-arow"><span>Resistencia</span><b class="tnum">{{ criatura.atributos.resistencia }}</b></div>
                 </div>
               </div>
@@ -240,6 +253,11 @@ import {
   editarCriaturaExistente,
 } from "../../domain/storage/criaturasRepo";
 import { useZoomFicha } from "../../domain/useZoomFicha";
+import {
+  saltoHorizontal,
+  saltoVertical,
+  esVolador,
+} from "../../domain/locomocion";
 import ControlZoom from "../ControlZoom.vue";
 import DescripcionConEstados from "../DescripcionConEstados.vue";
 import habilidadesData from "../../assets/habilidades.json";
@@ -254,6 +272,16 @@ const props = defineProps<{
 }>();
 
 const criatura = ref<CriaturaData | null>(null);
+
+// Salto (ecsas de distancia / niveles de altura) y vuelo derivados de los
+// atributos (ver locomocion.ts). El vuelo solo aplica a etiquetas "Volador".
+const salto = computed(() => {
+  const a = criatura.value?.atributos;
+  return a
+    ? { h: saltoHorizontal(a.movimiento, a.poderio), v: saltoVertical(a.poderio) }
+    : { h: 0, v: 0 };
+});
+const volador = computed(() => esVolador(criatura.value?.etiquetas));
 
 const navigateToBestiario = inject<() => void>("navigateToBestiario");
 const navigateToCrearCriatura = inject<() => void>("navigateToCrearCriatura");

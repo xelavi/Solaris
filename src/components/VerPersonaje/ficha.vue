@@ -78,6 +78,38 @@
               </div>
             </div>
             <div class="fx-ident-stats">
+              <!-- Ventaja / Desventaja: general, afecta a TODAS las tiradas de la ficha -->
+              <div
+                v-if="embebido"
+                class="fx-adv fx-adv-mini"
+                :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
+                title="Ventaja / Desventaja: afecta a todas las tiradas de la ficha"
+              >
+                <button
+                  type="button"
+                  class="fx-adv-b dis"
+                  title="Añadir desventaja"
+                  @click="ajustarVentaja(-1)"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  class="fx-adv-lbl"
+                  title="Reiniciar a Normal"
+                  @click="reiniciarVentaja"
+                >
+                  {{ textoVentaja }}
+                </button>
+                <button
+                  type="button"
+                  class="fx-adv-b adv"
+                  title="Añadir ventaja"
+                  @click="ajustarVentaja(1)"
+                >
+                  ＋
+                </button>
+              </div>
               <button
                 type="button"
                 class="fx-mini"
@@ -227,11 +259,16 @@
                   </div>
                 </div>
                 <div class="fx-attr-rows">
-                  <div class="fx-arow"><span>Poderío</span>
+                  <div
+                    class="fx-arow"
+                    :class="{ 'fx-arow-click': embebido }"
+                    :title="embebido ? 'Tirar Poderío (2d12 + Poderío)' : ''"
+                    @click="usarAtributo('Poderío', ef.poderio, 'Cuerpo')"
+                  ><span>Poderío</span>
                     <span class="fx-num" :class="{ boost: ef.poderio !== personaje.cuerpo.poderio }">
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('poderio', -1)">−</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('poderio', -1)">−</button>
                       <b class="tnum">{{ ef.poderio }}</b>
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('poderio', 1)">＋</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('poderio', 1)">＋</button>
                     </span>
                   </div>
                   <div class="fx-arow"><span>Movimiento</span>
@@ -241,11 +278,16 @@
                       <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('movimiento', 1)">＋</button>
                     </span>
                   </div>
-                  <div class="fx-arow"><span>Resistencia</span>
+                  <div
+                    class="fx-arow"
+                    :class="{ 'fx-arow-click': embebido }"
+                    :title="embebido ? 'Tirar Resistencia (2d12 + Resistencia)' : ''"
+                    @click="usarAtributo('Resistencia', ef.resistencia, 'Cuerpo')"
+                  ><span>Resistencia</span>
                     <span class="fx-num" :class="{ boost: ef.resistencia !== personaje.cuerpo.resistencia }">
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('resistencia', -1)">−</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('resistencia', -1)">−</button>
                       <b class="tnum">{{ ef.resistencia }}</b>
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('resistencia', 1)">＋</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('resistencia', 1)">＋</button>
                     </span>
                   </div>
                 </div>
@@ -299,11 +341,16 @@
                   </div>
                 </div>
                 <div class="fx-attr-rows">
-                  <div class="fx-arow"><span>Voluntad</span>
+                  <div
+                    class="fx-arow"
+                    :class="{ 'fx-arow-click': embebido }"
+                    :title="embebido ? 'Tirar Voluntad (2d12 + Voluntad)' : ''"
+                    @click="usarAtributo('Voluntad', ef.voluntad, 'Mente')"
+                  ><span>Voluntad</span>
                     <span class="fx-num" :class="{ boost: ef.voluntad !== personaje.mente.voluntad }">
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('voluntad', -1)">−</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('voluntad', -1)">−</button>
                       <b class="tnum">{{ ef.voluntad }}</b>
-                      <button v-if="editAtributos" class="fx-numb" @click="ajustarBono('voluntad', 1)">＋</button>
+                      <button v-if="editAtributos" class="fx-numb" @click.stop="ajustarBono('voluntad', 1)">＋</button>
                     </span>
                   </div>
                   <div class="fx-arow"><span>Pts. hab.</span><b class="tnum">{{ personaje.mente.puntosHabilidadRestantes }}</b></div>
@@ -375,6 +422,22 @@
                 <div v-if="editArmadura" class="fx-shctrl">
                   <button class="fx-numb" @click="ajustarBono('movimiento', -1)">−</button>
                   <button class="fx-numb" @click="ajustarBono('movimiento', 1)">＋</button>
+                </div>
+                <div class="fx-ac-lbl fx-salto-lbl">Salto</div>
+                <div
+                  class="fx-sp-val tnum"
+                  :class="{ boost: saltoMejorado }"
+                  title="Distancia horizontal (ecsas) · altura vertical (niveles)"
+                >
+                  {{ salto.h }}<small> dist</small> · {{ salto.v
+                  }}<small> alt</small>
+                </div>
+                <div v-if="editArmadura" class="fx-shctrl">
+                  <button class="fx-numb" title="Salto horizontal −1" @click="ajustarBono('salto', -1)">−</button>
+                  <button class="fx-numb" title="Salto horizontal +1" @click="ajustarBono('salto', 1)">＋</button>
+                  <span class="fx-salto-sep">·</span>
+                  <button class="fx-numb" title="Salto vertical −1" @click="ajustarBono('saltoV', -1)">−</button>
+                  <button class="fx-numb" title="Salto vertical +1" @click="ajustarBono('saltoV', 1)">＋</button>
                 </div>
               </div>
             </div>
@@ -478,10 +541,23 @@
                 <div
                   v-for="armadura in armadurasVisibles"
                   :key="armadura.id"
-                  class="fx-arm"
+                  class="fx-arm fx-arm-sel"
+                  :class="{ on: esArmaduraActiva(armadura.id) }"
+                  role="button"
+                  :title="
+                    esArmaduraActiva(armadura.id)
+                      ? 'Desequipar'
+                      : 'Equipar (sustituye a la activa de su tipo)'
+                  "
+                  @click="equiparArmadura(armadura.id)"
                 >
                   <div class="fx-arm-top">
                     <span class="fx-arm-n">{{ armadura.nombre }}</span>
+                    <span
+                      v-if="esArmaduraActiva(armadura.id)"
+                      class="fx-tag fx-arm-eq"
+                      >Equipada</span
+                    >
                     <span
                       v-for="et in armadura.etiquetas"
                       :key="et"
@@ -526,7 +602,7 @@
                 <select v-model="objetivoTokenId" class="fx-objetivo-sel">
                   <option :value="null">Sin objetivo (solo tirada)</option>
                   <option v-for="t in objetivosDisponibles" :key="t.id" :value="t.id">
-                    {{ t.nombre }}
+                    {{ t.nombre }} · {{ t.tipo === "criatura" ? "Criatura" : "Personaje" }}
                   </option>
                 </select>
               </div>
@@ -593,7 +669,7 @@
                       <span
                         v-for="et in arma.etiquetas"
                         :key="et"
-                        class="fx-tag"
+                        class="fx-tag fx-tag-tipo"
                         >{{ et }}</span
                       >
                     </div>
@@ -660,35 +736,6 @@
                       </svg>
                       <span>Atacar</span>
                     </button>
-                    <div
-                      class="fx-adv fx-adv-mini"
-                      :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
-                    >
-                      <button
-                        type="button"
-                        class="fx-adv-b dis"
-                        title="Añadir desventaja"
-                        @click="ajustarVentaja(-1)"
-                      >
-                        −
-                      </button>
-                      <button
-                        type="button"
-                        class="fx-adv-lbl"
-                        title="Reiniciar a Normal"
-                        @click="reiniciarVentaja"
-                      >
-                        {{ textoVentaja }}
-                      </button>
-                      <button
-                        type="button"
-                        class="fx-adv-b adv"
-                        title="Añadir ventaja"
-                        @click="ajustarVentaja(1)"
-                      >
-                        ＋
-                      </button>
-                    </div>
                   </div>
 
                   <!-- Desglose del cálculo al pasar el ratón -->
@@ -890,7 +937,7 @@
                         </div>
                         <ul class="fx-lista">
                           <li v-for="(it, ii) in bloque.items" :key="ii">
-                            {{ it }}
+                            <DescripcionConEstados :texto="it" />
                           </li>
                         </ul>
                       </div>
@@ -1102,6 +1149,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, inject, watch } from "vue";
 import armasData from "../../assets/armas.json";
+import { nombresEtiquetas } from "../../domain/etiquetasEquipo";
+import { armadurasActivas, esArmaduraEscudo } from "../../domain/escudos";
 import armadurasData from "../../assets/armaduras.json";
 import especialidadesData from "../../assets/especialidades/especialidades.json";
 import estilosMarciales from "../../assets/estiloMarcial/estiloMarcial.json";
@@ -1116,7 +1165,11 @@ import {
   obtenerPersonaje,
   guardarPersonaje,
 } from "../../domain/storage/personajesRepo";
-import { obtenerCriatura } from "../../domain/storage/criaturasRepo";
+import {
+  resolverObjetivoCombate,
+  armaduraContra,
+  resolverImpacto,
+} from "../../domain/objetivoCombate";
 import {
   tirar2d12,
   etiquetaVentaja,
@@ -1124,6 +1177,7 @@ import {
 } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
+import { saltoHorizontal, saltoVertical } from "../../domain/locomocion";
 import { useZoomFicha } from "../../domain/useZoomFicha";
 import ControlZoom from "../ControlZoom.vue";
 
@@ -1167,11 +1221,12 @@ function reiniciarVentaja() {
 }
 const textoVentaja = computed(() => etiquetaVentaja(ventajaTirada.value));
 
-// --- Bonos temporales de partida (solo modo embebido) ---
-// Suben valores durante el juego SIN persistirse ni afectar a la ficha de
-// VerPersonaje. Se guardan por clave (atributo/armadura/vida…) y son >= 0.
-// El objeto se toma del estado de la partida (bonosDeFicha) para que sobreviva
-// al cerrar y reabrir la ventana flotante; en modo no embebido es local.
+// --- Bonos de partida (solo modo embebido) ---
+// Suben valores durante el juego sin afectar a la ficha de VerPersonaje. Se
+// guardan por clave (atributo/armadura/vida…) y son >= 0. El objeto se toma
+// del estado de la partida (bonosDeFicha), que los persiste dentro de la
+// partida: sobreviven a cerrar la ventana flotante y a salir y volver a
+// entrar en la partida. En modo no embebido es local.
 const {
   bonosDeFicha,
   armaSeleccionadaDeFicha,
@@ -1296,6 +1351,22 @@ const ef = computed(() => {
   };
 });
 
+// Salto EFECTIVO: fórmula de locomoción sobre los valores efectivos (con la
+// cascada de Cuerpo y los bonos de Movimiento/Poderío) más el bono directo de
+// salto editado en partida. `h` en ecsas, `v` en niveles de prisma.
+const salto = computed(() => ({
+  h: saltoHorizontal(ef.value.movimiento, ef.value.poderio) + bono("salto"),
+  v: saltoVertical(ef.value.poderio) + bono("saltoV"),
+}));
+// ¿Difiere del salto base (sin bonos de partida)? Para resaltarlo en verde.
+const saltoMejorado = computed(() => {
+  const p = personaje.value;
+  return (
+    salto.value.h !== saltoHorizontal(p.cuerpo.movimiento, p.cuerpo.poderio) ||
+    salto.value.v !== saltoVertical(p.cuerpo.poderio)
+  );
+});
+
 // Bono del atributo principal que se aplica a una habilidad (2d12 + atributo + …).
 function bonoHabilidad(atributo?: string): number {
   if (atributo === "Cuerpo") return bono("cuerpo");
@@ -1326,6 +1397,18 @@ function usarHabilidad(hab: { nombre: string; total: number; atributo?: string }
     texto: `usa ${hab.nombre}`,
     tirada,
     color: colorAtributo(hab.atributo),
+  });
+}
+
+// Tirada directa de un atributo secundario (Poderío / Voluntad / Resistencia)
+// al clicar sobre su fila: 2d12 + valor efectivo, con la ventaja de la ficha.
+function usarAtributo(nombre: string, valor: number, atributo: string) {
+  if (!props.embebido) return;
+  const tirada = tirar2d12(valor, nombre, ventajaTirada.value);
+  emit("tirar", {
+    texto: `tira ${nombre}`,
+    tirada,
+    color: colorAtributo(atributo),
   });
 }
 
@@ -1425,14 +1508,18 @@ const COLOR_DANO: Record<TipoDano, string> = {
   c: "#cc7d10",
 };
 
-// --- Objetivo del ataque (solo criaturas del escenario) ---
-// El jugador puede elegir una criatura con token en el mapa como objetivo. Al
-// atacarla, la tirada se compara con su Esquiva (empate impacta) y su armadura
-// del tipo de daño reduce el daño. Es solo informativo: no toca la vida del
-// token (lo ajusta el DJ a mano). Sin objetivo, el ataque se comporta como antes.
+// --- Objetivo del ataque (personajes y criaturas del escenario) ---
+// El jugador puede elegir cualquier token del mapa (personaje o criatura) como
+// objetivo. Al atacarlo, la tirada se compara con su Esquiva (empate impacta) y
+// su armadura del tipo de daño reduce el daño, penetrada por la puntería del
+// atacante. Es solo informativo: no toca la vida del token (lo ajusta el DJ a
+// mano). Sin objetivo, el ataque se comporta como antes. Se excluye el propio
+// token del personaje que ataca para no apuntarse a sí mismo.
 const objetivoTokenId = ref<string | null>(null);
 const objetivosDisponibles = computed(() =>
-  (partidaActual.value?.tokens ?? []).filter((t) => t.tipo === "criatura"),
+  (partidaActual.value?.tokens ?? []).filter(
+    (t) => !props.diarioId || t.diarioId !== props.diarioId,
+  ),
 );
 // Si el objetivo elegido desaparece del escenario, se deselecciona.
 watch(objetivosDisponibles, (lista) => {
@@ -1472,24 +1559,34 @@ async function confirmarAtaque() {
     ? Math.round(danoBase * parseMultiplicadorCritico(arma.critico))
     : danoBase;
 
-  const objetivo = objetivoTokenId.value
+  const token = objetivoTokenId.value
     ? objetivosDisponibles.value.find((t) => t.id === objetivoTokenId.value)
     : null;
-  if (objetivo) {
-    const criatura = await obtenerCriatura(objetivo.refId);
-    const esquiva = criatura?.atributos.evasion ?? 0;
-    const armadura = criatura?.armadura?.[TIPO_A_ARMADURA[tipo]] ?? 0;
-    const impacta = tirada.total >= esquiva;
-    const danoNeto = Math.max(0, dano - armadura);
+  if (token) {
+    const objetivo = await resolverObjetivoCombate(token);
+    const esquiva = objetivo?.esquiva ?? 0;
+    const armadura = objetivo
+      ? armaduraContra(objetivo, TIPO_A_ARMADURA[tipo])
+      : 0;
+    const punteria = ef.value.deadeye;
+    const { impacta, armaduraEfectiva, danoNeto } = resolverImpacto({
+      totalTirada: tirada.total,
+      esquiva,
+      dano,
+      armadura,
+      punteria,
+    });
     emit("tirar", {
-      texto: `ataca a ${objetivo.nombre} con ${arma.nombre}`,
+      texto: `ataca a ${token.nombre} con ${arma.nombre}`,
       tirada,
-      objetivo: `${objetivo.nombre} · Esquiva ${esquiva}`,
+      objetivo: `${token.nombre} · Esquiva ${esquiva}`,
       impacto: impacta,
       dano: impacta
         ? `${danoNeto} ${etiquetaDano(tipo)}${
-            armadura > 0 ? ` (−${armadura} arm.)` : ""
-          }${tirada.esCritico ? " ¡Crítico!" : ""}`
+            armaduraEfectiva > 0 ? ` (−${armaduraEfectiva} arm.)` : ""
+          }${armadura > 0 ? ` · Pen. ${punteria}` : ""}${
+            tirada.esCritico ? " ¡Crítico!" : ""
+          }`
         : undefined,
       danoColor: COLOR_DANO[tipo],
       color: COLOR_DANO[tipo],
@@ -1547,6 +1644,25 @@ const vistaArmas = ref<VistaEquipo[]>([]);
 const vistaArmaduras = ref<VistaEquipo[]>([]);
 const configArmasAbierto = ref(false);
 const configArmadurasAbierto = ref(false);
+
+// --- Armadura/escudo activos: las armaduras no se acumulan, solo cuenta una
+// armadura (no escudo) y un escudo a la vez. Clic en la lista para cambiarla.
+const armaduraEquipada = ref<number | null>(null);
+const escudoEquipado = ref<number | null>(null);
+
+function esArmaduraActiva(id: number): boolean {
+  return id === armaduraEquipada.value || id === escudoEquipado.value;
+}
+
+function equiparArmadura(id: number) {
+  const slot = esArmaduraEscudo(id) ? escudoEquipado : armaduraEquipada;
+  slot.value = slot.value === id ? null : id;
+  if (personajeGuardado.value) {
+    personajeGuardado.value.armadura_equipada = armaduraEquipada.value;
+    personajeGuardado.value.escudo_equipado = escudoEquipado.value;
+    if (!props.embebido) guardarPersonaje(personajeGuardado.value);
+  }
+}
 
 // Inject navigation function from App.vue
 const navigateToCharacters = inject<() => void>("navigateToCharacters");
@@ -1809,12 +1925,15 @@ const armadurasVisibles = computed(() =>
     .filter((a): a is any => Boolean(a)),
 );
 
-// Armadura total (resistencia EFECTIVA + armaduras VISIBLES). Al usar la
-// resistencia efectiva, subir Cuerpo o Resistencia se refleja aquí también.
+// Armadura total (resistencia EFECTIVA + armadura y escudo ACTIVOS). Al usar
+// la resistencia efectiva, subir Cuerpo o Resistencia se refleja aquí también.
+const armadurasEnUso = computed(() =>
+  armadurasDisponibles.value.filter((a) => esArmaduraActiva(a.id)),
+);
 const armaduraTotal = computed(() => {
   const r = ef.value.resistencia;
   const total = { lacerante: r, perforante: r, contundente: r };
-  for (const a of armadurasVisibles.value) {
+  for (const a of armadurasEnUso.value) {
     total.lacerante += a.lac;
     total.perforante += a.cor;
     total.contundente += a.con;
@@ -2228,13 +2347,18 @@ async function cargarPersonaje() {
       const poderio = personaje.value.cuerpo.poderio || 0;
       const rangoCritPersonaje = datos.atributos?.rangoCritico ?? 24;
 
-      // Suma el Poderío solo a los tipos de daño que el arma realmente inflige
-      const conPoderio = (base: number) => (base > 0 ? base + poderio : 0);
-
       personaje.value.armas = datos.armas
         .map((armaId: number) => {
           const arma = armasData.armas.find((a) => a.id === armaId);
           if (!arma) return null;
+
+          // Las armas a distancia NO suman Poderío al daño.
+          const esADistancia = (arma.distancia_max || 0) > 0;
+          const poderioArma = esADistancia ? 0 : poderio;
+
+          // Suma el Poderío solo a los tipos de daño que el arma realmente inflige
+          const conPoderio = (base: number) =>
+            base > 0 ? base + poderioArma : 0;
 
           const rc = calcularRangoCritico(arma.rango_critico, rangoCritPersonaje);
 
@@ -2245,12 +2369,12 @@ async function cargarPersonaje() {
             { etiqueta: "Contundente", clase: "c", base: arma.contundente },
           ]
             .filter((d) => d.base > 0)
-            .map((d) => ({ ...d, poderio, final: d.base + poderio }));
+            .map((d) => ({ ...d, poderio: poderioArma, final: d.base + poderioArma }));
 
           return {
             id: arma.id,
             nombre: arma.nombre,
-            // Daño final = base del arma + Poderío (por tipo)
+            // Daño final = base del arma + Poderío (por tipo; 0 a distancia)
             lac: conPoderio(arma.lacerante),
             cor: conPoderio(arma.perforante),
             con: conPoderio(arma.contundente),
@@ -2266,11 +2390,9 @@ async function cargarPersonaje() {
             // definida es cuerpo a cuerpo (mínimo y máximo = 1 casilla).
             distanciaMin: arma.distancia_max ? arma.distancia_min || 1 : 1,
             distanciaMax: arma.distancia_max || 1,
-            poderio,
+            poderio: poderioArma,
             danos,
-            etiquetas: arma.categoria
-              ? arma.categoria.split(",").map((e: string) => e.trim())
-              : [],
+            etiquetas: nombresEtiquetas(arma.etiquetas),
           };
         })
         .filter((arma: any) => arma !== null);
@@ -2356,6 +2478,18 @@ async function cargarPersonaje() {
       datos.armaduras_vista,
       () => true,
     );
+
+    // Armadura/escudo activos según los slots guardados (o la primera de cada
+    // tipo para personajes anteriores a la regla de no acumulación).
+    const idsArmaduras = armadurasDisponibles.value.map((a) => a.id);
+    const activas = armadurasActivas(
+      idsArmaduras,
+      datos.armadura_equipada,
+      datos.escudo_equipado,
+    );
+    armaduraEquipada.value =
+      activas.find((id) => !esArmaduraEscudo(id)) ?? null;
+    escudoEquipado.value = activas.find((id) => esArmaduraEscudo(id)) ?? null;
 
     console.log("✅ Personaje cargado exitosamente:", personaje.value);
   } catch (error) {
@@ -2898,6 +3032,15 @@ onUnmounted(() => {
   margin-top: 5px;
 }
 
+/* Bloque de salto dentro del panel de movimiento. */
+.fx-salto-lbl {
+  margin-top: 8px;
+}
+.fx-salto-sep {
+  color: #6b7280;
+  align-self: center;
+}
+
 /* Vida: "+X" verde y control de edición. */
 .fx-hp-bonus {
   margin-left: 6px;
@@ -3091,6 +3234,19 @@ onUnmounted(() => {
 }
 .fx-arow:nth-child(odd) {
   background: var(--surface-2);
+}
+/* Filas de atributo tirables (Poderío / Voluntad / Resistencia) en partida. */
+.fx-arow.fx-arow-click {
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+.fx-arow.fx-arow-click:hover {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.fx-arow.fx-arow-click:hover > span:first-child {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* Armadura + velocidad */
@@ -3762,6 +3918,24 @@ onUnmounted(() => {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--ink);
+}
+/* Armaduras seleccionables: solo una armadura + un escudo activos a la vez */
+.fx-arm-sel {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.fx-arm-sel:hover {
+  background: var(--surface-2);
+}
+.fx-arm-sel:not(.on) {
+  opacity: 0.55;
+}
+.fx-arm-eq {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
 }
 
 /* Elementos desplegables (dotes y activas) */

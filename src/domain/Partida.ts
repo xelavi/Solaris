@@ -25,6 +25,10 @@ export interface PersonajeInstancia {
   habilidades: string;
   armas: number[];
   armaduras: number[];
+  // Slots de armadura/escudo activos (ver domain/escudos.ts). Opcionales para
+  // no romper las partidas guardadas antes de existir.
+  armadura_equipada?: number | null;
+  escudo_equipado?: number | null;
   atributos: {
     cuerpo: number;
     agilidad: number;
@@ -97,6 +101,10 @@ export interface TokenPartida {
   esencia?: { actual: number; max: number };
   /** Estados alterados aplicados sobre este token (iconos sobre el personaje). */
   estados?: EstadoAplicado[];
+  /** Niveles de prisma que el token flota por encima de su casilla (solo
+   * criaturas Voladoras; 0/ausente = posado en el suelo). La posición lógica
+   * sigue siendo la casilla (col,row,nivel); esto es solo la altura de vuelo. */
+  alturaVuelo?: number;
 }
 
 /**
@@ -155,6 +163,13 @@ export interface PartidaData {
   // Chat de la partida (texto y tiradas). Se comparte y persiste como el resto
   // del estado. Opcional (partidas antiguas no lo tienen).
   mensajesChat?: MensajeChat[];
+  // Ajustes hechos desde las fichas flotantes durante la partida (bonos de
+  // atributos/armadura/movimiento… por ficha), indexados por la clave de la
+  // ficha (diarioId, instanciaId o id del personaje). Se persisten para que
+  // sobrevivan a salir y volver a entrar en la partida. Opcional.
+  bonosFichas?: Record<string, Record<string, number>>;
+  // Arma seleccionada en cada ficha flotante, misma clave que bonosFichas.
+  armasSeleccionadas?: Record<string, number | null>;
   // Campos heredados del antiguo sistema de combate.
   // Se mantienen para no romper las partidas ya guardadas en localStorage.
   combateActivo: boolean;

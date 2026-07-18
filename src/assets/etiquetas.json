@@ -1,0 +1,22 @@
+{
+  "etiquetas": [
+    { "id": 1, "nombre": "A Distancia", "color": "blue" },
+    { "id": 2, "nombre": "A dos manos", "color": "amber" },
+    { "id": 3, "nombre": "Arma contundente", "color": "gray" },
+    { "id": 4, "nombre": "Arma enastada", "color": "green" },
+    { "id": 5, "nombre": "Arrojadiza", "color": "teal" },
+    { "id": 6, "nombre": "Cadena", "color": "purple" },
+    { "id": 7, "nombre": "Cuchillo", "color": "red" },
+    { "id": 8, "nombre": "Escudo", "color": "indigo" },
+    { "id": 9, "nombre": "Espada corta", "color": "red" },
+    { "id": 10, "nombre": "Espada larga", "color": "orange" },
+    { "id": 11, "nombre": "Glande", "color": "pink" },
+    { "id": 12, "nombre": "Hacha", "color": "orange" },
+    { "id": 13, "nombre": "Ligera", "color": "green" },
+    { "id": 14, "nombre": "Pesada", "color": "purple" },
+    { "id": 15, "nombre": "Recarga", "color": "teal" },
+    { "id": 16, "nombre": "Versátil", "color": "indigo" },
+    { "id": 17, "nombre": "Media", "color": "amber" },
+    { "id": 18, "nombre": "Guante", "color": "pink" }
+  ]
+}

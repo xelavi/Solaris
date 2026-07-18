@@ -3,7 +3,9 @@
     {
       "id": 1,
       "nombre": "Gladius",
-      "categoria": "Espada corta",
+      "etiquetas": [
+        9
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -16,7 +18,10 @@
     {
       "id": 2,
       "nombre": "Lanza",
-      "categoria": "Arma enastada, Versátil",
+      "etiquetas": [
+        4,
+        16
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": 2,
@@ -29,7 +34,10 @@
     {
       "id": 3,
       "nombre": "Hacha de mano",
-      "categoria": "Arrojadiza, Hacha",
+      "etiquetas": [
+        5,
+        12
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -42,7 +50,9 @@
     {
       "id": 4,
       "nombre": "Maza",
-      "categoria": "Arma contundente",
+      "etiquetas": [
+        3
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -55,7 +65,11 @@
     {
       "id": 5,
       "nombre": "Maza de guerra",
-      "categoria": "A dos manos, Arma contundente, Pesada",
+      "etiquetas": [
+        2,
+        3,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -68,7 +82,11 @@
     {
       "id": 6,
       "nombre": "Hacha de batalla",
-      "categoria": "A dos manos, Hacha, Pesada",
+      "etiquetas": [
+        2,
+        12,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -81,7 +99,11 @@
     {
       "id": 7,
       "nombre": "Espadón",
-      "categoria": "A dos manos, Glande, Pesada",
+      "etiquetas": [
+        2,
+        11,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -94,7 +116,10 @@
     {
       "id": 8,
       "nombre": "Espada bastarda",
-      "categoria": "Espada larga, Versátil",
+      "etiquetas": [
+        10,
+        16
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -107,7 +132,9 @@
     {
       "id": 9,
       "nombre": "Espada corta",
-      "categoria": "Espada corta",
+      "etiquetas": [
+        9
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -120,7 +147,12 @@
     {
       "id": 10,
       "nombre": "Pica longa",
-      "categoria": "A dos manos, Arma enastada, Glande, Pesada",
+      "etiquetas": [
+        2,
+        4,
+        11,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -133,7 +165,10 @@
     {
       "id": 11,
       "nombre": "Guja Naginata",
-      "categoria": "Arma enastada, Versátil",
+      "etiquetas": [
+        4,
+        16
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -146,7 +181,10 @@
     {
       "id": 12,
       "nombre": "Pico de guerra",
-      "categoria": "Hacha, Pesada",
+      "etiquetas": [
+        12,
+        14
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -159,7 +197,11 @@
     {
       "id": 13,
       "nombre": "Guadaña",
-      "categoria": "A dos manos, Arma enastada, Pesada",
+      "etiquetas": [
+        2,
+        4,
+        14
+      ],
       "critico": "x3",
       "rango_critico": null,
       "distancia_min": null,
@@ -172,7 +214,10 @@
     {
       "id": 14,
       "nombre": "Hoz",
-      "categoria": "Arma contundente, Ligera",
+      "etiquetas": [
+        3,
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -185,7 +230,10 @@
     {
       "id": 15,
       "nombre": "Jabalina",
-      "categoria": "Arma enastada, Arrojadiza",
+      "etiquetas": [
+        4,
+        5
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -198,7 +246,12 @@
     {
       "id": 16,
       "nombre": "Alabarda",
-      "categoria": "A dos manos, Arma enastada, Hacha, Pesada",
+      "etiquetas": [
+        2,
+        4,
+        12,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -211,7 +264,12 @@
     {
       "id": 17,
       "nombre": "Lanza-espada",
-      "categoria": "A dos manos, Arma enastada, Glande, Pesada",
+      "etiquetas": [
+        2,
+        4,
+        11,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -224,7 +282,11 @@
     {
       "id": 18,
       "nombre": "Mangual",
-      "categoria": "Arma contundente, Cadena, Pesada",
+      "etiquetas": [
+        3,
+        6,
+        14
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -237,7 +299,12 @@
     {
       "id": 19,
       "nombre": "Mangual doble",
-      "categoria": "A dos manos, Arma contundente, Cadena, Pesada",
+      "etiquetas": [
+        2,
+        3,
+        6,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -250,7 +317,11 @@
     {
       "id": 20,
       "nombre": "Daga",
-      "categoria": "Arrojadiza, Cuchillo, Ligera",
+      "etiquetas": [
+        5,
+        7,
+        13
+      ],
       "critico": "x4",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -263,7 +334,10 @@
     {
       "id": 21,
       "nombre": "Estilete",
-      "categoria": "Espada corta, Ligera",
+      "etiquetas": [
+        9,
+        13
+      ],
       "critico": "x3",
       "rango_critico": "23-24",
       "distancia_min": null,
@@ -276,7 +350,11 @@
     {
       "id": 22,
       "nombre": "Falcata",
-      "categoria": "Arma contundente, Espada corta, Pesada",
+      "etiquetas": [
+        3,
+        9,
+        14
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -289,7 +367,10 @@
     {
       "id": 23,
       "nombre": "Escudo/Rodela",
-      "categoria": "Arma contundente, Escudo",
+      "etiquetas": [
+        3,
+        8
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -302,7 +383,11 @@
     {
       "id": 24,
       "nombre": "Escudo de torre",
-      "categoria": "Arma contundente, Escudo, Pesada",
+      "etiquetas": [
+        3,
+        8,
+        14
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -315,7 +400,9 @@
     {
       "id": 25,
       "nombre": "Cestus/arma de puño",
-      "categoria": "Ligera",
+      "etiquetas": [
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -328,7 +415,10 @@
     {
       "id": 26,
       "nombre": "Escudo afilado",
-      "categoria": "Cuchillo, Escudo",
+      "etiquetas": [
+        7,
+        8
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -341,7 +431,9 @@
     {
       "id": 27,
       "nombre": "Champion's Grip",
-      "categoria": "Ligera",
+      "etiquetas": [
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -354,7 +446,10 @@
     {
       "id": 28,
       "nombre": "Honda",
-      "categoria": "A Distancia, Ligera",
+      "etiquetas": [
+        1,
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -367,7 +462,11 @@
     {
       "id": 29,
       "nombre": "Arco",
-      "categoria": "A Distancia, A dos manos, Ligera",
+      "etiquetas": [
+        1,
+        2,
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": 3,
@@ -380,7 +479,11 @@
     {
       "id": 30,
       "nombre": "Arco largo",
-      "categoria": "A Distancia, A dos manos, Pesada",
+      "etiquetas": [
+        1,
+        2,
+        14
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": 3,
@@ -393,7 +496,11 @@
     {
       "id": 31,
       "nombre": "Arco compuesto",
-      "categoria": "A Distancia, A dos manos, Ligera",
+      "etiquetas": [
+        1,
+        2,
+        13
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -406,7 +513,12 @@
     {
       "id": 32,
       "nombre": "Arco Escorpión",
-      "categoria": "A Distancia, A dos manos, Arma contundente, Pesada",
+      "etiquetas": [
+        1,
+        2,
+        3,
+        14
+      ],
       "critico": "x2",
       "rango_critico": "23-24",
       "distancia_min": 2,
@@ -419,7 +531,11 @@
     {
       "id": 33,
       "nombre": "Ballesta",
-      "categoria": "A Distancia, A dos manos, Recarga",
+      "etiquetas": [
+        1,
+        2,
+        15
+      ],
       "critico": "x3",
       "rango_critico": null,
       "distancia_min": null,
@@ -432,7 +548,12 @@
     {
       "id": 34,
       "nombre": "Ballesta de repetición",
-      "categoria": "A Distancia, Ligera, Recarga, Versátil",
+      "etiquetas": [
+        1,
+        13,
+        15,
+        16
+      ],
       "critico": "x1.5",
       "rango_critico": null,
       "distancia_min": null,
@@ -445,7 +566,11 @@
     {
       "id": 35,
       "nombre": "Ballesta de mano",
-      "categoria": "A Distancia, Ligera, Recarga",
+      "etiquetas": [
+        1,
+        13,
+        15
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,
@@ -458,7 +583,12 @@
     {
       "id": 36,
       "nombre": "Ballesta pesada",
-      "categoria": "A Distancia, A dos manos, Pesada, Recarga",
+      "etiquetas": [
+        1,
+        2,
+        14,
+        15
+      ],
       "critico": "x3",
       "rango_critico": null,
       "distancia_min": null,
@@ -471,7 +601,10 @@
     {
       "id": 37,
       "nombre": "Bastón",
-      "categoria": "Arma contundente, Versátil",
+      "etiquetas": [
+        3,
+        16
+      ],
       "critico": "x2",
       "rango_critico": null,
       "distancia_min": null,

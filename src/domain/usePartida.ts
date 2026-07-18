@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import type {
   PartidaData,
   PersonajeInstancia,
@@ -57,7 +57,10 @@ function suscribirseRealtimePartida(id: string) {
           return;
         }
         const nuevo = (payload.new as { value?: PartidaData } | null)?.value;
-        if (nuevo) partidaActual.value = nuevo;
+        if (nuevo) {
+          partidaActual.value = nuevo;
+          cargarEstadoFichas(nuevo);
+        }
       },
     )
     .subscribe();
@@ -101,17 +104,84 @@ type FichaFlotante =
 const fichasFlotantes = ref<FichaFlotante[]>([]);
 let _fichaSeq = 0;
 
-// Bonos temporales de combate por ficha (ajustes de atributos/armadura/vida que
-// se hacen desde la ficha flotante durante la partida). NO se persisten en
-// localStorage: viven mientras dura la sesión de la partida. Se guardan aquí, a
-// nivel de módulo, para que sobrevivan al cerrar y reabrir la ficha flotante
-// (que destruye el componente). Clave externa = identidad de la ficha
-// (instanciaId o characterId); valor = record de bonos por atributo.
+// Bonos de combate por ficha (ajustes de atributos/armadura/vida que se hacen
+// desde la ficha flotante durante la partida). Se guardan aquí, a nivel de
+// módulo, para que sobrevivan al cerrar y reabrir la ficha flotante (que
+// destruye el componente), y se PERSISTEN dentro de la partida (bonosFichas)
+// para que también sobrevivan a salir y volver a entrar en ella. Clave externa
+// = identidad de la ficha (diarioId/instanciaId/characterId); valor = record
+// de bonos por atributo.
 const bonosPartida = ref<Record<string, Record<string, number>>>({});
 
 // Arma seleccionada por ficha (para recordarla al cerrar y reabrir la ventana
-// flotante durante la sesión). Misma clave e igual de efímera que los bonos.
+// flotante). Misma clave que los bonos y también persistida en la partida.
 const armaSeleccionadaPartida = ref<Record<string, number | null>>({});
+
+// Carga en el estado de sesión los ajustes de fichas guardados en la partida
+// (al iniciarla o al recibir un sync remoto). Se clonan para que las fichas
+// muten el estado de sesión y no el objeto de la partida directamente.
+function cargarEstadoFichas(partida: PartidaData) {
+  bonosPartida.value = JSON.parse(JSON.stringify(partida.bonosFichas ?? {}));
+  armaSeleccionadaPartida.value = { ...(partida.armasSeleccionadas ?? {}) };
+}
+
+// Copia de los bonos sin los records vacíos (bonosDeFicha crea uno vacío por
+// ficha abierta aunque no haya ajustes; no merece la pena persistirlos).
+function bonosNoVacios(): Record<string, Record<string, number>> {
+  const out: Record<string, Record<string, number>> = {};
+  for (const [clave, record] of Object.entries(bonosPartida.value)) {
+    if (Object.keys(record).length > 0) out[clave] = record;
+  }
+  return out;
+}
+
+// Persiste los ajustes de fichas dentro de la partida cuando cambian. Las
+// fichas mutan directamente el record que les da bonosDeFicha, así que el
+// watch profundo es el único punto común por el que pasan todos los cambios.
+// Con debounce: pulsar +/+/+ seguidos produce un único guardado.
+let timerGuardadoFichas: ReturnType<typeof setTimeout> | null = null;
+watch(
+  [bonosPartida, armaSeleccionadaPartida],
+  () => {
+    const p = partidaActual.value;
+    if (!p) return;
+    // Sin cambios reales (p. ej. justo tras cargar del propio guardado): nada.
+    if (
+      JSON.stringify(bonosNoVacios()) === JSON.stringify(p.bonosFichas ?? {}) &&
+      JSON.stringify(armaSeleccionadaPartida.value) ===
+        JSON.stringify(p.armasSeleccionadas ?? {})
+    ) {
+      return;
+    }
+    if (timerGuardadoFichas) clearTimeout(timerGuardadoFichas);
+    timerGuardadoFichas = setTimeout(() => {
+      timerGuardadoFichas = null;
+      const partida = partidaActual.value;
+      if (!partida) return;
+      partida.bonosFichas = bonosNoVacios();
+      partida.armasSeleccionadas = { ...armaSeleccionadaPartida.value };
+      void guardarPartidaActual();
+    }, 400);
+  },
+  { deep: true },
+);
+
+// Persiste la partida actual en el backend (a través del repositorio). Es
+// "fire-and-forget": los llamantes (mutaciones disparadas por la UI) no
+// necesitan esperar; los errores se registran aquí para no dejar promesas
+// rechazadas sin capturar.
+async function guardarPartidaActual() {
+  if (!partidaActual.value) return;
+  // Cuenta este guardado ANTES de escribir para poder ignorar su eco de
+  // Realtime cuando vuelva (solo si hay suscripción activa).
+  if (canalPartida) guardadosPropiosPendientes++;
+  try {
+    await guardarPartida(partidaActual.value);
+  } catch (error) {
+    if (canalPartida) guardadosPropiosPendientes--;
+    console.error("❌ Error al guardar la partida:", error);
+  }
+}
 
 // --- Orden de iniciativa ---
 // Vive a nivel de módulo (como bonosPartida) para sobrevivir a cerrar y
@@ -157,9 +227,9 @@ export function usePartida() {
       // dispositivos (no hace nada en modo localStorage).
       suscribirseRealtimePartida(partidaId);
 
-      // Los bonos temporales son propios de cada sesión: se descartan al cargar.
-      bonosPartida.value = {};
-      armaSeleccionadaPartida.value = {};
+      // Recupera los ajustes de fichas persistidos en la partida (bonos de
+      // atributos, arma seleccionada…) para que sobrevivan a salir y entrar.
+      cargarEstadoFichas(partida);
       ordenIniciativa.value = [];
       turnoIniciativa.value = 0;
 
@@ -279,23 +349,6 @@ export function usePartida() {
 
   function getCharacter(id: string) {
     return personajesCreados.value.get(id);
-  }
-
-  // Persiste la partida actual en el backend (a través del repositorio). Es
-  // "fire-and-forget": los llamantes (mutaciones disparadas por la UI) no
-  // necesitan esperar; los errores se registran aquí para no dejar promesas
-  // rechazadas sin capturar.
-  async function guardarPartidaActual() {
-    if (!partidaActual.value) return;
-    // Cuenta este guardado ANTES de escribir para poder ignorar su eco de
-    // Realtime cuando vuelva (solo si hay suscripción activa).
-    if (canalPartida) guardadosPropiosPendientes++;
-    try {
-      await guardarPartida(partidaActual.value);
-    } catch (error) {
-      if (canalPartida) guardadosPropiosPendientes--;
-      console.error("❌ Error al guardar la partida:", error);
-    }
   }
 
   // --- Chat ---
@@ -619,6 +672,22 @@ export function usePartida() {
     guardarPartidaActual();
   }
 
+  // Fija la altura de vuelo de un token (niveles de prisma por encima de su
+  // casilla). Solo tiene sentido en criaturas Voladoras; 0 = posado en el suelo.
+  function establecerAlturaVueloToken(tokenId: string, altura: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const nueva = Math.max(0, Math.floor(altura) || 0);
+    if ((token.alturaVuelo ?? 0) === nueva) return;
+    token.alturaVuelo = nueva;
+    guardarPartidaActual();
+    agregarLog(
+      nueva > 0
+        ? `☁️ ${token.nombre} vuela a ${nueva} ${nueva === 1 ? "nivel" : "niveles"} de altura.`
+        : `🛬 ${token.nombre} se posa en el suelo.`,
+    );
+  }
+
   function quitarToken(id: string) {
     const p = partidaActual.value;
     if (!p?.tokens) return;
@@ -706,6 +775,7 @@ export function usePartida() {
     colocarToken,
     moverToken,
     quitarToken,
+    establecerAlturaVueloToken,
     establecerVidaToken,
     ajustarVidaToken,
     ajustarVidaMaximaToken,

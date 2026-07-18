@@ -51,7 +51,7 @@
                 {{ bloque.titulo }}
               </div>
               <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
-                <li v-for="(it, ii) in bloque.items" :key="ii">{{ it }}</li>
+                <li v-for="(it, ii) in bloque.items" :key="ii"><DescripcionConEstados :texto="it" /></li>
               </ul>
             </div>
             <div v-else-if="bloque.tipo === 'tabla'" class="mt-2">
@@ -78,7 +78,7 @@
                         :key="cdi"
                         class="px-3 py-1.5 text-gray-600"
                       >
-                        {{ celda }}
+                        <DescripcionConEstados :texto="celda" />
                       </td>
                     </tr>
                   </tbody>

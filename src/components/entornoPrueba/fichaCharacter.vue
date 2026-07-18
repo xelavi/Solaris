@@ -171,7 +171,11 @@
             </div>
 
             <div class="flex gap-2 text-[9px] text-gray-500 mb-2">
-               <span class="bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700">{{ arma.categoria }}</span>
+               <span
+                 v-for="nombre in nombresEtiquetas(arma.etiquetas)"
+                 :key="nombre"
+                 class="bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700"
+               >{{ nombre }}</span>
                <span v-if="arma.distancia_max" class="bg-gray-900 px-1.5 py-0.5 rounded border border-gray-700">Rango: {{ arma.distancia_max }}m</span>
             </div>
 
@@ -201,6 +205,8 @@ import type { PersonajeInstancia } from "../../domain/Partida";
 import armasData from "../../assets/armas.json";
 import armadurasData from "../../assets/armaduras.json";
 import { usePartida } from "../../domain/usePartida";
+import { nombresEtiquetas } from "../../domain/etiquetasEquipo";
+import { armadurasActivas } from "../../domain/escudos";
 
 const props = defineProps<{
   personaje: PersonajeInstancia;
@@ -239,18 +245,22 @@ const armaduraTotal = computed(() => {
     contundente: resistencia,
   };
 
-  if (props.personaje.armaduras && props.personaje.armaduras.length > 0) {
-    props.personaje.armaduras.forEach((armaduraId) => {
-      const armadura = armadurasData.armaduras.find(
-        (a: any) => a.id === armaduraId,
-      );
-      if (armadura) {
-        total.perforante += armadura.perforante || 0;
-        total.lacerante += armadura.lacerante || 0;
-        total.contundente += armadura.contundente || 0;
-      }
-    });
-  }
+  // Solo la armadura y el escudo activos (las armaduras no se acumulan)
+  const activas = armadurasActivas(
+    props.personaje.armaduras ?? [],
+    props.personaje.armadura_equipada,
+    props.personaje.escudo_equipado,
+  );
+  activas.forEach((armaduraId) => {
+    const armadura = armadurasData.armaduras.find(
+      (a: any) => a.id === armaduraId,
+    );
+    if (armadura) {
+      total.perforante += armadura.perforante || 0;
+      total.lacerante += armadura.lacerante || 0;
+      total.contundente += armadura.contundente || 0;
+    }
+  });
   return total;
 });
 

@@ -53,14 +53,11 @@
             {{ innata.nombre }}
             <span
               v-if="innata.tipoEjecucion"
-              :class="[
-                'badge',
-                innata.tipoEjecucion === 'accion' ? 'badge-accent' : 'badge-muted',
-              ]"
-              >{{ innata.tipoEjecucion === "accion" ? "Acción" : "Pasiva" }}</span
+              :class="['badge', badgeEjecucion(innata.tipoEjecucion)]"
+              >{{ labelEjecucion(innata.tipoEjecucion) }}</span
             >
             <span
-              v-if="innata.tipoEjecucion === 'accion' && innata.tipoAccion"
+              v-if="innata.tipoAccion"
               class="badge badge-muted"
               >{{ innata.tipoAccion === "fisica" ? "Física" : "Mental" }}</span
             >
@@ -79,7 +76,7 @@
                 {{ bloque.titulo }}
               </div>
               <ul class="list-disc space-y-1 pl-5 text-sm text-gray-600">
-                <li v-for="(it, ii) in bloque.items" :key="ii">{{ it }}</li>
+                <li v-for="(it, ii) in bloque.items" :key="ii"><DescripcionConEstados :texto="it" /></li>
               </ul>
             </div>
             <div v-else-if="bloque.tipo === 'tabla'" class="mt-2">
@@ -106,7 +103,7 @@
                         :key="cdi"
                         class="px-3 py-1.5 text-gray-600"
                       >
-                        {{ celda }}
+                        <DescripcionConEstados :texto="celda" />
                       </td>
                     </tr>
                   </tbody>
@@ -202,20 +199,11 @@
                       >
                       <span
                         v-if="dote.tipoEjecucion"
-                        :class="[
-                          'badge',
-                          dote.tipoEjecucion === 'accion'
-                            ? 'badge-accent'
-                            : 'badge-muted',
-                        ]"
-                        >{{
-                          dote.tipoEjecucion === "accion" ? "Acción" : "Pasiva"
-                        }}</span
+                        :class="['badge', badgeEjecucion(dote.tipoEjecucion)]"
+                        >{{ labelEjecucion(dote.tipoEjecucion) }}</span
                       >
                       <span
-                        v-if="
-                          dote.tipoEjecucion === 'accion' && dote.tipoAccion
-                        "
+                        v-if="dote.tipoAccion"
                         class="badge badge-muted"
                         >{{
                           dote.tipoAccion === "fisica" ? "Física" : "Mental"
@@ -407,6 +395,36 @@ const estiloMarcialActual = computed(() => {
     gruposDotes,
   };
 });
+
+// Etiqueta y color del tipo de ejecución, igual que en la ficha
+// (acción/reacción/ritual/pasiva en vez del binario acción/pasiva).
+function labelEjecucion(tipo) {
+  switch (tipo) {
+    case "accion":
+      return "Acción";
+    case "reaccion":
+      return "Reacción";
+    case "ritual":
+      return "Ritual";
+    case "pasiva":
+      return "Pasiva";
+    default:
+      return "";
+  }
+}
+
+function badgeEjecucion(tipo) {
+  switch (tipo) {
+    case "reaccion":
+      return "badge-warning";
+    case "ritual":
+      return "badge-purple";
+    case "pasiva":
+      return "badge-muted";
+    default:
+      return "badge-accent";
+  }
+}
 
 const LIMITE = 3;
 

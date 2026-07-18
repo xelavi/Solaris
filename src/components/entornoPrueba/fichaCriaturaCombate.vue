@@ -20,6 +20,18 @@
               </div>
             </div>
             <div class="fx-ident-stats">
+              <!-- Ventaja / Desventaja: general, afecta a TODAS las tiradas de la ficha -->
+              <div
+                class="fx-adv fx-adv-mini"
+                :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
+                title="Ventaja / Desventaja: afecta a todas las tiradas de la ficha"
+              >
+                <button type="button" class="fx-adv-b dis" title="Añadir desventaja" @click="ajustarVentaja(-1)">−</button>
+                <button type="button" class="fx-adv-lbl" title="Reiniciar a Normal" @click="reiniciarVentaja">
+                  {{ textoVentaja }}
+                </button>
+                <button type="button" class="fx-adv-b adv" title="Añadir ventaja" @click="ajustarVentaja(1)">＋</button>
+              </div>
               <button
                 type="button"
                 class="fx-mini fx-mini-click"
@@ -91,9 +103,17 @@
                   <div class="fx-hex"><span class="tnum">{{ criatura.atributos.cuerpo }}</span></div>
                 </div>
                 <div class="fx-attr-rows">
-                  <div class="fx-arow"><span>Poderío</span><b class="tnum">{{ criatura.atributos.poderio }}</b></div>
-                  <div class="fx-arow"><span>Movimiento</span><b class="tnum">{{ criatura.atributos.movimiento }}</b></div>
-                  <div class="fx-arow"><span>Resistencia</span><b class="tnum">{{ criatura.atributos.resistencia }}</b></div>
+                  <div
+                    class="fx-arow fx-arow-click"
+                    title="Tirar Poderío (2d12 + Poderío)"
+                    @click="usarAtributo('Poderío', podEf, 'Cuerpo')"
+                  ><span>Poderío</span><b class="tnum" :class="{ boost: podEf !== criatura.atributos.poderio }">{{ podEf }}</b></div>
+                  <div class="fx-arow"><span>Movimiento</span><b class="tnum" :class="{ boost: movEf !== criatura.atributos.movimiento }">{{ movEf }}</b></div>
+                  <div
+                    class="fx-arow fx-arow-click"
+                    title="Tirar Resistencia (2d12 + Resistencia)"
+                    @click="usarAtributo('Resistencia', criatura.atributos.resistencia, 'Cuerpo')"
+                  ><span>Resistencia</span><b class="tnum">{{ criatura.atributos.resistencia }}</b></div>
                 </div>
               </div>
 
@@ -116,7 +136,11 @@
                 </div>
                 <div class="fx-attr-rows">
                   <div class="fx-arow"><span>Regeneración</span><b class="tnum">{{ criatura.atributos.regeneracion }}</b></div>
-                  <div class="fx-arow"><span>Voluntad</span><b class="tnum">{{ criatura.atributos.voluntad }}</b></div>
+                  <div
+                    class="fx-arow fx-arow-click"
+                    title="Tirar Voluntad (2d12 + Voluntad)"
+                    @click="usarAtributo('Voluntad', criatura.atributos.voluntad, 'Mente')"
+                  ><span>Voluntad</span><b class="tnum">{{ criatura.atributos.voluntad }}</b></div>
                   <div class="fx-arow"><span>Acciones</span><b class="tnum">{{ criatura.atributos.acciones }}</b></div>
                   <div class="fx-arow"><span>Reacciones</span><b class="tnum">{{ criatura.atributos.reacciones }}</b></div>
                 </div>
@@ -125,7 +149,22 @@
           </div>
 
           <div class="fx-panel">
-            <div class="fx-phead"><span class="fx-grow">Armadura / Velocidad</span></div>
+            <div class="fx-phead">
+              <span class="fx-grow">Armadura / Velocidad</span>
+              <button
+                class="fx-gear"
+                :class="{ on: editMov }"
+                title="Ajustar movimiento / salto / vuelo"
+                aria-label="Ajustar movimiento"
+                @click="editMov = !editMov"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm7.4 3.5c0-.3 0-.6-.06-.9l1.7-1.32a.4.4 0 0 0 .1-.52l-1.6-2.77a.4.4 0 0 0-.5-.18l-2 .8a6 6 0 0 0-1.56-.9l-.3-2.13a.4.4 0 0 0-.4-.34h-3.2a.4.4 0 0 0-.4.34l-.3 2.13c-.56.23-1.08.53-1.56.9l-2-.8a.4.4 0 0 0-.5.18l-1.6 2.77a.4.4 0 0 0 .1.52l1.7 1.32c-.04.3-.06.6-.06.9s.02.6.06.9l-1.7 1.32a.4.4 0 0 0-.1.52l1.6 2.77c.1.18.32.25.5.18l2-.8c.48.37 1 .67 1.56.9l.3 2.13c.03.2.2.34.4.34h3.2c.2 0 .37-.14.4-.34l.3-2.13c.56-.23 1.08-.53 1.56-.9l2 .8c.18.07.4 0 .5-.18l1.6-2.77a.4.4 0 0 0-.1-.52l-1.7-1.32c.04-.3.06-.6.06-.9Z"
+                  />
+                </svg>
+              </button>
+            </div>
             <div class="fx-acspeed">
               <div class="fx-ac">
                 <div class="fx-ac-lbl">Armadura</div>
@@ -145,9 +184,45 @@
               </div>
               <div class="fx-sp">
                 <div class="fx-ac-lbl">Movimiento</div>
-                <div class="fx-sp-val tnum">
-                  {{ criatura.atributos.movimiento }}<small> ecsas</small>
+                <div
+                  class="fx-sp-val tnum"
+                  :class="{ boost: movEf !== criatura.atributos.movimiento }"
+                >
+                  {{ movEf }}<small> ecsas</small>
                 </div>
+                <div v-if="editMov" class="fx-movctrl">
+                  <button class="fx-numb" @click="ajustarBono('movimiento', -1)">−</button>
+                  <button class="fx-numb" @click="ajustarBono('movimiento', 1)">＋</button>
+                </div>
+                <div class="fx-ac-lbl fx-salto-lbl">Salto</div>
+                <div
+                  class="fx-sp-val tnum"
+                  :class="{ boost: saltoMejorado }"
+                  title="Distancia horizontal (ecsas) · altura vertical (niveles)"
+                >
+                  {{ salto.h }}<small> dist</small> · {{ salto.v
+                  }}<small> alt</small>
+                </div>
+                <div v-if="editMov" class="fx-movctrl">
+                  <button class="fx-numb" title="Salto horizontal −1" @click="ajustarBono('salto', -1)">−</button>
+                  <button class="fx-numb" title="Salto horizontal +1" @click="ajustarBono('salto', 1)">＋</button>
+                  <span class="fx-salto-sep">·</span>
+                  <button class="fx-numb" title="Salto vertical −1" @click="ajustarBono('saltoV', -1)">−</button>
+                  <button class="fx-numb" title="Salto vertical +1" @click="ajustarBono('saltoV', 1)">＋</button>
+                </div>
+                <template v-if="volador">
+                  <div class="fx-ac-lbl fx-salto-lbl">Vuelo</div>
+                  <div
+                    class="fx-sp-val tnum"
+                    :class="{ boost: vueloEf !== criatura.atributos.movimiento }"
+                  >
+                    {{ vueloEf }}<small> ecsas</small>
+                  </div>
+                  <div v-if="editMov" class="fx-movctrl">
+                    <button class="fx-numb" @click="ajustarBono('vuelo', -1)">−</button>
+                    <button class="fx-numb" @click="ajustarBono('vuelo', 1)">＋</button>
+                  </div>
+                </template>
               </div>
             </div>
           </div>
@@ -280,6 +355,24 @@
               </div>
             </div>
 
+            <!-- Objetivo del ataque: cualquier token del escenario -->
+            <div
+              v-if="tecnicasConDano.length && objetivosDisponibles.length"
+              class="fx-objetivo"
+            >
+              <span class="fx-objetivo-l">Objetivo</span>
+              <select v-model="objetivoTokenId" class="fx-objetivo-sel">
+                <option :value="null">Sin objetivo (solo tirada)</option>
+                <option
+                  v-for="t in objetivosDisponibles"
+                  :key="t.id"
+                  :value="t.id"
+                >
+                  {{ t.nombre }} · {{ t.tipo === "criatura" ? "Criatura" : "Personaje" }}
+                </option>
+              </select>
+            </div>
+
             <!-- Botón de ataque: usa la técnica y el tipo de daño seleccionados -->
             <button
               v-if="tecnicasConDano.length"
@@ -294,18 +387,6 @@
               </svg>
               <span>Atacar</span>
             </button>
-
-            <!-- Ventaja / Desventaja: afecta a todas las tiradas de la ficha -->
-            <div
-              class="fx-adv"
-              :class="{ adv: ventajaTirada > 0, dis: ventajaTirada < 0 }"
-            >
-              <button type="button" class="fx-adv-b dis" title="Añadir desventaja" @click="ajustarVentaja(-1)">−</button>
-              <button type="button" class="fx-adv-lbl" title="Reiniciar a Normal" @click="reiniciarVentaja">
-                {{ textoVentaja }}
-              </button>
-              <button type="button" class="fx-adv-b adv" title="Añadir ventaja" @click="ajustarVentaja(1)">＋</button>
-            </div>
           </div>
         </div>
       </div>
@@ -318,7 +399,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import type {
   CriaturaData,
   Tecnica,
@@ -330,8 +411,18 @@ import { obtenerEstado } from "../../domain/EstadosAlterados";
 import { tirar2d12, etiquetaVentaja } from "../../domain/dados";
 import { usePartida } from "../../domain/usePartida";
 import type { PayloadTirada } from "../../domain/usePartida";
+import {
+  resolverObjetivoCombate,
+  armaduraContra,
+  resolverImpacto,
+} from "../../domain/objetivoCombate";
 import habilidadesData from "../../assets/habilidades.json";
 import DescripcionConEstados from "../DescripcionConEstados.vue";
+import {
+  saltoHorizontal,
+  saltoVertical,
+  esVolador,
+} from "../../domain/locomocion";
 
 const props = defineProps<{
   criaturaId?: string;
@@ -340,7 +431,7 @@ const props = defineProps<{
   diarioId?: string;
 }>();
 
-const { partidaActual, establecerVidaToken } = usePartida();
+const { partidaActual, establecerVidaToken, bonosDeFicha } = usePartida();
 const tokenVinculado = computed(() =>
   props.diarioId
     ? partidaActual.value?.tokens?.find((t) => t.diarioId === props.diarioId)
@@ -371,11 +462,53 @@ interface TecnicaView extends Tecnica {
 const tecnicas = ref<TecnicaView[]>([]);
 
 onMounted(async () => {
+  // Bonos temporales de partida compartidos con la escena (misma clave que usa
+  // el cálculo de rangos sobre el mapa): lo que se edite aquí cambia la
+  // distancia real de mover/saltar/volar del token.
+  const clave = props.diarioId ?? props.criaturaId;
+  if (clave) bonos.value = bonosDeFicha(clave);
+
   if (!props.criaturaId) return;
   const c = await obtenerCriatura(props.criaturaId);
   criatura.value = c;
   tecnicas.value = (c?.tecnicas ?? []).map((t) => ({ ...t, abierto: false }));
 });
+
+// --- Movimiento / salto / vuelo (con bonos temporales de partida) ---
+const bonos = ref<Record<string, number>>({});
+const editMov = ref(false);
+function bono(clave: string): number {
+  return bonos.value[clave] || 0;
+}
+function ajustarBono(clave: string, delta: number) {
+  const nuevo = Math.max(0, (bonos.value[clave] || 0) + delta);
+  if (nuevo === 0) delete bonos.value[clave];
+  else bonos.value[clave] = nuevo;
+}
+// Movimiento y Poderío efectivos (base + bono editado en partida).
+const movEf = computed(
+  () => (criatura.value?.atributos.movimiento ?? 3) + bono("movimiento"),
+);
+const podEf = computed(
+  () => (criatura.value?.atributos.poderio ?? 0) + bono("poderio"),
+);
+// Salto: fórmula de locomoción sobre los valores efectivos + bono directo.
+// `h` en ecsas, `v` en niveles de prisma.
+const salto = computed(() => ({
+  h: saltoHorizontal(movEf.value, podEf.value) + bono("salto"),
+  v: saltoVertical(podEf.value) + bono("saltoV"),
+}));
+const saltoMejorado = computed(() => {
+  const a = criatura.value?.atributos;
+  if (!a) return false;
+  return (
+    salto.value.h !== saltoHorizontal(a.movimiento, a.poderio) ||
+    salto.value.v !== saltoVertical(a.poderio)
+  );
+});
+// Vuelo (solo criaturas con la etiqueta Volador): velocidad = Movimiento.
+const volador = computed(() => esVolador(criatura.value?.etiquetas));
+const vueloEf = computed(() => movEf.value + bono("vuelo"));
 
 const rolTexto = computed(() => {
   const et = criatura.value?.etiquetas ?? [];
@@ -457,6 +590,17 @@ function usarHabilidad(hab: { nombre: string; total: number; atributo: string })
     texto: `usa ${hab.nombre}`,
     tirada,
     color: colorAtributo(hab.atributo),
+  });
+}
+
+// Tirada directa de un atributo secundario (Poderío / Voluntad / Resistencia)
+// al clicar sobre su fila: 2d12 + valor, con la ventaja de la ficha.
+function usarAtributo(nombre: string, valor: number, atributo: string) {
+  const tirada = tirar2d12(valor, nombre, ventajaTirada.value);
+  emit("tirar", {
+    texto: `tira ${nombre}`,
+    tirada,
+    color: colorAtributo(atributo),
   });
 }
 
@@ -607,6 +751,27 @@ function seleccionarDanoTecnica(i: number, tipo: TipoDanoTecnica) {
 
 const tecnicasConDano = computed(() => tecnicas.value.filter(tieneDano));
 
+// --- Objetivo del ataque (personajes y criaturas del escenario) ---
+// Igual que la ficha del personaje: se puede elegir cualquier token del mapa
+// como objetivo. Al atacarlo, la tirada se compara con su Esquiva y su armadura
+// del tipo de daño se reduce por la puntería de la criatura antes de aplicarse
+// al daño. Solo informativo (no toca la vida del token). Se excluye el propio
+// token de esta criatura.
+const objetivoTokenId = ref<string | null>(null);
+const objetivosDisponibles = computed(() =>
+  (partidaActual.value?.tokens ?? []).filter(
+    (t) => !props.diarioId || t.diarioId !== props.diarioId,
+  ),
+);
+watch(objetivosDisponibles, (lista) => {
+  if (
+    objetivoTokenId.value &&
+    !lista.some((t) => t.id === objetivoTokenId.value)
+  ) {
+    objetivoTokenId.value = null;
+  }
+});
+
 const tecnicaSeleccionada = computed(() =>
   tecnicaSeleccionadaId.value !== null
     ? (tecnicas.value[tecnicaSeleccionadaId.value] ?? null)
@@ -620,7 +785,7 @@ const puedeAtacarTecnica = computed(
 // Ataque con técnica: tira 2d12 + Estilo marcial para impactar y aplica el
 // daño plano del tipo elegido, usando el rango/multiplicador de crítico
 // propios de la técnica.
-function confirmarAtaqueTecnica() {
+async function confirmarAtaqueTecnica() {
   if (
     !criatura.value ||
     !tecnicaSeleccionada.value ||
@@ -640,6 +805,40 @@ function confirmarAtaqueTecnica() {
   const dano = tirada.esCritico
     ? Math.round(valor * tecnica.multiplicadorCritico)
     : valor;
+
+  const token = objetivoTokenId.value
+    ? objetivosDisponibles.value.find((t) => t.id === objetivoTokenId.value)
+    : null;
+  if (token) {
+    const objetivo = await resolverObjetivoCombate(token);
+    const esquiva = objetivo?.esquiva ?? 0;
+    const armadura = objetivo ? armaduraContra(objetivo, tipo) : 0;
+    const punteria = criatura.value.atributos.punteria;
+    const { impacta, armaduraEfectiva, danoNeto } = resolverImpacto({
+      totalTirada: tirada.total,
+      esquiva,
+      dano,
+      armadura,
+      punteria,
+    });
+    emit("tirar", {
+      texto: `ataca a ${token.nombre} con ${tecnica.nombre}`,
+      tirada,
+      objetivo: `${token.nombre} · Esquiva ${esquiva}`,
+      impacto: impacta,
+      dano: impacta
+        ? `${danoNeto} ${tipoInfo.etiqueta}${
+            armaduraEfectiva > 0 ? ` (−${armaduraEfectiva} arm.)` : ""
+          }${armadura > 0 ? ` · Pen. ${punteria}` : ""}${
+            tirada.esCritico ? " ¡Crítico!" : ""
+          }`
+        : undefined,
+      danoColor: tipoInfo.color,
+      color: tipoInfo.color,
+    });
+    return;
+  }
+
   emit("tirar", {
     texto: `ataca con ${tecnica.nombre}`,
     tirada,
@@ -919,6 +1118,45 @@ function confirmarAtaqueTecnica() {
   background: var(--accent-soft);
   border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
 }
+
+/* Ajuste de movimiento/salto/vuelo en partida (bonos temporales). */
+.fx-numb {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.fx-numb:hover {
+  background: color-mix(in srgb, #16a34a 15%, var(--surface));
+  color: #16a34a;
+  border-color: color-mix(in srgb, #16a34a 40%, var(--border-strong));
+}
+.fx-movctrl {
+  display: inline-flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+.fx-salto-lbl {
+  margin-top: 8px;
+}
+.fx-salto-sep {
+  color: var(--muted);
+  align-self: center;
+}
+.fx-sp-val.boost,
+.fx-arow b.boost {
+  color: #16a34a !important;
+}
 .fx-hpedit {
   display: flex;
   align-items: center;
@@ -1035,6 +1273,19 @@ function confirmarAtaqueTecnica() {
 }
 .fx-arow:nth-child(odd) {
   background: var(--surface-2);
+}
+/* Filas de atributo tirables (Poderío / Voluntad / Resistencia). */
+.fx-arow.fx-arow-click {
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+.fx-arow.fx-arow-click:hover {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.fx-arow.fx-arow-click:hover > span:first-child {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* Armadura + velocidad */
@@ -1462,6 +1713,43 @@ function confirmarAtaqueTecnica() {
   box-shadow: none;
 }
 
+/* Selector de objetivo del ataque */
+.fx-objetivo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.fx-objetivo-l {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.fx-objetivo-sel {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fx-objetivo-sel:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
 /* Ventaja / Desventaja */
 .fx-adv {
   --tint: var(--border-strong);
@@ -1518,6 +1806,19 @@ function confirmarAtaqueTecnica() {
 }
 .fx-adv.dis .fx-adv-lbl {
   color: #d81f4a;
+}
+/* Variante compacta para el panel de identidad. */
+.fx-adv-mini {
+  padding: 2px;
+  gap: 2px;
+}
+.fx-adv-mini .fx-adv-b {
+  width: 20px;
+  font-size: 13px;
+}
+.fx-adv-mini .fx-adv-lbl {
+  font-size: 10px;
+  padding: 0 4px;
 }
 
 @media (max-width: 720px) {
