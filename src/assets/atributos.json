@@ -44,7 +44,7 @@
     },
     {
       "id": 7,
-      "nombre": "HP",
+      "nombre": "Puntos de vida",
       "diminutivo": "HP",
       "descripcion": "Indica la salud general del personaje.",
       "tipo": 1

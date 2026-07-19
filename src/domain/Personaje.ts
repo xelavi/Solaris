@@ -35,6 +35,14 @@ export interface ArbolAttributes {
 export const ID_SIN_ARMAS = -1;
 
 /**
+ * Estrato del personaje según su nivel: 1 cada 5 niveles.
+ * Nivel 1-5 → Estrato 1, 6-10 → 2, 11-15 → 3, 16-20 → 4.
+ */
+export function calcularEstrato(nivel: number): number {
+  return Math.max(1, Math.ceil((nivel || 1) / 5));
+}
+
+/**
  * Configuración de visualización de un objeto de equipo en la ficha:
  * su orden (por la posición en el array) y si se muestra o no.
  */
@@ -54,6 +62,8 @@ export interface PersonajeGuardado {
   id: string;
   nombre: string;
   nivel: number;
+  /** Derivado del nivel (ver calcularEstrato); se sincroniza al recalcular. */
+  estrato: number;
   especialidad: string;
   especialidad_habilidades: string[];
   especialidad_dotes: number[];
@@ -85,6 +95,8 @@ export interface PersonajeGuardado {
   atributos: ArbolAttributes;
   /** Contador de puntos de "Arma predilecta" (innata del Vagabond). */
   arma_predilecta_puntos?: number;
+  /** Honra base del Gentilhombre (-12 a +12). Cada punto suma 1 al Poderío. */
+  honra?: number;
   fechaGuardado?: string;
 }
 
@@ -121,6 +133,7 @@ export function crearPersonajeVacio(id = ""): PersonajeGuardado {
     id,
     nombre: "",
     nivel: 1,
+    estrato: 1,
     especialidad: "",
     especialidad_habilidades: [],
     especialidad_dotes: [],

@@ -99,6 +99,8 @@ export interface TokenPartida {
   vida?: { actual: number; max: number };
   /** Esencia actual/máxima del token (solo personajes Pugilista). */
   esencia?: { actual: number; max: number };
+  /** Honra actual del token (solo personajes Gentilhombre, de -12 a +12). */
+  honra?: { actual: number };
   /** Estados alterados aplicados sobre este token (iconos sobre el personaje). */
   estados?: EstadoAplicado[];
   /** Niveles de prisma que el token flota por encima de su casilla (solo

@@ -158,6 +158,43 @@
                   </button>
                 </span>
               </div>
+              <div
+                v-if="personajeEsGentilhombre"
+                class="fx-mini fx-mini-honra"
+                :title="
+                  embebido
+                    ? 'Honra (de −12 a +12): solo afecta a esta partida'
+                    : 'Honra (de −12 a +12): cada punto suma 1 al Poderío'
+                "
+              >
+                <span class="fx-mini-l">Honra</span>
+                <span class="fx-esencia-ctrl">
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarHonra(-1)"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    class="fx-hpinput tnum"
+                    min="-12"
+                    max="12"
+                    :value="honraMostrada"
+                    @input="
+                      fijarHonra(($event.target as HTMLInputElement).value)
+                    "
+                  />
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarHonra(1)"
+                  >
+                    ＋
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -967,7 +1004,7 @@
                                   v-for="(celda, cdi) in fila"
                                   :key="cdi"
                                 >
-                                  {{ celda }}
+                                  <DescripcionConEstados :texto="celda" />
                                 </td>
                               </tr>
                             </tbody>
@@ -1160,6 +1197,7 @@ import habilidadesData from "../../assets/habilidades.json";
 import Arbol from "./arbol.vue";
 import DescripcionConEstados from "../DescripcionConEstados.vue";
 import type { PersonajeGuardado, VistaEquipo } from "../../domain/Personaje";
+import { calcularEstrato } from "../../domain/Personaje";
 import { ID_SIN_ARMAS } from "../../domain/Personaje";
 import {
   obtenerPersonaje,
@@ -1235,6 +1273,7 @@ const {
   establecerVidaToken,
   ajustarVidaMaximaToken,
   establecerEsenciaToken,
+  establecerHonraToken,
 } = usePartida();
 
 // Identidad de esta instancia dentro de la partida (para bonos temporales y
@@ -1294,6 +1333,9 @@ const editAtributos = ref(false);
 const editArmadura = ref(false);
 const editVida = ref(false);
 
+// Estrato del personaje: 1 cada 5 niveles (nivel 1-5 → 1, 6-10 → 2...).
+const estrato = computed(() => calcularEstrato(personaje.value.nivel));
+
 // --- Esencia (solo personajes Pugilista) ---
 // Máximo: 6 puntos por estrato (1 estrato cada 5 niveles). Actual: vinculada
 // al token en el mapa (igual que la vida); si no hay token, se guarda local
@@ -1302,9 +1344,7 @@ const personajeEsPugilista = computed(
   () => personaje.value.estiloMarcial === "Pugilista",
 );
 const esenciaMaxima = computed(() =>
-  personajeEsPugilista.value
-    ? 6 * Math.ceil((personaje.value.nivel || 1) / 5)
-    : 0,
+  personajeEsPugilista.value ? 6 * estrato.value : 0,
 );
 const esenciaLocal = ref(0);
 const esenciaMostrada = computed(() => ({
@@ -1326,6 +1366,34 @@ function ajustarEsencia(delta: number) {
   fijarEsencia(esenciaMostrada.value.actual + delta);
 }
 
+// --- Honra (solo personajes Gentilhombre) ---
+// Va de -12 a +12; cada punto suma 1 al Poderío efectivo (que no puede bajar
+// de 0). En la ficha normal se edita la honra BASE, persistida en el
+// personaje guardado; en la partida se edita la del token (igual que la
+// esencia), que parte de la base y nunca se escribe de vuelta.
+const personajeEsGentilhombre = computed(
+  () => personaje.value.estiloMarcial === "Gentilhombre",
+);
+const honraLocal = ref(0);
+const honraMostrada = computed(
+  () => tokenVinculado.value?.honra?.actual ?? honraLocal.value,
+);
+function fijarHonra(valor: string | number) {
+  const n = Math.max(-12, Math.min(12, Math.round(Number(valor) || 0)));
+  if (tokenVinculado.value) {
+    void establecerHonraToken(tokenVinculado.value.id, n);
+    return;
+  }
+  honraLocal.value = n;
+  if (personajeGuardado.value && !props.embebido) {
+    personajeGuardado.value.honra = n;
+    void guardarPersonaje(personajeGuardado.value);
+  }
+}
+function ajustarHonra(delta: number) {
+  fijarHonra(honraMostrada.value + delta);
+}
+
 // Valores EFECTIVOS = base + bono propio + cascada del atributo principal.
 // Reglas del juego: cada punto de Cuerpo suma +1 a Poderío / Movimiento /
 // Resistencia; cada punto de Agilidad suma +3 a Evasión / Iniciativa / Punteria.
@@ -1335,19 +1403,24 @@ const ef = computed(() => {
   const bc = bono("cuerpo");
   const ba = bono("agilidad");
   const bm = bono("mente");
+  // La Honra del Gentilhombre suma/resta 1 al Poderío por punto; el total
+  // efectivo nunca baja de 0.
+  const honra = personajeEsGentilhombre.value ? honraMostrada.value : 0;
+  const poderioEf = Math.max(0, p.cuerpo.poderio + bono("poderio") + bc + honra);
   return {
     cuerpo: p.cuerpo.total + bc,
     agilidad: p.agilidad.total + ba,
     mente: p.mente.total + bm,
-    poderio: p.cuerpo.poderio + bono("poderio") + bc,
+    poderio: poderioEf,
     movimiento: p.cuerpo.movimiento + bono("movimiento") + bc,
     resistencia: p.cuerpo.resistencia + bono("resistencia") + bc,
     esquiva: p.agilidad.esquiva + bono("esquiva") + ba * 3,
     iniciativa: p.agilidad.iniciativa + bono("iniciativa") + ba * 3,
     deadeye: p.agilidad.deadeye + bono("deadeye") + ba * 3,
     voluntad: p.mente.voluntad + bono("voluntad"),
-    // Incremento de daño = incremento de Poderío (propio + cascada de Cuerpo).
-    poderioDelta: bono("poderio") + bc,
+    // Incremento de daño = incremento de Poderío (propio + cascada de Cuerpo
+    // + Honra), respetando el tope inferior de 0 del Poderío efectivo.
+    poderioDelta: poderioEf - p.cuerpo.poderio,
   };
 });
 
@@ -2030,6 +2103,8 @@ async function cargarPersonaje() {
     personaje.value.trasfondo = datos.trasfondo || "";
     personaje.value.especialidad = datos.especialidad || "";
     personaje.value.estiloMarcial = datos.estilo_marcial || "";
+    // Honra base del Gentilhombre (si hay token vinculado, se mostrará la suya)
+    honraLocal.value = Math.max(-12, Math.min(12, datos.honra ?? 0));
 
     // HP
     personaje.value.hp.maximo = datos.atributos?.hp || 10;
@@ -3096,6 +3171,16 @@ onUnmounted(() => {
 .fx-mini-esencia .fx-hpinput:focus {
   border-color: color-mix(in srgb, #7c3aed 55%, var(--border-strong));
   box-shadow: 0 0 0 2px color-mix(in srgb, #7c3aed 22%, transparent);
+}
+.fx-mini-honra .fx-hpinput {
+  width: 46px;
+  height: 22px;
+  font-size: 13px;
+  color: #b45309;
+}
+.fx-mini-honra .fx-hpinput:focus {
+  border-color: color-mix(in srgb, #b45309 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #b45309 22%, transparent);
 }
 
 /* HP */

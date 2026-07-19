@@ -324,15 +324,27 @@
           @click="quitarEstadoHud(hud.id, est.estadoId)"
         >
           {{ est.icono }}
-          <!-- Tooltip: nombre (+ número) al pasar el ratón -->
+          <!-- Tooltip: nombre (+ número) al pasar el ratón; con Alt se amplía
+               para mostrar la descripción del estado -->
           <span
-            class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 hidden -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded border border-gray-700 bg-gray-900/95 px-2 py-1 text-[11px] font-semibold text-gray-100 shadow-lg group-hover:flex"
+            class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 hidden -translate-x-1/2 flex-col items-center gap-1 rounded border border-gray-700 bg-gray-900/95 px-2 py-1 text-[11px] text-gray-100 shadow-lg group-hover:flex"
+            :class="altPresionado ? 'w-56 whitespace-normal' : 'whitespace-nowrap'"
           >
-            <span>{{ est.nombre }}</span>
+            <span class="flex items-center gap-1 font-semibold">
+              <span>{{ est.nombre }}</span>
+              <span
+                v-if="est.valor != null"
+                class="flex h-4 min-w-4 items-center justify-center rounded bg-indigo-600 px-1 text-[10px] font-bold leading-none text-white"
+                >{{ est.valor }}</span
+              >
+            </span>
             <span
-              v-if="est.valor != null"
-              class="flex h-4 min-w-4 items-center justify-center rounded bg-indigo-600 px-1 text-[10px] font-bold leading-none text-white"
-              >{{ est.valor }}</span
+              v-if="altPresionado && est.descripcion"
+              class="text-left text-[10px] font-normal leading-snug text-gray-300"
+              >{{ est.descripcion }}</span
+            >
+            <span v-else-if="!altPresionado" class="text-[9px] italic text-gray-400"
+              >Mantén Alt para más información</span
             >
           </span>
         </button>
@@ -755,11 +767,15 @@ interface TokenHud {
     estadoId: number;
     icono: string;
     nombre: string;
+    descripcion: string;
     valor?: number;
     etiqueta: string;
   }[];
 }
 const tokenHuds = ref<TokenHud[]>([]);
+// true mientras se mantiene pulsada la tecla Alt: amplía el tooltip de los
+// estados alterados del HUD para mostrar su descripción.
+const altPresionado = ref(false);
 // Visibilidad global de los HUDs (nombre + vida + estados) sobre los tokens.
 // Se puede alternar con la tecla V.
 const hudsVisibles = ref(true);
@@ -907,10 +923,6 @@ function renderMap(grid: any[][]) {
   if (geometries.length > 0) {
     const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries);
 
-    // Create a texture or shader for the floor grid
-    const size = 40;
-    const divisions = 40;
-
     const material = new THREE.MeshStandardMaterial({
         color: 0x222222,
         side: THREE.DoubleSide,
@@ -922,13 +934,6 @@ function renderMap(grid: any[][]) {
     navMesh.receiveShadow = true;
     navMesh.name = "NavMesh";
     scene.add(navMesh);
-
-    // Add a GridHelper on top for visual clarity
-    const gridHelper = new THREE.GridHelper(size, divisions, 0x444444, 0x333333);
-    // Align grid helper to center if needed, or create custom grid texture.
-    // Assuming map is centered around 0,0 roughly.
-    // gridHelper.position.y = 0.01;
-    // scene.add(gridHelper);
 
     // Initialize Pathfinding
     // three-pathfinding expects a Mesh
@@ -1248,6 +1253,7 @@ function reconstruirHuds() {
         estadoId: e.estadoId,
         icono: iconoEstado(e.estadoId),
         nombre: obtenerEstado(e.estadoId)?.nombre ?? "Estado",
+        descripcion: obtenerEstado(e.estadoId)?.descripcion ?? "",
         valor: e.valor,
         etiqueta: nombreEstadoAplicado(e),
       })),
@@ -2173,7 +2179,23 @@ function quitarEstadoPanel(estadoId: number) {
 // Atajos de teclado: M activa/cancela el modo mover sobre el token
 // seleccionado; V alterna la visibilidad de los HUD (nombre/vida/estados);
 // Escape cancela el modo o cierra el menú contextual.
+function onKeyUp(event: KeyboardEvent) {
+  if (event.key === "Alt") altPresionado.value = false;
+}
+
+// Si la ventana pierde el foco (p. ej. Alt+Tab) no llega el keyup de Alt.
+function onWindowBlur() {
+  altPresionado.value = false;
+}
+
 function onKeyDown(event: KeyboardEvent) {
+  if (event.key === "Alt") {
+    // Evitar que el navegador enfoque su menú y marcar el modo ampliado.
+    event.preventDefault();
+    altPresionado.value = true;
+    return;
+  }
+
   // No interceptar si se está escribiendo en un campo (chat, etc.).
   const destino = event.target as HTMLElement | null;
   if (
@@ -2760,6 +2782,8 @@ onMounted(() => {
     }
   });
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
+  window.addEventListener("blur", onWindowBlur);
 });
 
 onBeforeUnmount(() => {
@@ -2769,6 +2793,8 @@ onBeforeUnmount(() => {
     renderer.domElement.removeEventListener("contextmenu", onContextMenu);
   }
   window.removeEventListener("keydown", onKeyDown);
+  window.removeEventListener("keyup", onKeyUp);
+  window.removeEventListener("blur", onWindowBlur);
   limpiarRango();
   cancelAnimationFrame(rafId);
   if (renderer) {

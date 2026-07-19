@@ -15,6 +15,7 @@ import { guardarPartida } from "./storage/partidasRepo";
 import type { MapaGuardado } from "./storage/mapasRepo";
 import { calcularCasillas, claveCelda } from "./mapaHex";
 import { obtenerPersonaje } from "./storage/personajesRepo";
+import { calcularEstrato } from "./Personaje";
 import { obtenerPartida } from "./storage/partidasRepo";
 import { obtenerCriatura } from "./storage/criaturasRepo";
 import { obtenerEstado } from "./EstadosAlterados";
@@ -473,8 +474,19 @@ export function usePartida() {
     if (entrada.tipo === "criatura") return undefined;
     const guardado = await obtenerPersonaje(entrada.refId);
     if (guardado?.estilo_marcial !== "Pugilista") return undefined;
-    const estrato = Math.ceil((guardado.nivel || 1) / 5);
-    return 6 * estrato;
+    return 6 * calcularEstrato(guardado.nivel);
+  }
+
+  // Honra inicial del token: la honra base guardada del personaje (solo
+  // Gentilhombre, de -12 a +12). Los cambios en partida solo viven en el
+  // token; nunca se escriben de vuelta en el personaje base.
+  async function honraInicialDe(
+    entrada: Pick<EntradaDiario, "refId" | "tipo">,
+  ): Promise<number | undefined> {
+    if (entrada.tipo === "criatura") return undefined;
+    const guardado = await obtenerPersonaje(entrada.refId);
+    if (guardado?.estilo_marcial !== "Gentilhombre") return undefined;
+    return Math.max(-12, Math.min(12, guardado.honra ?? 0));
   }
 
   // Coloca un token de una entrada del diario. Si se pasa `posDestino` (p. ej.
@@ -510,6 +522,7 @@ export function usePartida() {
 
     const max = await vidaMaximaDe(entrada);
     const esenciaMax = await esenciaMaximaDe(entrada);
+    const honraInicial = await honraInicialDe(entrada);
     p.tokens.push({
       id: `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       refId: entrada.refId,
@@ -519,6 +532,7 @@ export function usePartida() {
       pos,
       vida: { actual: max, max },
       esencia: esenciaMax ? { actual: 0, max: esenciaMax } : undefined,
+      honra: honraInicial !== undefined ? { actual: honraInicial } : undefined,
       estados: [],
     });
     guardarPartidaActual();
@@ -601,6 +615,41 @@ export function usePartida() {
     const esencia = await asegurarEsencia(token);
     if (!esencia) return;
     await establecerEsenciaToken(tokenId, esencia.actual + delta);
+  }
+
+  // --- Honra de un token (solo personajes Gentilhombre) ---
+  // Asegura que el token tenga el objeto honra inicializado (tokens creados
+  // antes de esta función, o cuyo personaje se convirtió en Gentilhombre
+  // después de colocarse) y lo devuelve, o undefined si no aplica.
+  async function asegurarHonra(
+    token: TokenPartida,
+  ): Promise<{ actual: number } | undefined> {
+    if (!token.honra) {
+      const inicial = await honraInicialDe(token);
+      if (inicial === undefined) return undefined;
+      token.honra = { actual: inicial };
+    }
+    return token.honra;
+  }
+
+  // Fija la honra actual del token (se limita entre -12 y +12).
+  async function establecerHonraToken(tokenId: string, actual: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const honra = await asegurarHonra(token);
+    if (!honra) return;
+    const n = Number.isFinite(actual) ? Math.round(actual) : honra.actual;
+    honra.actual = Math.max(-12, Math.min(12, n));
+    guardarPartidaActual();
+  }
+
+  // Suma (o resta) puntos a la honra actual del token.
+  async function ajustarHonraToken(tokenId: string, delta: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const honra = await asegurarHonra(token);
+    if (!honra) return;
+    await establecerHonraToken(tokenId, honra.actual + delta);
   }
 
   // --- Estados alterados sobre un token ---
@@ -781,6 +830,8 @@ export function usePartida() {
     ajustarVidaMaximaToken,
     establecerEsenciaToken,
     ajustarEsenciaToken,
+    establecerHonraToken,
+    ajustarHonraToken,
     agregarEstadoToken,
     establecerValorEstadoToken,
     quitarEstadoToken,

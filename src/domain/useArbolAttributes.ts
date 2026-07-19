@@ -17,11 +17,13 @@ export interface ArbolNode {
 // La definición canónica vive en Personaje.ts; se re-exporta para no romper
 // los imports existentes.
 import type { ArbolAttributes } from "./Personaje";
+import { calcularEstrato } from "./Personaje";
 export type { ArbolAttributes } from "./Personaje";
 
 export function useArbolAttributes(
   selectedNodes: ComputedRef<ArbolNode[]>,
   nivel: ComputedRef<number> = computed(() => 1),
+  estiloMarcial: ComputedRef<string> = computed(() => ""),
 ) {
   // Función para obtener el atributo ID de un nodo.
   // IMPORTANTE: solo los nodos con shape "circle" representan características
@@ -126,7 +128,12 @@ export function useArbolAttributes(
   const puntosHabilidad = computed(() =>
     calculateAttributeWithMultiplier(14, 10, 2 * nivel.value, 1, 3),
   ); // ID 14 = Puntos de Habilidad (tipo 3 = Mente)
-  const reacciones = computed(() => calculateAttributeWithMultiplier(13, 1, 1)); // ID 13 = Reacciones
+  // ID 13 = Reacciones. Innata del Vagabond: +1 reacción por estrato.
+  const reacciones = computed(() => {
+    const bonoVagabond =
+      estiloMarcial.value === "Vagabond" ? calcularEstrato(nivel.value) : 0;
+    return calculateAttributeWithMultiplier(13, 1, 1) + bonoVagabond;
+  });
   const voluntad = computed(() => calculateAttributeWithMultiplier(15, 2, 1)); // ID 15 = Voluntad (tipo 3 = Mente)
 
   // Objeto con todos los atributos calculados

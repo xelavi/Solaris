@@ -6,7 +6,11 @@
 
 import { ref, watch, computed } from "vue";
 import { useArbolAttributes, type ArbolNode } from "./useArbolAttributes";
-import { crearPersonajeVacio, type PersonajeGuardado } from "./Personaje";
+import {
+  crearPersonajeVacio,
+  calcularEstrato,
+  type PersonajeGuardado,
+} from "./Personaje";
 import {
   obtenerPersonaje,
   guardarPersonaje,
@@ -114,6 +118,7 @@ async function cancelarSubidaNivel() {
 /** Recalcula los atributos a partir del árbol, el trasfondo y el nivel. */
 function recalcularAtributos() {
   try {
+    characterData.value.estrato = calcularEstrato(characterData.value.nivel);
     const selectedNodes: ArbolNode[] = characterData.value.arbol
       ? JSON.parse(characterData.value.arbol)
       : [];
@@ -141,6 +146,7 @@ function recalcularAtributos() {
     const { attributes } = useArbolAttributes(
       computed(() => selectedNodes),
       computed(() => characterData.value.nivel),
+      computed(() => characterData.value.estilo_marcial),
     );
     characterData.value.atributos = { ...attributes.value };
   } catch (error) {
@@ -148,12 +154,13 @@ function recalcularAtributos() {
   }
 }
 
-// Los atributos dependen de nivel, trasfondo y árbol.
+// Los atributos dependen de nivel, trasfondo, árbol y estilo marcial.
 watch(
   () => [
     characterData.value.nivel,
     characterData.value.trasfondo,
     characterData.value.arbol,
+    characterData.value.estilo_marcial,
   ],
   () => recalcularAtributos(),
 );

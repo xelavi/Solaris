@@ -24,7 +24,7 @@
       ],
       "critico": "x2",
       "rango_critico": null,
-      "distancia_min": 2,
+      "distancia_min": 1,
       "distancia_max": 2,
       "perforante": 6,
       "lacerante": 2,
@@ -105,7 +105,7 @@
         14
       ],
       "critico": "x2",
-      "rango_critico": "23-24",
+      "rango_critico": "24",
       "distancia_min": null,
       "distancia_max": null,
       "perforante": 4,

@@ -268,7 +268,89 @@ const {
   punteria,
   puntosHabilidad,
   attributes,
-} = useArbolAttributes(selectedNodes, characterLevel);
+} = useArbolAttributes(
+  selectedNodes,
+  characterLevel,
+  computed(() => characterData.value.estilo_marcial),
+);
+
+// Helper functions to look up node info from atributos or activas
+function getDiminutivo(atributoId: string | number, shape: string): string {
+  const id = typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
+  if (shape === "circle") {
+    const atributo = atributosData.caracteristicasSecundarias.find(
+      (a) => a.id === id,
+    );
+    return atributo?.diminutivo || "";
+  } else {
+    const activa = activasData.activas.find((a) => a.id === id);
+    return activa?.diminutivo || "";
+  }
+}
+
+function getNombre(atributoId: string | number, shape: string): string {
+  const id = typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
+  if (shape === "circle") {
+    const atributo = atributosData.caracteristicasSecundarias.find(
+      (a) => a.id === id,
+    );
+    return atributo?.nombre || "";
+  } else {
+    const activa = activasData.activas.find((a) => a.id === id);
+    return activa?.nombre || "";
+  }
+}
+
+// Incremento que aporta cada nodo directo de una característica secundaria
+// (factor2 en useArbolAttributes; Rango de Crítico resta en vez de sumar)
+const INCREMENTO_POR_NODO: Record<number, number> = {
+  1: 1, // Cuerpo
+  2: 1, // Agilidad
+  3: 1, // Mente
+  4: 2, // Poderío
+  5: 1, // Movimiento
+  6: 1, // Resistencia
+  7: 3, // Puntos de vida
+  8: 1, // Regeneración
+  9: 3, // Evasión
+  10: 3, // Iniciativa
+  11: 3, // Puntería
+  12: 1, // Acciones
+  13: 1, // Reacciones
+  14: 3, // Puntos de Habilidad
+  15: 1, // Voluntad
+  16: 1, // Limite de Habilidad
+  17: 1, // Habilidades extras
+  18: -1, // Rango de Critico
+};
+
+function getTooltipLabel(atributoId: string | number, shape: string): string {
+  const nombre = getNombre(atributoId, shape);
+  if (shape === "circle") {
+    const id = typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+    const inc = INCREMENTO_POR_NODO[id];
+    if (inc !== undefined) {
+      return `${inc > 0 ? "+" : ""}${inc} ${nombre}`;
+    }
+  }
+  return nombre;
+}
+
+function getDescription(atributoId: string | number, shape: string): string {
+  const id = typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+
+  if (shape === "circle") {
+    const atributo = atributosData.caracteristicasSecundarias.find(
+      (a) => a.id === id,
+    );
+    return atributo?.descripcion || "";
+  } else {
+    const activa = activasData.activas.find((a) => a.id === id);
+    return activa?.descripcion || "";
+  }
+}
 
 function init() {
   const el = box.value!;
@@ -366,38 +448,6 @@ function init() {
 
   // circles and connections are now declared at component scope
   const rSmall = 8; // circle radius - increased for better visibility
-
-  // Helper function to get diminutivo from atributos or activas
-  function getDiminutivo(atributoId: string | number, shape: string): string {
-    const id =
-      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
-
-    if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(
-        (a) => a.id === id,
-      );
-      return atributo?.diminutivo || "";
-    } else {
-      const activa = activasData.activas.find((a) => a.id === id);
-      return activa?.diminutivo || "";
-    }
-  }
-
-  // Helper function to get description
-  function getDescription(atributoId: string | number, shape: string): string {
-    const id =
-      typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
-
-    if (shape === "circle") {
-      const atributo = atributosData.caracteristicasSecundarias.find(
-        (a) => a.id === id,
-      );
-      return atributo?.descripcion || "";
-    } else {
-      const activa = activasData.activas.find((a) => a.id === id);
-      return activa?.descripcion || "";
-    }
-  }
 
   // Build layers structure from arbol.json
   const layerSizes = [3, 12, 24, 24];
@@ -524,11 +574,13 @@ function init() {
 
         const skillName = layer.skills[i] || "";
         const description = getDescription(nodeData.atributo, "square");
+        const tooltipLabel = getTooltipLabel(nodeData.atributo, "square");
 
         // Add interactive data to square
         square.userData = {
           nodeId: nodeData.id,
           skillName: skillName,
+          tooltipLabel: tooltipLabel,
           description: description,
           isSelected: false,
           originalColor: 0x4a90e2, // Azul vibrante
@@ -567,11 +619,13 @@ function init() {
 
         const skillName = layer.skills[i] || "";
         const description = getDescription(nodeData.atributo, "circle");
+        const tooltipLabel = getTooltipLabel(nodeData.atributo, "circle");
 
         // Add interactive data to circle
         circle.userData = {
           nodeId: nodeData.id,
           skillName: skillName,
+          tooltipLabel: tooltipLabel,
           description: description,
           isSelected: false,
           originalColor: 0x4a90e2, // Azul vibrante
@@ -932,8 +986,7 @@ function showTooltip(event: MouseEvent, object: THREE.Mesh) {
   }
 
   tooltip.innerHTML = `
-  <strong>${object.userData.nodeId}</strong><br>
-    <strong>${object.userData.skillName}</strong><br>
+    <strong>${object.userData.tooltipLabel || object.userData.skillName}</strong><br>
     <small>${object.userData.description}</small><br>
     <em>Tipo: ${object.userData.type === "circle" ? "Pasiva" : "Activa"}</em>
   `;
@@ -1066,44 +1119,7 @@ function addTrasfondoNodes() {
       const nodo = arbolData.arbol.nodos.find((n) => n.id === nodeId);
       if (!nodo) return;
 
-      // Get skill name based on shape
-      const getDiminutivo = (
-        atributoId: string | number,
-        shape: string,
-      ): string => {
-        const id =
-          typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
-
-        if (shape === "circle") {
-          const atributo = atributosData.caracteristicasSecundarias.find(
-            (a) => a.id === id,
-          );
-          return atributo?.diminutivo || "";
-        } else {
-          const activa = activasData.activas.find((a) => a.id === id);
-          return activa?.diminutivo || "";
-        }
-      };
-
-      const getDescription = (
-        atributoId: string | number,
-        shape: string,
-      ): string => {
-        const id =
-          typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
-
-        if (shape === "circle") {
-          const atributo = atributosData.caracteristicasSecundarias.find(
-            (a) => a.id === id,
-          );
-          return atributo?.descripcion || "";
-        } else {
-          const activa = activasData.activas.find((a) => a.id === id);
-          return activa?.descripcion || "";
-        }
-      };
-
-      const skillName = getDiminutivo(nodo.atributo, nodo.shape);
+      const skillName = getNombre(nodo.atributo, nodo.shape);
       const description = getDescription(nodo.atributo, nodo.shape);
 
       newNodes.push({
