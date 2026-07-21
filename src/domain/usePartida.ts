@@ -489,6 +489,18 @@ export function usePartida() {
     return Math.max(-12, Math.min(12, guardado.honra ?? 0));
   }
 
+  // Cargas iniciales de Arsenal de depredador de un token (solo Depredador).
+  // Siempre empieza en 12 (según el equipo inicial del estilo). Criaturas y
+  // personajes de otro estilo marcial no tienen arsenal (undefined).
+  async function arsenalInicialDe(
+    entrada: Pick<EntradaDiario, "refId" | "tipo">,
+  ): Promise<number | undefined> {
+    if (entrada.tipo === "criatura") return undefined;
+    const guardado = await obtenerPersonaje(entrada.refId);
+    if (guardado?.estilo_marcial !== "Depredador") return undefined;
+    return 12;
+  }
+
   // Coloca un token de una entrada del diario. Si se pasa `posDestino` (p. ej.
   // al arrastrar y soltar sobre un hexágono), se usa esa posición; si no, se
   // busca la primera casilla libre del mapa hexagonal activo.
@@ -523,6 +535,7 @@ export function usePartida() {
     const max = await vidaMaximaDe(entrada);
     const esenciaMax = await esenciaMaximaDe(entrada);
     const honraInicial = await honraInicialDe(entrada);
+    const arsenalInicial = await arsenalInicialDe(entrada);
     p.tokens.push({
       id: `token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       refId: entrada.refId,
@@ -533,6 +546,8 @@ export function usePartida() {
       vida: { actual: max, max },
       esencia: esenciaMax ? { actual: 0, max: esenciaMax } : undefined,
       honra: honraInicial !== undefined ? { actual: honraInicial } : undefined,
+      arsenal:
+        arsenalInicial !== undefined ? { actual: arsenalInicial } : undefined,
       estados: [],
     });
     guardarPartidaActual();
@@ -650,6 +665,41 @@ export function usePartida() {
     const honra = await asegurarHonra(token);
     if (!honra) return;
     await establecerHonraToken(tokenId, honra.actual + delta);
+  }
+
+  // --- Arsenal de depredador de un token (solo personajes Depredador) ---
+  // Asegura que el token tenga el objeto arsenal inicializado (tokens creados
+  // antes de esta función, o cuyo personaje se convirtió en Depredador después
+  // de colocarse) y lo devuelve, o undefined si no aplica.
+  async function asegurarArsenal(
+    token: TokenPartida,
+  ): Promise<{ actual: number } | undefined> {
+    if (!token.arsenal) {
+      const inicial = await arsenalInicialDe(token);
+      if (inicial === undefined) return undefined;
+      token.arsenal = { actual: inicial };
+    }
+    return token.arsenal;
+  }
+
+  // Fija las cargas de arsenal del token (se limita entre 0 y 99).
+  async function establecerArsenalToken(tokenId: string, actual: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const arsenal = await asegurarArsenal(token);
+    if (!arsenal) return;
+    const n = Number.isFinite(actual) ? Math.round(actual) : arsenal.actual;
+    arsenal.actual = Math.max(0, Math.min(99, n));
+    guardarPartidaActual();
+  }
+
+  // Suma (o resta) cargas al arsenal actual del token.
+  async function ajustarArsenalToken(tokenId: string, delta: number) {
+    const token = partidaActual.value?.tokens?.find((t) => t.id === tokenId);
+    if (!token) return;
+    const arsenal = await asegurarArsenal(token);
+    if (!arsenal) return;
+    await establecerArsenalToken(tokenId, arsenal.actual + delta);
   }
 
   // --- Estados alterados sobre un token ---
@@ -832,6 +882,8 @@ export function usePartida() {
     ajustarEsenciaToken,
     establecerHonraToken,
     ajustarHonraToken,
+    establecerArsenalToken,
+    ajustarArsenalToken,
     agregarEstadoToken,
     establecerValorEstadoToken,
     quitarEstadoToken,

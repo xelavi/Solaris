@@ -125,6 +125,39 @@
                   >{{ formatoMod(ef.iniciativa) }}</span
                 >
               </button>
+              <div
+                v-if="personajeEsDepredador && embebido"
+                class="fx-mini fx-mini-arsenal"
+                title="Arsenal de depredador: cargas de proyectiles (empieza en 12)"
+              >
+                <span class="fx-mini-l">Arsenal</span>
+                <span class="fx-esencia-ctrl">
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarArsenal(-1)"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    class="fx-hpinput tnum"
+                    min="0"
+                    max="99"
+                    :value="arsenalMostrado"
+                    @input="
+                      fijarArsenal(($event.target as HTMLInputElement).value)
+                    "
+                  />
+                  <button
+                    type="button"
+                    class="fx-numb"
+                    @click="ajustarArsenal(1)"
+                  >
+                    ＋
+                  </button>
+                </span>
+              </div>
               <div v-if="personajeEsPugilista" class="fx-mini" title="Esencia máxima">
                 <span class="fx-mini-l">Esencia máx.</span>
                 <span class="fx-mini-v tnum">{{ esenciaMaxima }}</span>
@@ -821,6 +854,38 @@
               </template>
               <div v-else class="fx-empty">Sin armas equipadas</div>
 
+              <!-- Arsenal de depredador: ataque especial que tira 1d6 en la
+                   tabla de proyectiles y lo vuelca al chat. Solo en partida. -->
+              <div
+                v-if="embebido && personajeEsDepredador"
+                class="fx-atk-row fx-usable fx-atk-embebido fx-arsenal-row"
+                title="Tira 1d6 en la tabla de Arsenal de depredador"
+                @click="usarArsenalDepredador"
+              >
+                <div>
+                  <div class="fx-atk-name">Arsenal de depredador</div>
+                  <div class="fx-atk-sub">Tirada de arsenal · acierta siempre</div>
+                </div>
+                <div class="fx-cell">—</div>
+                <div class="fx-cell">1d6</div>
+                <div class="fx-cell tnum">{{ arsenalMostrado }} cargas</div>
+                <div class="fx-atk-action" @click.stop>
+                  <button
+                    type="button"
+                    class="fx-attack-btn-mini"
+                    title="Usar Arsenal de depredador"
+                    @click="usarArsenalDepredador"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M6.92 5H5l9 9 1.42-1.42L6.92 5Zm9.66-1 2.83 2.83-3.54 3.54 1.42 1.41 1.4-1.4 1.42 1.4L21 11l-1.42-1.42L21 8.17 16.58 3.75 15.17 5.17 16.58 4ZM3 17.25V21h3.75l9.06-9.06-3.75-3.75L3 17.25Z"
+                      />
+                    </svg>
+                    <span>Tirar</span>
+                  </button>
+                </div>
+              </div>
+
               <div class="fx-sect">
                 <span class="fx-grow">Habilidades activas</span>
               </div>
@@ -1210,6 +1275,7 @@ import {
 } from "../../domain/objetivoCombate";
 import {
   tirar2d12,
+  tirarDados,
   etiquetaVentaja,
   parseMultiplicadorCritico,
 } from "../../domain/dados";
@@ -1274,6 +1340,7 @@ const {
   ajustarVidaMaximaToken,
   establecerEsenciaToken,
   establecerHonraToken,
+  establecerArsenalToken,
 } = usePartida();
 
 // Identidad de esta instancia dentro de la partida (para bonos temporales y
@@ -1392,6 +1459,75 @@ function fijarHonra(valor: string | number) {
 }
 function ajustarHonra(delta: number) {
   fijarHonra(honraMostrada.value + delta);
+}
+
+// --- Arsenal de depredador (solo personajes Depredador) ---
+// Cargas de proyectiles fabricados. Siempre empieza en 12. Vinculado al token
+// en el mapa (igual que la esencia); si no hay token, se guarda local y no
+// persiste (ficha suelta, fuera de partida).
+const ARSENAL_INICIAL = 12;
+const personajeEsDepredador = computed(
+  () => personaje.value.estiloMarcial === "Depredador",
+);
+const arsenalLocal = ref(ARSENAL_INICIAL);
+const arsenalMostrado = computed(
+  () => tokenVinculado.value?.arsenal?.actual ?? arsenalLocal.value,
+);
+function fijarArsenal(valor: string | number) {
+  const n = Math.max(0, Math.min(99, Math.round(Number(valor) || 0)));
+  if (tokenVinculado.value) {
+    void establecerArsenalToken(tokenVinculado.value.id, n);
+  } else {
+    arsenalLocal.value = n;
+  }
+}
+function ajustarArsenal(delta: number) {
+  fijarArsenal(arsenalMostrado.value + delta);
+}
+
+// Tabla de Tirada de arsenal (1d6): cada fila es el proyectil obtenido y su
+// efecto. El texto admite tokens {{estado:N}} que DescripcionConEstados
+// renderiza como el estado alterado correspondiente en el chat.
+const TIRADA_ARSENAL: { proyectil: string; efecto: string }[] = [
+  {
+    proyectil: "Aguja",
+    efecto: "Estrato de Depredador en daño verdadero; aplica veneno.",
+  },
+  { proyectil: "Navaja", efecto: "Triple del estrato en daño perforante." },
+  {
+    proyectil: "Estrella voladora",
+    efecto: "Doble del estrato en daño cortante; aplica {{estado:15}}.",
+  },
+  { proyectil: "Dardo", efecto: "Doble del estrato en daño perforante." },
+  {
+    proyectil: "Red",
+    efecto: "Aplica {{estado:2}} hasta el final de su turno.",
+  },
+  {
+    proyectil: "Abrojo",
+    efecto:
+      "Estrato en daño perforante al impactar; aplica {{estado:10}} al pisar hasta el final de su turno.",
+  },
+];
+
+// Ataque con arsenal de depredador: tira 1d6 en la tabla y vuelca al chat el
+// proyectil obtenido y su efecto. Gasta una carga de arsenal si queda alguna.
+function usarArsenalDepredador() {
+  if (!props.embebido) return;
+  const tirada = tirarDados(1, 6, 0, 0);
+  const resultado = tirada.total; // 1..6
+  const fila = TIRADA_ARSENAL[resultado - 1] ?? {
+    proyectil: "?",
+    efecto: "",
+  };
+  if (arsenalMostrado.value > 0) ajustarArsenal(-1);
+  emit("tirar", {
+    texto: "usa Arsenal de depredador",
+    tirada,
+    descripcion: `${fila.proyectil} — ${fila.efecto}`,
+    tipoEjecucion: "accion",
+    color: "#8b5cf6",
+  });
 }
 
 // Valores EFECTIVOS = base + bono propio + cascada del atributo principal.
@@ -3181,6 +3317,19 @@ onUnmounted(() => {
 .fx-mini-honra .fx-hpinput:focus {
   border-color: color-mix(in srgb, #b45309 55%, var(--border-strong));
   box-shadow: 0 0 0 2px color-mix(in srgb, #b45309 22%, transparent);
+}
+.fx-mini-arsenal .fx-hpinput {
+  width: 46px;
+  height: 22px;
+  font-size: 13px;
+  color: #7c3aed;
+}
+.fx-mini-arsenal .fx-hpinput:focus {
+  border-color: color-mix(in srgb, #8b5cf6 55%, var(--border-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, #8b5cf6 22%, transparent);
+}
+.fx-arsenal-row {
+  border-top: 1px dashed var(--border-strong);
 }
 
 /* HP */

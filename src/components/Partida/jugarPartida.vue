@@ -115,6 +115,39 @@
           </div>
         </div>
       </div>
+
+      <!-- Color de la figura -->
+      <div>
+        <h4 class="text-sm font-bold text-gray-700 mb-2">Color de la figura</h4>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            v-for="c in COLORES_PERSONAJES"
+            :key="c"
+            type="button"
+            :title="hexCss(c)"
+            @click="cambiarColorPersonaje(seleccionado, c)"
+            class="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+            :class="
+              colorDe(seleccionado) === c
+                ? 'border-gray-800 ring-2 ring-offset-1 ring-gray-400'
+                : 'border-gray-300'
+            "
+            :style="{ backgroundColor: hexCss(c) }"
+          ></button>
+          <label
+            class="w-7 h-7 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center cursor-pointer relative overflow-hidden hover:scale-110 transition-transform"
+            title="Color personalizado"
+          >
+            <span class="text-xs">🎨</span>
+            <input
+              type="color"
+              :value="hexCss(colorDe(seleccionado) ?? 0xffffff)"
+              @input="cambiarColorDesdeInput(seleccionado, $event)"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Chat de Logs -->
@@ -166,6 +199,53 @@
         </div>
       </div>
     </div>
+
+    <!-- Menú contextual de color (clic derecho sobre una figura) -->
+    <template v-if="menuColor.visible">
+      <!-- Capa para cerrar al hacer clic fuera -->
+      <div
+        class="fixed inset-0 z-40"
+        @click="cerrarMenuColor"
+        @contextmenu.prevent="cerrarMenuColor"
+      ></div>
+      <div
+        class="absolute z-50 bg-white rounded-lg shadow-2xl p-3 border border-gray-200"
+        :style="{ left: `${menuColor.x}px`, top: `${menuColor.y}px` }"
+        @click.stop
+      >
+        <p class="text-xs font-bold text-gray-700 mb-2">Color de la figura</p>
+        <div class="grid grid-cols-6 gap-2">
+          <button
+            v-for="c in COLORES_PERSONAJES"
+            :key="c"
+            type="button"
+            :title="hexCss(c)"
+            @click="
+              cambiarColorPersonaje(menuColor.instanciaId, c);
+              cerrarMenuColor();
+            "
+            class="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+            :class="
+              colorDe(menuColor.instanciaId) === c
+                ? 'border-gray-800 ring-2 ring-offset-1 ring-gray-400'
+                : 'border-gray-300'
+            "
+            :style="{ backgroundColor: hexCss(c) }"
+          ></button>
+        </div>
+        <label
+          class="mt-2 flex items-center gap-2 text-xs text-gray-600 cursor-pointer"
+        >
+          <span>🎨 Personalizado</span>
+          <input
+            type="color"
+            :value="hexCss(colorDe(menuColor.instanciaId) ?? 0xffffff)"
+            @input="cambiarColorDesdeInput(menuColor.instanciaId, $event)"
+            class="w-8 h-6 cursor-pointer border border-gray-300 rounded"
+          />
+        </label>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -229,6 +309,18 @@ const hexMap = new Map<string, THREE.Mesh>();
 
 // Personajes (instanciaId -> mesh)
 const personajesMeshes = new Map<string, THREE.Mesh>();
+
+// Color actual de la figura de cada personaje (instanciaId -> color 0xRRGGBB).
+// Reactivo para que los selectores de color de la UI reflejen el color vigente.
+const coloresPersonajes = ref<Map<string, number>>(new Map());
+
+// Menú contextual de color (clic derecho sobre una figura).
+const menuColor = ref<{
+  visible: boolean;
+  x: number;
+  y: number;
+  instanciaId: string | null;
+}>({ visible: false, x: 0, y: 0, instanciaId: null });
 
 // Referencias del panel de logs (UI arrastrable)
 const logContainer = ref<HTMLDivElement | null>(null);
@@ -332,6 +424,7 @@ async function init() {
   // Event listeners
   renderer.domElement.addEventListener("pointermove", onPointerMove);
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
+  renderer.domElement.addEventListener("contextmenu", onContextMenu);
 
   // Iniciar loop de render
   animate();
@@ -538,10 +631,40 @@ function crearPersonajes() {
 
     scene.add(cilindro);
     personajesMeshes.set(instanciaId, cilindro);
+    coloresPersonajes.value.set(instanciaId, color);
     clickables.push(cilindro);
 
     colorIndex++;
   });
+}
+
+// Color CSS (#RRGGBB) a partir de un color numérico de Three.js.
+function hexCss(color: number): string {
+  return "#" + color.toString(16).padStart(6, "0");
+}
+
+// Color vigente de la figura de un personaje (o undefined si no tiene mesh).
+function colorDe(id: string | null): number | undefined {
+  return id ? coloresPersonajes.value.get(id) : undefined;
+}
+
+// Cambia el color de la figura (cilindro) de un personaje.
+function cambiarColorPersonaje(instanciaId: string | null, color: number) {
+  if (!instanciaId) return;
+  const mesh = personajesMeshes.get(instanciaId);
+  if (!mesh) return;
+  (mesh.material as THREE.MeshStandardMaterial).color.setHex(color);
+  coloresPersonajes.value.set(instanciaId, color);
+}
+
+// Aplica el color elegido en un <input type="color"> (formato "#rrggbb").
+function cambiarColorDesdeInput(instanciaId: string | null, event: Event) {
+  const valor = (event.target as HTMLInputElement).value;
+  cambiarColorPersonaje(instanciaId, parseInt(valor.slice(1), 16));
+}
+
+function cerrarMenuColor() {
+  menuColor.value.visible = false;
 }
 
 function getHexCoordinates(
@@ -556,19 +679,35 @@ function getHexCoordinates(
 }
 
 // Raycasting
-function setPointerFromEvent(event: PointerEvent) {
-  if (!renderer) return;
+function pickClient(clientX: number, clientY: number): THREE.Mesh | null {
+  if (!renderer) return null;
   const rect = renderer.domElement.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / rect.width;
-  const y = (event.clientY - rect.top) / rect.height;
+  const x = (clientX - rect.left) / rect.width;
+  const y = (clientY - rect.top) / rect.height;
   pointer.set(x * 2 - 1, -(y * 2 - 1));
-}
-
-function pick(event: PointerEvent): THREE.Mesh | null {
-  setPointerFromEvent(event);
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(clickables, false);
   return hits.length ? (hits[0].object as THREE.Mesh) : null;
+}
+
+function pick(event: PointerEvent): THREE.Mesh | null {
+  return pickClient(event.clientX, event.clientY);
+}
+
+// Clic derecho sobre una figura: abre el menú de color en el cursor. Si no se
+// pincha sobre un personaje, se deja pasar (MapControls rota la cámara).
+function onContextMenu(event: MouseEvent) {
+  const mesh = pickClient(event.clientX, event.clientY);
+  if (!mesh || !mesh.name.startsWith("personaje_")) return;
+
+  event.preventDefault();
+  const rect = renderer!.domElement.getBoundingClientRect();
+  menuColor.value = {
+    visible: true,
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+    instanciaId: (mesh as any).instanciaId as string,
+  };
 }
 
 function onPointerMove(event: PointerEvent) {
@@ -712,6 +851,7 @@ onBeforeUnmount(() => {
   if (renderer) {
     renderer.domElement.removeEventListener("pointermove", onPointerMove);
     renderer.domElement.removeEventListener("pointerdown", onPointerDown);
+    renderer.domElement.removeEventListener("contextmenu", onContextMenu);
 
     scene.traverse((object: THREE.Object3D) => {
       if (object instanceof THREE.Mesh) {

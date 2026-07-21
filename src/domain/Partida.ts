@@ -101,6 +101,8 @@ export interface TokenPartida {
   esencia?: { actual: number; max: number };
   /** Honra actual del token (solo personajes Gentilhombre, de -12 a +12). */
   honra?: { actual: number };
+  /** Cargas de Arsenal de depredador del token (solo Depredador; empieza en 12). */
+  arsenal?: { actual: number };
   /** Estados alterados aplicados sobre este token (iconos sobre el personaje). */
   estados?: EstadoAplicado[];
   /** Niveles de prisma que el token flota por encima de su casilla (solo
