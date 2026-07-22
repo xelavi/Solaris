@@ -65,6 +65,10 @@ async function saveCharacterData() {
 function resetCharacterData() {
   characterData.value = crearPersonajeVacio();
   idCargado = undefined;
+  // Al vaciar el estado del asistente también salimos de cualquier modo "subir
+  // de nivel" que hubiera quedado activo, para no contaminar la próxima edición
+  // o creación.
+  subidaNivelBase.value = null;
 }
 
 /**
@@ -73,6 +77,10 @@ function resetCharacterData() {
  * al id indicado y fuerza la recarga en memoria, ignorando el caché de idCargado.
  */
 async function editarPersonajeExistente(id: string) {
+  // Editar NUNCA es modo "subir de nivel": si una subida previa se abandonó sin
+  // confirmar/descartar, subidaNivelBase (singleton de módulo) seguiría activo y
+  // bloquearía quitar los nodos/dotes ya existentes. Lo limpiamos siempre aquí.
+  subidaNivelBase.value = null;
   establecerIdEnCreacion(id);
   characterData.value = (await obtenerPersonaje(id)) ?? crearPersonajeVacio(id);
   idCargado = id;

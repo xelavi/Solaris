@@ -35,6 +35,7 @@ let tooltip: HTMLElement | null = null;
 
 // Parse selected nodes from prop
 const selectedNodeIds = ref<number[]>([]);
+const trasfondoNodeIds = ref<number[]>([]);
 
 watch(
   () => props.arbolData,
@@ -43,6 +44,9 @@ watch(
       try {
         const parsed = JSON.parse(newData);
         selectedNodeIds.value = parsed.map((node: any) => node.nodeId);
+        trasfondoNodeIds.value = parsed
+          .filter((node: any) => node.isTrasfondo)
+          .map((node: any) => node.nodeId);
         updateNodeVisuals();
       } catch (error) {
         console.error("Error parsing arbol data:", error);
@@ -282,6 +286,7 @@ function init() {
           description: description,
           originalColor: 0x4a90e2,
           selectedColor: 0x00ff00,
+          trasfondoNodeColor: 0xffd700,
           type: "square",
           layer: layerIndex,
           index: i,
@@ -318,6 +323,7 @@ function init() {
           description: description,
           originalColor: 0x4a90e2,
           selectedColor: 0x00ff00,
+          trasfondoNodeColor: 0xffd700,
           type: "circle",
           layer: layerIndex,
           index: i,
@@ -384,9 +390,14 @@ function init() {
 function updateNodeVisuals() {
   circles.forEach((mesh) => {
     const isSelected = selectedNodeIds.value.includes(mesh.userData.nodeId);
-    (mesh.material as THREE.MeshBasicMaterial).color.setHex(
-      isSelected ? mesh.userData.selectedColor : mesh.userData.originalColor,
-    );
+    const isTrasfondo = trasfondoNodeIds.value.includes(mesh.userData.nodeId);
+    let color = mesh.userData.originalColor;
+    if (isTrasfondo) {
+      color = mesh.userData.trasfondoNodeColor; // Amarillo para nodos de trasfondo
+    } else if (isSelected) {
+      color = mesh.userData.selectedColor;
+    }
+    (mesh.material as THREE.MeshBasicMaterial).color.setHex(color);
   });
 }
 

@@ -107,13 +107,49 @@
 
       <!-- ============= EQUIPO ============= -->
       <div v-else-if="currentTab === 'equipo'" class="ed-panel">
+        <!-- Buscador + filtro por etiquetas -->
+        <div class="ed-filtro">
+          <div class="ed-search">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M9 3.5a5.5 5.5 0 1 0 3.415 9.812l3.636 3.637a.75.75 0 1 0 1.061-1.06l-3.636-3.638A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <input
+              v-model="busqueda"
+              type="text"
+              placeholder="Buscar armas y armaduras..."
+            />
+          </div>
+          <div class="ed-chips">
+            <SelectorEtiquetasEquipo
+              v-model="etiquetasSeleccionadas"
+              :etiquetas="etiquetas"
+              class="ed-selector"
+            />
+            <button
+              v-if="filtroActivo"
+              type="button"
+              class="ed-chip-clear"
+              @click="limpiarFiltros"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+
         <div class="ed-phead">
           <span class="ed-grow">Armas</span>
           <span class="ed-count">{{ characterData.armas.length }} equipada(s)</span>
         </div>
         <div class="ed-list">
+          <p v-if="armasFiltradas.length === 0" class="ed-empty">
+            Ninguna arma coincide con la búsqueda.
+          </p>
           <button
-            v-for="arma in armas"
+            v-for="arma in armasFiltradas"
             :key="arma.id"
             type="button"
             :class="['ed-item', { on: characterData.armas.includes(arma.id) }]"
@@ -137,8 +173,11 @@
           <span class="ed-count">{{ characterData.armaduras.length }} equipada(s)</span>
         </div>
         <div class="ed-list">
+          <p v-if="armadurasFiltradas.length === 0" class="ed-empty">
+            Ninguna armadura coincide con la búsqueda.
+          </p>
           <button
-            v-for="arm in armaduras"
+            v-for="arm in armadurasFiltradas"
             :key="arm.id"
             type="button"
             :class="['ed-item', { on: characterData.armaduras.includes(arm.id) }]"
@@ -180,6 +219,8 @@ import Arbol from "../CrearPersonaje/arbol.vue";
 import Habilidades from "../CrearPersonaje/habilidades.vue";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 import { nombresEtiquetas } from "../../domain/etiquetasEquipo";
+import { useEquipoFiltro } from "../../domain/useEquipoFiltro";
+import SelectorEtiquetasEquipo from "../SelectorEtiquetasEquipo.vue";
 import { armaduraVinculada, armaVinculada } from "../../domain/escudos";
 import type { PersonajeGuardado } from "../../domain/Personaje";
 import {
@@ -212,6 +253,17 @@ const currentTab = ref<(typeof tabs)[number]["id"]>("general");
 
 const armas = ref(armasData.armas);
 const armaduras = ref(armadurasData.armaduras);
+
+// Búsqueda + filtro por etiquetas del equipo, compartido con el asistente.
+const {
+  busqueda,
+  etiquetas,
+  etiquetasSeleccionadas,
+  armasFiltradas,
+  armadurasFiltradas,
+  limpiarFiltros,
+  filtroActivo,
+} = useEquipoFiltro(armas, armaduras);
 
 // Copia intacta del personaje al entrar, para poder descartar los cambios.
 // (La edición se autoguarda sobre el personaje real; "Descartar" restaura esto.)
@@ -470,6 +522,67 @@ async function cancelar() {
   font-size: 12px;
   color: var(--faint);
   font-style: italic;
+}
+
+/* Buscador + filtro por etiquetas del equipo */
+.ed-filtro {
+  padding: 14px 14px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ed-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ed-search svg {
+  position: absolute;
+  left: 11px;
+  width: 15px;
+  height: 15px;
+  color: var(--faint);
+  pointer-events: none;
+}
+.ed-search input {
+  width: 100%;
+  padding: 9px 12px 9px 32px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13.5px;
+}
+.ed-search input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.ed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+.ed-selector {
+  flex: 1;
+  min-width: 200px;
+}
+.ed-chip-clear {
+  padding: 9px 6px 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ed-empty {
+  padding: 20px 14px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--faint);
 }
 
 /* Listas de equipo */

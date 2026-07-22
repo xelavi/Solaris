@@ -25,31 +25,6 @@
             </span>
           </p>
         </div>
-        <div class="max-h-60 space-y-2 overflow-y-auto">
-          <div
-            v-for="node in selectedNodes"
-            :key="node.nodeId"
-            :class="[
-              'rounded-lg border p-2 text-sm',
-              node.isTrasfondo
-                ? 'border-indigo-300 bg-indigo-50'
-                : 'border-gray-200 bg-white',
-            ]"
-          >
-            <div class="font-semibold text-gray-900">
-              {{ node.skillName }}
-              <span
-                v-if="node.isTrasfondo"
-                class="ml-1 text-xs font-medium text-indigo-600"
-                >(Trasfondo)</span
-              >
-            </div>
-            <div class="text-xs text-gray-500">
-              {{ node.type === "circle" ? "Atributo" : "Activa" }} · Capa
-              {{ node.layer }}
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Panel de Atributos Calculados -->
@@ -226,6 +201,28 @@ const selectedNodes = computed({
   },
 });
 
+// Nodos principales (Cuerpo=1, Agilidad=2, Mente=3): solo se puede elegir uno.
+const PRINCIPAL_ATTR_IDS = new Set([1, 2, 3]);
+const principalNodeIds = new Set(
+  arbolData.arbol.nodos
+    .filter(
+      (n) =>
+        n.shape === "circle" &&
+        PRINCIPAL_ATTR_IDS.has(
+          typeof n.atributo === "string" ? parseInt(n.atributo) : n.atributo,
+        ),
+    )
+    .map((n) => n.id),
+);
+
+// nodeId del principal actualmente seleccionado (o null si ninguno)
+const selectedPrincipalNodeId = computed<number | null>(() => {
+  const found = selectedNodes.value.find((n: ArbolNode) =>
+    principalNodeIds.has(n.nodeId),
+  );
+  return found ? found.nodeId : null;
+});
+
 // Get trasfondo node IDs
 const trasfondoNodeIds = computed(() => {
   if (!characterData.value.trasfondo) return [];
@@ -336,6 +333,34 @@ function getTooltipLabel(atributoId: string | number, shape: string): string {
     }
   }
   return nombre;
+}
+
+// Bonificaciones que aporta cada nodo de un atributo principal (Cuerpo/Agilidad/
+// Mente). Coinciden con los factores de useArbolAttributes.ts; HP y Puntos de
+// Habilidad escalan con el nivel (2×Nivel por nodo).
+function getPrincipalBonuses(atributoId: string | number): string[] {
+  const id = typeof atributoId === "string" ? parseInt(atributoId) : atributoId;
+  const nivel = characterLevel.value;
+  switch (id) {
+    case 1: // Cuerpo
+      return [
+        "+1 Poderío",
+        "+1 Movimiento",
+        "+1 Resistencia",
+        "+1 Regeneración",
+        `+${2 * nivel} HP`,
+      ];
+    case 2: // Agilidad
+      return ["+1 Evasión", "+1 Iniciativa", "+1 Puntería", "+1 Reacción"];
+    case 3: // Mente
+      return [
+        "+1 Voluntad",
+        "+1 Límite de Habilidad",
+        "+3 Puntos de Habilidad",
+      ];
+    default:
+      return [];
+  }
 }
 
 function getDescription(atributoId: string | number, shape: string): string {
@@ -586,7 +611,7 @@ function init() {
           originalColor: 0x4a90e2, // Azul vibrante
           selectedColor: 0x00ff00, // Verde brillante
           hoverColor: 0x7ec8e3, // Azul claro
-          trasfondoNodeColor: 0x6366f1, // Indigo para nodos de trasfondo
+          trasfondoNodeColor: 0xffd700, // Amarillo para nodos de trasfondo
           type: "square",
           layer: layerIndex,
           index: i,
@@ -624,6 +649,7 @@ function init() {
         // Add interactive data to circle
         circle.userData = {
           nodeId: nodeData.id,
+          atributoId: nodeData.atributo,
           skillName: skillName,
           tooltipLabel: tooltipLabel,
           description: description,
@@ -631,7 +657,9 @@ function init() {
           originalColor: 0x4a90e2, // Azul vibrante
           selectedColor: 0x00ff00, // Verde brillante
           hoverColor: 0x7ec8e3, // Azul claro
-          trasfondoNodeColor: 0x6366f1, // Indigo para nodos de trasfondo
+          trasfondoNodeColor: 0xffd700, // Amarillo para nodos de trasfondo
+          lockedColor: 0x6b7280, // Gris para principales bloqueados
+          locked: false,
           type: "circle",
           layer: layerIndex,
           index: i,
@@ -841,9 +869,11 @@ function init() {
       );
       if (mesh) {
         mesh.userData.isSelected = true;
-        // Always use green selected color for all selected nodes
+        // Nodos de trasfondo en amarillo; el resto en verde de selección
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(
-          mesh.userData.selectedColor,
+          savedNode.isTrasfondo
+            ? mesh.userData.trasfondoNodeColor
+            : mesh.userData.selectedColor,
         );
       }
     });
@@ -851,6 +881,30 @@ function init() {
 
   // Call after scene is fully set up
   restoreSelectionState();
+  updatePrincipalLocks();
+}
+
+// Bloquea visualmente los otros dos principales cuando ya hay uno elegido.
+// Un principal seleccionado NUNCA se bloquea: solo se bloquean los principales
+// no seleccionados mientras haya algún principal elegido. (Si un personaje
+// tuviera varios principales por datos antiguos, todos se ven seleccionados y
+// se pueden quitar; nunca quedan atascados en gris.)
+function updatePrincipalLocks() {
+  const selectedId = selectedPrincipalNodeId.value;
+  circles.forEach((mesh) => {
+    if (!principalNodeIds.has(mesh.userData.nodeId)) return;
+    const locked = selectedId !== null && !mesh.userData.isSelected;
+    mesh.userData.locked = locked;
+    if (locked) {
+      (mesh.material as THREE.MeshBasicMaterial).color.setHex(
+        mesh.userData.lockedColor,
+      );
+    } else if (!mesh.userData.isSelected) {
+      (mesh.material as THREE.MeshBasicMaterial).color.setHex(
+        mesh.userData.originalColor,
+      );
+    }
+  });
 }
 
 // Mouse event functions
@@ -865,7 +919,9 @@ function onMouseMove(event: MouseEvent) {
   // Remove hover effect from previous object
   if (hovered && !hovered.userData.isSelected) {
     (hovered.material as THREE.MeshStandardMaterial).color.setHex(
-      hovered.userData.originalColor,
+      hovered.userData.locked
+        ? hovered.userData.lockedColor
+        : hovered.userData.originalColor,
     );
   }
 
@@ -873,8 +929,8 @@ function onMouseMove(event: MouseEvent) {
     const intersect = intersects[0];
     const object = intersect.object as THREE.Mesh;
 
-    // Apply hover effect if not selected
-    if (!object.userData.isSelected) {
+    // Apply hover effect if not selected and not locked
+    if (!object.userData.isSelected && !object.userData.locked) {
       hovered = object;
       (object.material as THREE.MeshStandardMaterial).color.setHex(
         object.userData.hoverColor,
@@ -883,7 +939,9 @@ function onMouseMove(event: MouseEvent) {
 
     // Show tooltip
     showTooltip(event, object);
-    renderer!.domElement.style.cursor = "pointer";
+    renderer!.domElement.style.cursor = object.userData.locked
+      ? "not-allowed"
+      : "pointer";
   } else {
     hovered = null;
     hideTooltip();
@@ -932,6 +990,14 @@ function onClick(event: MouseEvent) {
 
       console.log(`Deselected skill: ${object.userData.skillName}`);
     } else {
+      // Principal bloqueado: ya hay otro Cuerpo/Agilidad/Mente elegido
+      if (object.userData.locked) {
+        console.warn(
+          "Solo puedes elegir uno entre Cuerpo, Agilidad y Mente.",
+        );
+        return;
+      }
+
       // Check if we've reached the maximum number of nodes (excluding trasfondo nodes)
       if (remainingNodes.value <= 0) {
         console.warn(`No quedan puntos disponibles!`);
@@ -985,9 +1051,20 @@ function showTooltip(event: MouseEvent, object: THREE.Mesh) {
     document.body.appendChild(tooltip);
   }
 
+  const bonuses =
+    object.userData.atributoId !== undefined
+      ? getPrincipalBonuses(object.userData.atributoId)
+      : [];
+  const bonusesHtml = bonuses.length
+    ? `<div style="margin-top:6px;">${bonuses
+        .map((b) => `<div>${b}</div>`)
+        .join("")}</div>`
+    : "";
+
   tooltip.innerHTML = `
     <strong>${object.userData.tooltipLabel || object.userData.skillName}</strong><br>
-    <small>${object.userData.description}</small><br>
+    <small>${object.userData.description}</small>
+    ${bonusesHtml}
     <em>Tipo: ${object.userData.type === "circle" ? "Pasiva" : "Activa"}</em>
   `;
 
@@ -1102,6 +1179,16 @@ watch(
   },
 );
 
+// Reaplica el bloqueo gris de los principales ante cualquier cambio en la
+// selección del árbol (no solo cuando cambia el principal "primario"), para que
+// al quitar un principal se refresque siempre el estado de los otros dos.
+watch(
+  () => characterData.value.arbol,
+  () => {
+    updatePrincipalLocks();
+  },
+);
+
 // Function to add trasfondo nodes to selected nodes
 function addTrasfondoNodes() {
   const trasfondo = trasfondosData.trasfondos.find(
@@ -1150,7 +1237,7 @@ function updateTrasfondoVisuals() {
       if (mesh) {
         mesh.userData.isSelected = true;
         (mesh.material as THREE.MeshBasicMaterial).color.setHex(
-          mesh.userData.selectedColor,
+          mesh.userData.trasfondoNodeColor,
         );
       }
     }

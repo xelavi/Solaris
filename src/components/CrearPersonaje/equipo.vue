@@ -1,5 +1,44 @@
 <template>
   <div class="space-y-8">
+    <!-- Buscador + filtro por etiquetas (armas y armaduras) -->
+    <div class="space-y-3">
+      <div class="relative">
+        <svg
+          class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9 3.5a5.5 5.5 0 1 0 3.415 9.812l3.636 3.637a.75.75 0 1 0 1.061-1.06l-3.636-3.638A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <input
+          v-model="busqueda"
+          type="text"
+          placeholder="Buscar armas y armaduras..."
+          class="w-full rounded-lg border border-gray-300 bg-white py-2 pr-3 pl-9 text-sm text-gray-800 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
+        />
+      </div>
+      <div class="flex flex-wrap items-start gap-2">
+        <SelectorEtiquetasEquipo
+          v-model="etiquetasSeleccionadas"
+          :etiquetas="etiquetas"
+          class="flex-1"
+        />
+        <button
+          v-if="filtroActivo"
+          type="button"
+          @click="limpiarFiltros"
+          class="mt-2 text-xs font-medium whitespace-nowrap text-indigo-600 hover:text-indigo-800"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+
     <!-- Tabla de Armas -->
     <div>
       <div class="mb-3 flex items-center justify-between">
@@ -14,19 +53,59 @@
           <!-- Header de la tabla de armas -->
           <div class="data-table-head tabla-grid grid-cols-12">
             <div class="col-span-1 text-center">Sel.</div>
-            <div class="col-span-2">Arma</div>
-            <div class="col-span-1 text-center">Pen.</div>
-            <div class="col-span-1 text-center">Lac.</div>
-            <div class="col-span-1 text-center">Con.</div>
-            <div class="col-span-3">Categoría</div>
-            <div class="col-span-1 text-center">Crítico</div>
-            <div class="col-span-1 text-center">Rango Crít.</div>
-            <div class="col-span-1 text-center">Distancia</div>
+            <div class="th-sort col-span-2" @click="ordenar('arma', 'nombre')">
+              Arma{{ flecha("arma", "nombre") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'perforante')"
+            >
+              Pen.{{ flecha("arma", "perforante") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'lacerante')"
+            >
+              Lac.{{ flecha("arma", "lacerante") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'contundente')"
+            >
+              Con.{{ flecha("arma", "contundente") }}
+            </div>
+            <div class="th-sort col-span-3" @click="ordenar('arma', 'categoria')">
+              Categoría{{ flecha("arma", "categoria") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'critico')"
+            >
+              Crítico{{ flecha("arma", "critico") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'rango_critico')"
+            >
+              Rango Crít.{{ flecha("arma", "rango_critico") }}
+            </div>
+            <div
+              class="th-sort col-span-1 text-center"
+              @click="ordenar('arma', 'distancia')"
+            >
+              Distancia{{ flecha("arma", "distancia") }}
+            </div>
           </div>
           <!-- Filas de armas -->
           <div class="divide-y divide-gray-200">
             <div
-              v-for="arma in armas"
+              v-if="armasOrdenadas.length === 0"
+              class="px-4 py-6 text-center text-sm text-gray-400"
+            >
+              Ninguna arma coincide con la búsqueda.
+            </div>
+            <div
+              v-for="arma in armasOrdenadas"
               :key="arma.id"
               @click="toggleArma(arma.id)"
               :class="[
@@ -119,17 +198,48 @@
           <!-- Header de la tabla de armaduras -->
           <div class="data-table-head tabla-grid grid-cols-12">
             <div class="col-span-1 text-center">Sel.</div>
-            <div class="col-span-3">Armadura</div>
-            <div class="col-span-2 text-center">Pen.</div>
-            <div class="col-span-2 text-center">Lac.</div>
-            <div class="col-span-2 text-center">Con.</div>
-            <div class="col-span-2">Categoría</div>
+            <div
+              class="th-sort col-span-3"
+              @click="ordenar('armadura', 'nombre')"
+            >
+              Armadura{{ flecha("armadura", "nombre") }}
+            </div>
+            <div
+              class="th-sort col-span-2 text-center"
+              @click="ordenar('armadura', 'perforante')"
+            >
+              Pen.{{ flecha("armadura", "perforante") }}
+            </div>
+            <div
+              class="th-sort col-span-2 text-center"
+              @click="ordenar('armadura', 'lacerante')"
+            >
+              Lac.{{ flecha("armadura", "lacerante") }}
+            </div>
+            <div
+              class="th-sort col-span-2 text-center"
+              @click="ordenar('armadura', 'contundente')"
+            >
+              Con.{{ flecha("armadura", "contundente") }}
+            </div>
+            <div
+              class="th-sort col-span-2"
+              @click="ordenar('armadura', 'categoria')"
+            >
+              Categoría{{ flecha("armadura", "categoria") }}
+            </div>
           </div>
 
           <!-- Filas de armaduras -->
           <div class="divide-y divide-gray-200">
             <div
-              v-for="armadura in armaduras"
+              v-if="armadurasOrdenadas.length === 0"
+              class="px-4 py-6 text-center text-sm text-gray-400"
+            >
+              Ninguna armadura coincide con la búsqueda.
+            </div>
+            <div
+              v-for="armadura in armadurasOrdenadas"
               :key="armadura.id"
               @click="toggleArmadura(armadura.id)"
               :class="[
@@ -197,18 +307,114 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import armasData from "../../assets/armas.json";
 import armadurasData from "../../assets/armaduras.json";
 import { useCharacterCreation } from "../../domain/useCharacterCreation";
 import {
   resolverEtiquetas,
+  nombresEtiquetas,
   clasesEtiquetaEquipo,
 } from "../../domain/etiquetasEquipo";
+import { useEquipoFiltro } from "../../domain/useEquipoFiltro";
+import SelectorEtiquetasEquipo from "../SelectorEtiquetasEquipo.vue";
 import { armaduraVinculada, armaVinculada } from "../../domain/escudos";
 
 const armas = ref(armasData.armas);
 const armaduras = ref(armadurasData.armaduras);
+
+// Búsqueda + filtro por etiquetas, compartido con el editor.
+const {
+  busqueda,
+  etiquetas,
+  etiquetasSeleccionadas,
+  armasFiltradas,
+  armadurasFiltradas,
+  limpiarFiltros,
+  filtroActivo,
+} = useEquipoFiltro(armas, armaduras);
+
+// --- Ordenación por columna (clic en la cabecera) ---
+// Cada clic cicla: sin orden -> ascendente -> descendente -> sin orden.
+
+type Tabla = "arma" | "armadura";
+type Direccion = "asc" | "desc";
+type EstadoOrden = { campo: string | null; dir: Direccion };
+
+type Arma = (typeof armasData.armas)[number];
+type Armadura = (typeof armadurasData.armaduras)[number];
+
+const orden = ref<Record<Tabla, EstadoOrden>>({
+  arma: { campo: null, dir: "asc" },
+  armadura: { campo: null, dir: "asc" },
+});
+
+// Valor por el que se ordena cada columna (número o texto).
+const accesoArma: Record<string, (a: Arma) => number | string> = {
+  nombre: (a) => a.nombre.toLowerCase(),
+  perforante: (a) => a.perforante,
+  lacerante: (a) => a.lacerante,
+  contundente: (a) => a.contundente,
+  categoria: (a) => (nombresEtiquetas(a.etiquetas)[0] ?? "").toLowerCase(),
+  critico: (a) => parseFloat(String(a.critico).replace(/[^0-9.]/g, "")) || 0,
+  rango_critico: (a) => parseInt(formatRangoCritico(a.rango_critico), 10) || 0,
+  distancia: (a) => a.distancia_min ?? a.distancia_max ?? 0,
+};
+
+const accesoArmadura: Record<string, (a: Armadura) => number | string> = {
+  nombre: (a) => a.nombre.toLowerCase(),
+  perforante: (a) => a.perforante,
+  lacerante: (a) => a.lacerante,
+  contundente: (a) => a.contundente,
+  categoria: (a) => a.categoria.toLowerCase(),
+};
+
+function comparar(a: number | string, b: number | string): number {
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  return String(a).localeCompare(String(b));
+}
+
+function ordenar(tabla: Tabla, campo: string) {
+  const estado = orden.value[tabla];
+  if (estado.campo !== campo) {
+    estado.campo = campo;
+    estado.dir = "asc";
+  } else if (estado.dir === "asc") {
+    estado.dir = "desc";
+  } else {
+    estado.campo = null; // tercer clic: vuelve al orden original
+    estado.dir = "asc";
+  }
+}
+
+/** Indicador de la cabecera: '▲' asc, '▼' desc, '' sin orden por esa columna. */
+function flecha(tabla: Tabla, campo: string): string {
+  const estado = orden.value[tabla];
+  if (estado.campo !== campo) return "";
+  return estado.dir === "asc" ? " ▲" : " ▼";
+}
+
+const armasOrdenadas = computed(() => {
+  const { campo, dir } = orden.value.arma;
+  if (!campo) return armasFiltradas.value;
+  const acc = accesoArma[campo];
+  if (!acc) return armasFiltradas.value;
+  const lista = [...armasFiltradas.value].sort((a, b) =>
+    comparar(acc(a), acc(b)),
+  );
+  return dir === "desc" ? lista.reverse() : lista;
+});
+
+const armadurasOrdenadas = computed(() => {
+  const { campo, dir } = orden.value.armadura;
+  if (!campo) return armadurasFiltradas.value;
+  const acc = accesoArmadura[campo];
+  if (!acc) return armadurasFiltradas.value;
+  const lista = [...armadurasFiltradas.value].sort((a, b) =>
+    comparar(acc(a), acc(b)),
+  );
+  return dir === "desc" ? lista.reverse() : lista;
+});
 
 // Use character creation composable
 const { characterData, loadCharacterData } = useCharacterCreation();
@@ -307,5 +513,15 @@ function toggleArmadura(armaduraId: number) {
   font-weight: 600;
   line-height: 1rem;
   white-space: nowrap;
+}
+/* Cabeceras ordenables */
+.th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color 0.12s;
+}
+.th-sort:hover {
+  color: var(--accent, #4f46e5);
 }
 </style>

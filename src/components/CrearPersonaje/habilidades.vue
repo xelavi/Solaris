@@ -28,6 +28,38 @@
     <!-- Tabla de Habilidades Generales -->
     <div class="data-table">
       <h3 class="data-table-title">Habilidades generales</h3>
+
+      <!-- Buscador + filtro por atributo -->
+      <div class="flex flex-col gap-2 px-1 pb-3 sm:flex-row">
+        <input
+          type="text"
+          v-model="busquedaHabilidad"
+          placeholder="Buscar habilidad..."
+          class="input w-full"
+        />
+        <select
+          v-model="filtroAtributo"
+          class="input w-full sm:w-48 sm:flex-shrink-0"
+        >
+          <option value="">Todos los atributos</option>
+          <option
+            v-for="atributo in ordenAtributosGenerales"
+            :key="atributo"
+            :value="atributo"
+          >
+            {{ atributo }}
+          </option>
+        </select>
+        <select
+          v-model="filtroCompetencia"
+          class="input w-full sm:w-48 sm:flex-shrink-0"
+        >
+          <option value="">Clase y foráneas</option>
+          <option value="clase">Solo de clase</option>
+          <option value="foranea">Solo foráneas</option>
+        </select>
+      </div>
+
       <div class="tabla-scroll max-h-[500px] overflow-y-auto">
         <div class="data-table-head tabla-grid grid-cols-12">
           <div class="col-span-1 text-center">Activa</div>
@@ -38,13 +70,23 @@
           <div class="col-span-2 text-center">Total</div>
         </div>
 
-        <!-- Filas de habilidades generales -->
+        <!-- Filas de habilidades generales, agrupadas por atributo -->
         <div class="divide-y divide-gray-200">
-          <div
-            v-for="habilidad in habilidadesGenerales"
-            :key="habilidad.id"
-            class="data-table-row tabla-grid grid-cols-12"
+          <template
+            v-for="grupo in gruposHabilidadesGenerales"
+            :key="grupo.atributo"
           >
+            <div
+              v-if="grupo.habilidades.length"
+              class="grupo-atributo tabla-grid bg-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-wide text-gray-600"
+            >
+              {{ grupo.atributo }}
+            </div>
+            <div
+              v-for="habilidad in grupo.habilidades"
+              :key="habilidad.id"
+              class="data-table-row tabla-grid grid-cols-12"
+            >
             <!-- Checkbox Activa -->
             <div class="col-span-1 flex justify-center">
               <input
@@ -146,7 +188,8 @@
                 }}{{ calcularTotal(habilidad) }}
               </span>
             </div>
-          </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -575,11 +618,38 @@ const habilidadesExtrasMarcadas = computed(() => {
   ).length;
 });
 
-// Filtrar habilidades por categoría
-const habilidadesGenerales = computed(() => {
-  return habilidades.value.filter(
-    (hab) => hab.atributo !== "Artesania" && hab.atributo !== "Recoleccion",
-  );
+// Texto del buscador de habilidades generales
+const busquedaHabilidad = ref("");
+
+// Filtro por atributo ("" = todos)
+const filtroAtributo = ref("");
+
+// Filtro por competencia: "" = todas, "clase" = activas, "foranea" = no activas
+const filtroCompetencia = ref("");
+
+// Orden de los grupos de atributos en la tabla de habilidades generales
+const ordenAtributosGenerales = ["Agilidad", "Cuerpo", "Mente"];
+
+// Habilidades generales agrupadas por atributo (Agilidad, Cuerpo, Mente),
+// filtradas por el buscador y el filtro de atributo, y ordenadas
+// alfabéticamente dentro de cada grupo
+const gruposHabilidadesGenerales = computed(() => {
+  const termino = busquedaHabilidad.value.trim().toLowerCase();
+  return ordenAtributosGenerales
+    .filter((atributo) => !filtroAtributo.value || atributo === filtroAtributo.value)
+    .map((atributo) => ({
+      atributo,
+      habilidades: habilidades.value
+        .filter(
+          (hab) =>
+            hab.atributo === atributo &&
+            (!termino || hab.nombre.toLowerCase().includes(termino)) &&
+            (filtroCompetencia.value === "" ||
+              (filtroCompetencia.value === "clase" && hab.activa) ||
+              (filtroCompetencia.value === "foranea" && !hab.activa)),
+        )
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
+    }));
 });
 
 const habilidadesArtesania = computed(() => {

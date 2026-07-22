@@ -122,12 +122,12 @@ export function useArbolAttributes(
   const regeneracion = computed(() =>
     calculateAttributeWithMultiplier(8, 2, 1),
   ); // ID 8 = Regeneración (tipo 1 = Cuerpo)
-  const evasion = computed(() => calculateAttributeWithMultiplier(9, 12)); // ID 9 = Evasión (tipo 2 = Agilidad)
-  const iniciativa = computed(() => calculateAttributeWithMultiplier(10)); // ID 10 = Iniciativa (tipo 2 = Agilidad)
-  const punteria = computed(() => calculateAttributeWithMultiplier(11)); // ID 11 = Puntería (tipo 2 = Agilidad)
+  const evasion = computed(() => calculateAttributeWithMultiplier(9, 12, 1, 0, 3)); // ID 9 = Evasión: +1 por nodo de Agilidad, +3 por nodo directo
+  const iniciativa = computed(() => calculateAttributeWithMultiplier(10, 0, 1, 0, 3)); // ID 10 = Iniciativa: +1 por nodo de Agilidad, +3 por nodo directo
+  const punteria = computed(() => calculateAttributeWithMultiplier(11, 0, 1, 0, 3)); // ID 11 = Puntería: +1 por nodo de Agilidad, +3 por nodo directo
   const puntosHabilidad = computed(() =>
-    calculateAttributeWithMultiplier(14, 10, 2 * nivel.value, 1, 3),
-  ); // ID 14 = Puntos de Habilidad (tipo 3 = Mente)
+    calculateAttributeWithMultiplier(14, 10, 3, 1, 3),
+  ); // ID 14 = Puntos de Habilidad: +3 por nodo de Mente, +3 por nodo directo
   // ID 13 = Reacciones. Innata del Vagabond: +1 reacción por estrato.
   const reacciones = computed(() => {
     const bonoVagabond =
